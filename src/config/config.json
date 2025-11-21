@@ -1,0 +1,144 @@
+{
+  "icons": {
+    "ADD_NOTE": "add_circle_outline",
+    "INSERT_TEMPLATE": "note_add",
+    "COPY": "content_copy",
+    "DOWNLOAD": "download",
+    "UPLOAD": "upload",
+    "EDIT": "edit",
+    "MANAGE": "video_library",
+    "DELETE": "delete",
+    "CLOSE": "close",
+    "OPEN": "open_in_new",
+    "SEARCH": "search",
+    "DELETE_SWEEP": "delete_sweep",
+    "PLAY_CIRCLE": "play_circle",
+    "EXPAND_MORE": "expand_more"
+  },
+  "theme": {
+    "light": {
+      "bg": "#f9f9f9",
+      "text": "#333",
+      "border": "#e0e0e0",
+      "cardBg": "#ffffff",
+      "hoverBg": "#f0f0f0",
+      "activeBg": "#e3f2fd",
+      "primary": "#1a73e8",
+      "primaryText": "#ffffff",
+      "icon": "#555",
+      "iconHover": "#000",
+      "delete": "#d32f2f"
+    },
+    "dark": {
+      "bg": "#1f1f1f",
+      "text": "#eee",
+      "border": "#333",
+      "cardBg": "#2a2a2a",
+      "hoverBg": "#333",
+      "activeBg": "#3a3a3a",
+      "primary": "#3ea6ff",
+      "primaryText": "#ffffff",
+      "icon": "#bbb",
+      "iconHover": "#fff",
+      "delete": "#f44336"
+    },
+    "twitter": "#1DA1F2"
+  },
+  "storage": {
+    "cacheDuration": 300000,
+    "retentionDays": 30,
+    "maxRetentionDays": 99999999,
+    "minRetentionDays": 7
+  },
+"presets": {
+    "1": {
+      "name": "High Importance",
+      "description": "Critical concepts, exam topics, and core definitions",
+      "templates": [
+        "Critical Concept: ",
+        "Definition: ",
+        "Potential Exam Question: ",
+        "Key Takeaway: ",
+        "Must Memorize: ",
+        "Core Principle: ",
+        "Summary of Main Point: ",
+        "Important Formula/Rule: ",
+        "Conclusion: ",
+        "Cause and Effect: "
+      ]
+    },
+    "2": {
+      "name": "Medium Importance",
+      "description": "Supporting details, examples, and clarifications",
+      "templates": [
+        "Supporting Example: ",
+        "Needs Further Review: ",
+        "Process/Steps: ",
+        "Comparison/Contrast: ",
+        "Detailed Explanation: ",
+        "Connection to Previous Topic: ",
+        "Practical Application: ",
+        "Clarification Needed: ",
+        "Context: ",
+        "Evidence/Proof: "
+      ]
+    },
+    "3": {
+      "name": "Low Importance",
+      "description": "General notes, references, and questions",
+      "templates": [
+        "Side Note: ",
+        "Question to Ask: ",
+        "Interesting Fact: ",
+        "External Reference/Resource: ",
+        "General Observation: ",
+        "Background Information: ",
+        "Personal Thought: ",
+        "Vocabulary/Term: ",
+        "Related Topic: ",
+        "Quick Reminder: "
+      ]
+    },
+    "4": {
+      "name": "Preset 4",
+      "description": "Custom preset 4",
+      "templates": []
+    },
+    "5": {
+      "name": "Preset 5",
+      "description": "Custom preset 5",
+      "templates": []
+    },
+    "6": {
+      "name": "Preset 6",
+      "description": "Custom preset 6",
+      "templates": []
+    },
+    "7": {
+      "name": "Preset 7",
+      "description": "Custom preset 7",
+      "templates": []
+    },
+    "8": {
+      "name": "Preset 8",
+      "description": "Custom preset 8",
+      "templates": []
+    },
+    "9": {
+      "name": "Preset 9",
+      "description": "Custom preset 9",
+      "templates": []
+    }
+  },
+  "ui": {
+    "sidebarWidth": "400px",
+    "maxSidebarHeight": "calc(100vh - 100px)",
+    "noteMaxHeight": "80px",
+    "noteMinHeight": "24px",
+    "autoSaveDelay": 2000,
+    "navigationDelay": 1000,
+    "toastDuration": 3000,
+    "maxAttempts": 20,
+    "checkInterval": 500
+  }
+}

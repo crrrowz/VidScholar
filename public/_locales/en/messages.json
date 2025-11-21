@@ -1,0 +1,558 @@
+{
+  "shareOnX": {
+    "message": "Share on X",
+    "description": "Tooltip for the share button."
+  },
+  "copiedLinkToClipboard": {
+    "message": "Copied link to clipboard!",
+    "description": "Toast message shown when a link is copied."
+  },
+  "failedToCopyLink": {
+    "message": "Failed to copy link",
+    "description": "Toast message shown when copying a link fails."
+  },
+  "failedToPrepareLink": {
+    "message": "Failed to prepare link",
+    "description": "Toast message shown when preparing a shareable link fails."
+  },
+  "copyAllNotes": {
+    "message": "Copy all notes",
+    "description": "Tooltip for the 'copy all' button."
+  },
+  "downloadAllScreenshots": {
+    "message": "Download all screenshots",
+    "description": "Tooltip for the 'download all' button."
+  },
+  "editTemplates": {
+    "message": "Edit templates",
+    "description": "Tooltip for the 'edit templates' button."
+  },
+  "saveCurrentNotes": {
+    "message": "Save current notes",
+    "description": "Tooltip for the 'save notes' button."
+  },
+  "manageSavedVideos": {
+    "message": "Manage saved videos",
+    "description": "Tooltip for the 'manage videos' button."
+  },
+  "allNotesCopiedToClipboard": {
+    "message": "All notes copied to clipboard!",
+    "description": "Toast message shown when all notes are copied."
+  },
+  "failedToCopyNotesToClipboard": {
+    "message": "Failed to copy notes to clipboard",
+    "description": "Toast message shown when copying all notes fails."
+  },
+    "templatesSavedSuccessfully": {
+      "message": "Templates saved successfully!",
+      "description": "Message displayed when templates are successfully saved."
+    },
+    "presetNamePlaceholder": {
+      "message": "Preset Name",
+      "description": "Placeholder for the preset name input field."
+    },
+    "failedToSaveTemplates": {
+      "message": "Failed to save templates.",
+      "description": "Toast message shown when saving templates fails."
+    },
+
+  "addNote": {
+    "message": "Add note",
+    "description": "Tooltip for the 'add note' button."
+  },
+  "infiniteTerm": {
+    "message": "Infinite",
+    "description": "Term for infinite retention."
+  },
+  "insertTemplate": {
+    "message": "Insert template",
+    "description": "Tooltip for the 'insert template' button."
+  },
+  "itemsTerm": {
+    "message": "items",
+    "description": "Term for a number of items (e.g., 'X items')."
+  },
+  "jumpToTimestamp": {
+    "message": "Click to jump to this timestamp",
+    "description": "Tooltip for the timestamp link."
+  },
+  "videoDeleted": {
+    "message": "Video deleted",
+    "description": "Toast message shown when a video is deleted."
+  },
+  "failedToDeleteVideo": {
+    "message": "Failed to delete video",
+    "description": "Toast message shown when deleting a video fails."
+  },
+  "savedVideos": {
+    "message": "Saved Videos",
+    "description": "Title for the saved videos manager."
+  },
+  "noSavedVideos": {
+    "message": "No saved videos yet.",
+    "description": "Message shown when there are no saved videos."
+  },
+  "okButton": {
+    "message": "OK",
+    "description": "Text for the OK button."
+  },
+  "openVideo": {
+    "message": "Open video",
+    "description": "Tooltip for the 'open video' button."
+  },
+  "delete": {
+    "message": "Delete",
+    "description": "Tooltip for the 'delete' button."
+  },
+  "confirmDelete": {
+    "message": "Are you sure you want to delete \"$VIDEO_TITLE$\"",
+    "description": "Confirmation message for deleting a video.",
+    "placeholders": {
+      "VIDEO_TITLE": {
+        "content": "$1",
+        "example": "My Awesome Video"
+      }
+    }
+  },
+  "confirmDeleteAll": {
+    "message": "Delete ALL data?",
+    "description": "Confirmation message for deleting all data."
+  },
+  "confirmDeleteAllTitle": {
+    "message": "Confirm Delete All",
+    "description": "Title for the 'Delete All' confirmation dialog."
+  },
+  "confirmDeleteAllMessage": {
+    "message": "Are you sure you want to delete all notes? This action cannot be undone.",
+    "description": "Message for the 'Delete All' confirmation dialog."
+  },
+      "confirm": {
+        "message": "Confirm",
+        "description": "Generic text for a confirm button."
+      },
+      "presetGroup": {
+        "message": "Group $PRESET_NUMBER$",
+        "description": "Preset group name with a number.",
+        "placeholders": {
+          "PRESET_NUMBER": {
+            "content": "$1"
+          }
+        }
+      },  "switchedToPreset": {
+    "message": "Switched to Preset $PRESET_NUMBER$",
+    "description": "Toast message shown when switching presets.",
+    "placeholders": {
+      "PRESET_NUMBER": {
+        "content": "$1"
+      }
+    }
+  },
+  "failedToDeleteNote": {
+    "message": "Failed to delete note",
+    "description": "Toast message shown when deleting a note fails."
+  },
+  "deleteNote": {
+    "message": "Delete note",
+    "description": "Tooltip for the delete note button."
+  },
+      "editTemplatesTitle": {
+        "message": "Edit Templates",
+        "description": "Title for the template editor modal."
+      },  "templatePlaceholder": {
+    "message": "Enter one template per line...",
+    "description": "Placeholder text for the template textarea."
+  },
+  "cancelButton": {
+    "message": "Cancel",
+    "description": "Text for the cancel button."
+  },
+  "saveChangesButton": {
+    "message": "Save Changes",
+    "description": "Text for the save changes button."
+  },
+  "failedToLoadTemplates": {
+    "message": "Failed to load templates",
+    "description": "Toast message shown when loading templates fails."
+  },
+  "errorLoading": {
+    "message": "Please reload the page.",
+    "description": "Error message for loading issues."
+  },
+  "errorStorage": {
+    "message": "Please check your browser settings.",
+    "description": "Error message for storage access issues."
+  },
+  "errorNetwork": {
+    "message": "Please check your connection.",
+    "description": "Error message for network issues."
+  },
+  "errorGeneral": {
+    "message": "Please try again later.",
+    "description": "General error message."
+  },
+  "noteTooClose": {
+    "message": "Please wait at least 10 seconds between notes.",
+    "description": "Toast message shown when a note is added too close to another."
+  },
+  "notesTerm": {
+    "message": "Notes",
+    "description": "Term for a collection of notes (e.g., 'X Notes')."
+  },
+  "notesSavedSuccessfully": {
+    "message": "Notes saved successfully!",
+    "description": "Toast message shown when notes are saved successfully."
+  },
+  "failedToSaveNotes": {
+    "message": "Failed to save notes",
+    "description": "Toast message shown when saving notes fails."
+  },
+  "libraryCleared": {
+    "message": "Library cleared",
+    "description": "Toast message shown when library is cleared."
+  },
+  "failedToAddNote": {
+    "message": "Failed to add note",
+    "description": "Toast message shown when adding a note fails."
+  },
+  "focusNoteInputWarning": {
+    "message": "Please focus on the note input field to add a note.",
+    "description": "Warning message when the user tries to add a note without focusing on the input field."
+  },
+  "unsavedChangesWarning": {
+    "message": "You have unsaved changes. Are you sure you want to leave?",
+    "description": "Warning message when trying to leave with unsaved changes."
+  },
+  "warningTitle": {
+    "message": "Warning",
+    "description": "Title for warning dialogs."
+  },
+  "languageLabel": {
+    "message": "Language:",
+    "description": "Label for the language selection dropdown."
+  },
+  "english": {
+    "message": "English",
+    "description": "Language option for English."
+  },
+  "arabic": {
+    "message": "Arabic",
+    "description": "Language option for Arabic."
+  },
+  "languageSetSuccess": {
+    "message": "Language set to $LOCALE$",
+    "description": "Toast message shown when language is successfully set.",
+    "placeholders": {
+      "LOCALE": {
+        "content": "$1"
+      }
+    }
+  },
+  "languageUnsupportedError": {
+    "message": "Unsupported language: $LOCALE$",
+    "description": "Toast message shown when an unsupported language is selected.",
+    "placeholders": {
+      "LOCALE": {
+        "content": "$1"
+      }
+    }
+  },
+  "searchPlaceholder": {
+    "message": "Search titles or notes...",
+    "description": "Placeholder text for the search input in video manager."
+  },
+  "autoDeleteLabel": {
+    "message": "Auto-delete:",
+    "description": "Label for auto-delete function in video manager."
+  },
+  "autoDeleteTitle": {
+    "message": "Auto-delete Notes",
+    "description": "Title for the 'Auto-delete' prompt dialog."
+  },
+  "retentionDaysPrompt": {
+    "message": "Enter the number of days to retain notes (e.g., 30):",
+    "description": "Prompt for setting auto-delete retention days."
+  },
+      "savedDays": {
+        "message": "Saved! $DAYS$ days",
+        "description": "Toast message for successful retention days update.",
+        "placeholders": {
+          "DAYS": {
+            "content": "$1"
+          }
+        }
+      },
+      "daysUnit": {
+        "message": "days",
+        "description": "Unit for number of days."
+      },
+      "dayUnit": {
+        "message": "day",
+        "description": "Unit for a single day."
+      },
+      "couldNotLoadData": {
+        "message": "Could not load data",
+        "description": "Error toast message when video manager data fails to load."
+      },  "downloadAllNotesJson": {
+    "message": "Download All Notes",
+    "description": "Button to download all notes across all videos as a single JSON file."
+  },
+  "exportErrorNoVideoId": {
+    "message": "Cannot export notes: No video is currently playing or its ID could not be determined.",
+    "description": "Error message when no video ID is found for notes export."
+  },
+  "failedToExportNotes": {
+    "message": "Failed to export notes.",
+    "description": "General error message for notes export failures."
+  },
+  "screenshotDownloadComplete": {
+    "message": "Screenshots downloaded successfully!",
+    "description": "Toast message for successful screenshot download."
+  },
+  "screenshotDownloadFailed": {
+    "message": "Failed to download screenshots.",
+    "description": "Error message for screenshot download failures."
+  },
+  "failedToSwitchPresets": {
+    "message": "Failed to switch preset.",
+    "description": "Error message when preset switching fails."
+  },
+  "failedToInitializePresets": {
+    "message": "Failed to initialize presets.",
+    "description": "Error message when preset initialization fails."
+  },
+  "failedToChangePresets": {
+    "message": "Failed to change presets.",
+    "description": "Error message when preset changes fail."
+  },
+  "allNotesImportedError": {
+    "message": "Failed to import all notes.",
+    "description": "Error message when importing all notes fails."
+  },
+  "importModePrompt": {
+    "message": "Import mode: 'Replace' existing notes or 'Merge' with them? (Type 'merge' or 'replace')",
+    "description": "Prompt asking the user to choose between replacing or merging notes during import."
+  },
+  "invalidVideoIdForMerge": {
+    "message": "Cannot merge notes for different videos. Imported notes are for video $IMPORTED_VIDEO_ID$ but current video is $CURRENT_VIDEO_ID$.",
+    "description": "Error message when attempting to merge video-specific notes for a different video ID.",
+    "placeholders": {
+      "IMPORTED_VIDEO_ID": { "content": "$1" },
+      "CURRENT_VIDEO_ID": { "content": "$2" }
+    }
+  },
+  "invalidVideoIdForReplace": {
+    "message": "Cannot replace notes for different videos. Imported notes are for video $IMPORTED_VIDEO_ID$ but current video is $CURRENT_VIDEO_ID$.",
+    "description": "Error message when attempting to replace video-specific notes for a different video ID.",
+    "placeholders": {
+      "IMPORTED_VIDEO_ID": { "content": "$1" },
+      "CURRENT_VIDEO_ID": { "content": "$2" }
+    }
+  },
+  "notesMergeSuccess": {
+    "message": "Notes merged successfully!",
+    "description": "Toast message shown when notes are merged successfully."
+  },
+  "notesMergeError": {
+    "message": "Error merging notes: $ERROR_MESSAGE$",
+    "description": "Error message for notes merging failures.",
+    "placeholders": {
+      "ERROR_MESSAGE": { "content": "$1" }
+    }
+  },
+  "notesImportError": {
+    "message": "Error importing notes: $ERROR_MESSAGE$",
+    "description": "General error message for notes import failures.",
+    "placeholders": {
+      "ERROR_MESSAGE": { "content": "$1" }
+    }
+  },
+  "importVideoIdMismatchTitle": {
+    "message": "Video ID Mismatch",
+    "description": "Title for the video ID mismatch dialog."
+  },
+  "importVideoIdMismatchMessage": {
+    "message": "Imported notes are for video <b>`$IMPORTED_VIDEO_ID$`</b> but current video is <b>`$CURRENT_VIDEO_ID$`</b>. Do you want to open the video?",
+    "description": "Message for the video ID mismatch dialog.",
+    "placeholders": {
+      "IMPORTED_VIDEO_ID": { "content": "$1" },
+      "CURRENT_VIDEO_ID": { "content": "$2" }
+    }
+  },
+  "importVideoIdMismatch": {
+    "message": "Imported notes are for video $IMPORTED_VIDEO_ID$ but current video is $CURRENT_VIDEO_ID$. Import cancelled.",
+    "description": "Error message when imported notes video ID does not match current video ID.",
+    "placeholders": {
+      "IMPORTED_VIDEO_ID": { "content": "$1" },
+      "CURRENT_VIDEO_ID": { "content": "$2" }
+    }
+  },
+  "importCancelled": {
+    "message": "Import cancelled.",
+    "description": "Info message when the user cancels an import operation."
+  },
+  "invalidImportChoice": {
+    "message": "Invalid import choice. Please type 'merge' or 'replace'.",
+    "description": "Error message when the user provides an invalid choice for import mode."
+  },
+  "uploadAllNotesJson": {
+    "message": "Upload All Notes",
+    "description": "Button to upload a JSON file to replace all notes across all videos."
+  },
+  "downloadNotesJson": {
+    "message": "Download Notes",
+    "description": "Button to download notes for the current video as a JSON file."
+  },
+  "uploadNotesJson": {
+    "message": "Upload Notes",
+    "description": "Button to upload a JSON file to replace or merge notes for the current video."
+  },
+  "switchLanguage": {
+    "message": "Switch Language",
+    "description": "Tooltip/label for the language switch button."
+  },
+  "switchTheme": {
+    "message": "Switch Theme",
+    "description": "Tooltip/label for the theme switch button."
+  },
+  "invalidImportScope": {
+    "message": "Invalid import scope. This file is not for global import or is malformed.",
+    "description": "Error message when the imported JSON file has an invalid scope for the current import context."
+  },
+  "videoImportNotAllowedHere": {
+    "message": "Video notes import is not allowed in a global context. Please use the video-specific upload.",
+    "description": "Error message when a video notes import is attempted globally."
+  },
+  "globalImportNotAllowedTitle": {
+    "message": "Global Import Not Allowed",
+    "description": "Title for the global import not allowed dialog."
+  },
+  "globalImportNotAllowedHere": {
+    "message": "Global notes import is not allowed in this context. Please use the global import UI in the Video Manager.",
+    "description": "Error message when a global notes import is attempted from the sub-toolbar."
+  },
+  "confirmMergeAllNotes": {
+    "message": "Do you want to merge the imported notes with all existing notes? (Otherwise, you can replace or cancel)",
+    "description": "Confirmation message for merging all notes."
+  },
+  "confirmReplaceAllNotes": {
+    "message": "Do you want to replace ALL existing notes with the imported notes? This action cannot be undone.",
+    "description": "Confirmation message for replacing all notes."
+  },
+  "allNotesImportedSuccess": {
+    "message": "All notes replaced successfully!",
+    "description": "Toast message shown when all notes are successfully imported (replaced)."
+  },
+  "allNotesMergeSuccess": {
+    "message": "All notes merged successfully!",
+    "description": "Toast message shown when all notes are successfully merged."
+  },
+  "confirmMergeSpecificVideo": {
+    "message": "Video \"$VIDEO_TITLE$\" already exists. Do you want to merge its notes with the imported notes? (Cancel to replace)",
+    "description": "Confirmation message for merging notes of a specific video during an all-notes import.",
+    "placeholders": {
+        "VIDEO_TITLE": { "content": "$1" }
+    }
+  },
+  "importDecisionTitle": {
+      "message": "Import Decision Manager",
+      "description": "Title for the import decision modal."
+  },
+  "loadingDecisions": {
+      "message": "Preparing import decisions...",
+      "description": "Loading message in the import decision modal."
+  },
+      "singleVideoImportTitle": {
+          "message": "Import Notes for \"$VIDEO_TITLE$\"",
+          "description": "Title for single video import decision, showing video title.",
+          "placeholders": {
+              "VIDEO_TITLE": { "content": "$1" }
+          }
+      },
+      "singleVideoImportDescription": {
+          "message": "Choose whether to merge new notes with existing ones, or replace all existing notes with the imported ones.",
+          "description": "Description text for single video import decision modal."
+      },  "globalMergeAll": {
+      "message": "Merge All",
+      "description": "Button to merge all imported videos globally."
+  },
+  "globalReplaceAll": {
+      "message": "Replace All",
+      "description": "Button to replace all existing videos globally."
+  },
+  "globalSkipAll": {
+      "message": "Skip All",
+      "description": "Button to skip all imported videos globally."
+  },
+  "newVideo": {
+      "message": "New Video",
+      "description": "Status indicator for a new video in the import decision list."
+  },
+  "existingVideo": {
+      "message": "Existing Video",
+      "description": "Status indicator for an existing video in the import decision list."
+  },
+  "skipOption": {
+      "message": "Skip",
+      "description": "Option to skip importing notes for a specific video."
+  },
+  "applyChanges": {
+      "message": "Apply Changes",
+      "description": "Button to confirm and apply import decisions."
+  },
+  "replaceOption": {
+      "message": "Replace",
+      "description": "Option to replace notes."
+  },
+  "mergeOption": {
+      "message": "Merge",
+      "description": "Option to merge notes."
+  },
+  "mergeWithExistingNotes": {
+          "message": "Merge with existing notes",
+          "description": "Label for the checkbox to merge imported notes with existing ones."
+        },
+        "enableAutoAddTranscript": {
+          "message": "Enable automatic transcript text",
+          "description": "Tooltip for enabling auto transcript text."
+        },
+        "disableAutoAddTranscript": {
+          "message": "Disable automatic transcript text",
+          "description": "Tooltip for disabling auto transcript text."
+        },
+        "showTranscript": {
+          "message": "Show transcript",
+          "description": "Aria label for the button to show the video transcript."
+        },
+        "noteDeleted": {
+          "message": "Note deleted",
+          "description": "Toast message shown when a note is deleted successfully."
+        },
+        "videoGroupsTitle": {
+          "message": "Video Groups",
+          "description": "Title for the video groups section in the template editor."
+        },
+        "addNewGroupPlaceholder": {
+          "message": "Add new group",
+          "description": "Placeholder for the input field to add new video groups."
+        },
+        "addButton": {
+          "message": "Add",
+          "description": "Text for the button to add a new video group."
+        },
+        "groupExistsError": {
+          "message": "Group already exists",
+          "description": "Error message shown when trying to add a group that already exists."
+        },
+        "deleteButton": {
+          "message": "Delete",
+          "description": "Text for the button to delete a video group or a note."
+        },
+        "noGroup": {
+                  "message": "No Group",
+                  "description": "Label for videos that do not belong to any group."
+                },
+                "transcriptNotAvailable": {
+                  "message": "Transcript not available for this video.",
+                  "description": "Error message when transcript is not available."
+                }
+              }

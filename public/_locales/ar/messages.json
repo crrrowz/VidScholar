@@ -1,0 +1,563 @@
+{
+  "shareOnX": {
+    "message": "مشاركة على X",
+    "description": "نص تلميحي لزر المشاركة."
+  },
+  "copiedLinkToClipboard": {
+    "message": "تم نسخ الرابط إلى الحافظة!",
+    "description": "رسالة تنبيه تظهر عند نسخ الرابط."
+  },
+  "failedToCopyLink": {
+    "message": "فشل نسخ الرابط",
+    "description": "رسالة تنبيه تظهر عند فشل نسخ الرابط."
+  },
+  "failedToPrepareLink": {
+    "message": "فشل تجهيز الرابط",
+    "description": "رسالة تنبيه تظهر عند فشل إعداد رابط المشاركة."
+  },
+  "copyAllNotes": {
+    "message": "نسخ جميع الملاحظات",
+    "description": "نص تلميحي لزر 'نسخ الكل'."
+  },
+  "downloadAllScreenshots": {
+    "message": "تنزيل جميع لقطات الشاشة",
+    "description": "نص تلميحي لزر 'تنزيل الكل'."
+  },
+  "editTemplates": {
+    "message": "تعديل القوالب",
+    "description": "نص تلميحي لزر 'تعديل القوالب'."
+  },
+  "saveCurrentNotes": {
+    "message": "حفظ الملاحظات الحالية",
+    "description": "نص تلميحي لزر 'حفظ الملاحظات'."
+  },
+  "manageSavedVideos": {
+    "message": "إدارة الفيديوهات المحفوظة",
+    "description": "نص تلميحي لزر 'إدارة الفيديوهات'."
+  },
+  "allNotesCopiedToClipboard": {
+    "message": "تم نسخ جميع الملاحظات إلى الحافظة!",
+    "description": "رسالة تنبيه تظهر عند نسخ جميع الملاحظات."
+  },
+  "failedToCopyNotesToClipboard": {
+    "message": "فشل نسخ الملاحظات إلى الحافظة",
+    "description": "رسالة تنبيه تظهر عند فشل نسخ جميع الملاحظات."
+  },
+    "templatesSavedSuccessfully": {
+      "message": "تم حفظ القوالب بنجاح!",
+      "description": "Message displayed when templates are successfully saved."
+    },
+    "presetNamePlaceholder": {
+      "message": "اسم الإعداد المسبق",
+      "description": "Placeholder for the preset name input field."
+    },
+    "failedToSaveTemplates": {
+      "message": "فشل حفظ القوالب.",
+      "description": "رسالة تنبيه تظهر عند فشل حفظ القوالب."
+    },
+
+  "addNote": {
+    "message": "إضافة ملاحظة",
+    "description": "نص تلميحي لزر 'إضافة ملاحظة'."
+  },
+  "infiniteTerm": {
+    "message": "لا نهائي",
+    "description": "مصطلح للاحتفاظ اللانهائي."
+  },
+  "insertTemplate": {
+    "message": "إدراج قالب",
+    "description": "نص تلميحي لزر 'إدراج قالب'."
+  },
+  "itemsTerm": {
+    "message": "عناصر",
+    "description": "مصطلح لعدد من العناصر (مثال: 'X عناصر')."
+  },
+  "jumpToTimestamp": {
+    "message": "انقر للانتقال إلى هذا التوقيت",
+    "description": "نص تلميحي لرابط التوقيت الزمني."
+  },
+  "videoDeleted": {
+    "message": "تم حذف الفيديو",
+    "description": "رسالة تنبيه تظهر عند حذف فيديو."
+  },
+  "failedToDeleteVideo": {
+    "message": "فشل حذف الفيديو",
+    "description": "رسالة تنبيه تظهر عند فشل حذف فيديو."
+  },
+  "savedVideos": {
+    "message": "الفيديوهات المحفوظة",
+    "description": "عنوان نافذة مدير الفيديوهات المحفوظة."
+  },
+  "noSavedVideos": {
+    "message": "لا توجد فيديوهات محفوظة بعد.",
+    "description": "رسالة تظهر عندما لا توجد فيديوهات محفوظة."
+  },
+  "okButton": {
+    "message": "حسنا",
+    "description": "نص زر 'حسنا'."
+  },
+  "openVideo": {
+    "message": "فتح الفيديو",
+    "description": "نص تلميحي لزر 'فتح الفيديو'."
+  },
+  "delete": {
+    "message": "حذف",
+    "description": "نص تلميحي لزر 'حذف'."
+  },
+  "confirmDelete": {
+    "message": "هل أنت متأكد أنك تريد حذف \"$VIDEO_TITLE$\"؟",
+    "description": "رسالة تأكيد لحذف فيديو.",
+    "placeholders": {
+      "VIDEO_TITLE": {
+        "content": "$1",
+        "example": "فيديوي الرائع"
+      }
+    }
+  },
+  "confirmDeleteAll": {
+    "message": "حذف جميع البيانات؟",
+    "description": "رسالة تأكيد لحذف جميع البيانات."
+  },
+  "confirmDeleteAllTitle": {
+    "message": "تأكيد حذف الكل",
+    "description": "عنوان نافذة تأكيد 'حذف الكل'."
+  },
+  "confirmDeleteAllMessage": {
+    "message": "هل أنت متأكد أنك تريد حذف جميع الملاحظات؟ لا يمكن التراجع عن هذا الإجراء.",
+    "description": "نص الرسالة لنافذة تأكيد 'حذف الكل'."
+  },
+      "confirm": {
+        "message": "تأكيد",
+        "description": "نص عام لزر التأكيد."
+      },
+      "presetGroup": {
+        "message": "مجموعة $PRESET_NUMBER$",
+        "description": "اسم مجموعة القوالب مع رقم.",
+        "placeholders": {
+          "PRESET_NUMBER": {
+            "content": "$1"
+          }
+        }
+      },  "switchedToPreset": {
+    "message": "تم التبديل إلى المجموعة $PRESET_NUMBER$",
+    "description": "رسالة تنبيه تظهر عند تبديل المجموعات.",
+    "placeholders": {
+      "PRESET_NUMBER": {
+        "content": "$1"
+      }
+    }
+  },
+  "failedToDeleteNote": {
+    "message": "فشل حذف الملاحظة",
+    "description": "رسالة تنبيه تظهر عند فشل حذف ملاحظة."
+  },
+  "deleteNote": {
+    "message": "حذف الملاحظة",
+    "description": "نص تلميحي لزر حذف الملاحظة."
+  },
+      "editTemplatesTitle": {
+        "message": "تعديل القوالب",
+        "description": "عنوان نافذة محرر القوالب."
+      },  "templatePlaceholder": {
+    "message": "أدخل قالباً واحداً في كل سطر...",
+    "description": "النص التوضيحي (Placeholder) لحقل إدخال القوالب."
+  },
+  "cancelButton": {
+    "message": "إلغاء",
+    "description": "نص زر الإلغاء."
+  },
+  "saveChangesButton": {
+    "message": "حفظ التغييرات",
+    "description": "نص زر حفظ التغييرات."
+  },
+  "failedToLoadTemplates": {
+    "message": "فشل تحميل القوالب",
+    "description": "رسالة تنبيه تظهر عند فشل تحميل القوالب."
+  },
+  "errorLoading": {
+    "message": "يرجى إعادة تحميل الصفحة.",
+    "description": "رسالة خطأ لمشاكل التحميل."
+  },
+  "errorStorage": {
+    "message": "يرجى التحقق من إعدادات المتصفح.",
+    "description": "رسالة خطأ لمشاكل الوصول للتخزين."
+  },
+  "errorNetwork": {
+    "message": "يرجى التحقق من الاتصال.",
+    "description": "رسالة خطأ لمشاكل الشبكة."
+  },
+  "errorGeneral": {
+    "message": "يرجى المحاولة مرة أخرى لاحقاً.",
+    "description": "رسالة خطأ عامة."
+  },
+  "noteTooClose": {
+    "message": "الرجاء الانتظار 10 ثوانٍ على الأقل بين الملاحظات.",
+    "description": "رسالة توست تظهر عندما يتم إضافة ملاحظة قريبة جداً من أخرى."
+  },
+  "notesTerm": {
+    "message": "ملاحظات",
+    "description": "مصطلح لمجموعة من الملاحظات (مثال: 'X ملاحظات')."
+  },
+  "notesSavedSuccessfully": {
+    "message": "تم حفظ الملاحظات بنجاح!",
+    "description": "رسالة تنبيه تظهر عند حفظ الملاحظات بنجاح."
+  },
+  "failedToSaveNotes": {
+    "message": "فشل حفظ الملاحظات",
+    "description": "رسالة تنبيه تظهر عند فشل حفظ الملاحظات."
+  },
+  "libraryCleared": {
+    "message": "تم مسح المكتبة",
+    "description": "رسالة تنبيه تظهر عند مسح المكتبة."
+  },
+  "failedToAddNote": {
+    "message": "فشل إضافة الملاحظة",
+    "description": "رسالة تنبيه تظهر عند فشل إضافة ملاحظة."
+  },
+  "focusNoteInputWarning": {
+    "message": "الرجاء التركيز على حقل إدخال الملاحظة لإضافة ملاحظة.",
+    "description": "رسالة تحذير عندما يحاول المستخدم إضافة ملاحظة دون التركيز على حقل الإدخال."
+  },
+  "unsavedChangesWarning": {
+    "message": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد المغادرة؟",
+    "description": "رسالة تحذير عند محاولة المغادرة مع وجود تغييرات غير محفوظة."
+  },
+  "warningTitle": {
+    "message": "تحذير",
+    "description": "عنوان لنوافذ التحذير."
+  },
+  "languageLabel": {
+    "message": "اللغة:",
+    "description": "تسمية لقائمة اختيار اللغة."
+  },
+  "english": {
+    "message": "الإنجليزية",
+    "description": "خيار اللغة الإنجليزية."
+  },
+  "arabic": {
+    "message": "العربية",
+    "description": "خيار اللغة العربية."
+  },
+  "languageSetSuccess": {
+    "message": "تم تعيين اللغة إلى $LOCALE$",
+    "description": "رسالة تنبيه تظهر عند تعيين اللغة بنجاح.",
+    "placeholders": {
+      "LOCALE": {
+        "content": "$1"
+      }
+    }
+  },
+  "languageUnsupportedError": {
+    "message": "لغة غير مدعومة: $LOCALE$",
+    "description": "رسالة تنبيه تظهر عند اختيار لغة غير مدعومة.",
+    "placeholders": {
+      "LOCALE": {
+        "content": "$1"
+      }
+    }
+  },
+  "searchPlaceholder": {
+    "message": "بحث في العناوين أو الملاحظات...",
+    "description": "النص التوضيحي لحقل البحث في مدير الفيديو."
+  },
+  "autoDeleteLabel": {
+    "message": "حذف تلقائي:",
+    "description": "تسمية لوظيفة الحذف التلقائي في مدير الفيديو."
+  },
+  "autoDeleteTitle": {
+    "message": "حذف الملاحظات تلقائياً",
+    "description": "عنوان نافذة الحذف التلقائي."
+  },
+  "retentionDaysPrompt": {
+    "message": "أدخل عدد الأيام للاحتفاظ بالملاحظات (مثال: 30):",
+    "description": "نص يطلب تحديد أيام الاحتفاظ بالملاحظات."
+  },
+      "savedDays": {
+        "message": "تم الحفظ! $DAYS$ يوم",
+        "description": "رسالة تنبيه لتحديث أيام الاحتفاظ بنجاح.",
+        "placeholders": {
+          "DAYS": {
+            "content": "$1"
+          }
+        }
+      },
+      "daysUnit": {
+        "message": "أيام",
+        "description": "وحدة لعدد الأيام."
+      },
+      "dayUnit": {
+        "message": "يوم",
+        "description": "وحدة ليوم واحد."
+      },
+      "couldNotLoadData": {
+        "message": "تعذر تحميل البيانات",
+        "description": "رسالة خطأ عند فشل تحميل بيانات مدير الفيديو."
+      },  "downloadAllNotesJson": {
+    "message": "تنزيل كل الملاحظات",
+    "description": "زر لتنزيل جميع الملاحظات لجميع الفيديوهات كملف JSON واحد."
+  },
+  "exportErrorNoVideoId": {
+    "message": "لا يمكن تصدير الملاحظات: لا يوجد فيديو يعمل حالياً أو تعذر تحديد معرفه.",
+    "description": "رسالة خطأ عند عدم العثور على معرف الفيديو لتصدير الملاحظات."
+  },
+  "failedToExportNotes": {
+    "message": "فشل تصدير الملاحظات.",
+    "description": "رسالة خطأ عامة لفشل تصدير الملاحظات."
+  },
+  "screenshotDownloadComplete": {
+    "message": "تم تنزيل لقطات الشاشة بنجاح!",
+    "description": "رسالة تنبيه لنجاح تنزيل لقطات الشاشة."
+  },
+  "screenshotDownloadFailed": {
+    "message": "فشل تنزيل لقطات الشاشة.",
+    "description": "رسالة خطأ لفشل تنزيل لقطات الشاشة."
+  },
+  "failedToSwitchPresets": {
+    "message": "فشل تبديل المجموعة.",
+    "description": "رسالة خطأ عند فشل تبديل المجموعة."
+  },
+  "failedToInitializePresets": {
+    "message": "فشل تهيئة المجموعات.",
+    "description": "رسالة خطأ عند فشل تهيئة المجموعات."
+  },
+  "failedToChangePresets": {
+    "message": "فشل تغيير المجموعات.",
+    "description": "رسالة خطأ عند فشل تغيير المجموعات."
+  },
+  "allNotesImportedError": {
+    "message": "فشل استيراد جميع الملاحظات.",
+    "description": "رسالة خطأ عند فشل استيراد جميع الملاحظات."
+  },
+  "importModePrompt": {
+    "message": "وضع الاستيراد: 'استبدال' (Replace) الملاحظات الموجودة أم 'دمج' (Merge) معها؟ (اكتب 'merge' أو 'replace')",
+    "description": "رسالة تطلب من المستخدم الاختيار بين الاستبدال أو الدمج أثناء الاستيراد."
+  },
+  "invalidVideoIdForMerge": {
+    "message": "لا يمكن دمج ملاحظات لفيديوهات مختلفة. الملاحظات المستوردة للفيديو $IMPORTED_VIDEO_ID$ ولكن الفيديو الحالي هو $CURRENT_VIDEO_ID$.",
+    "description": "رسالة خطأ عند محاولة دمج ملاحظات فيديو بمعرف مختلف.",
+    "placeholders": {
+      "IMPORTED_VIDEO_ID": { "content": "$1" },
+      "CURRENT_VIDEO_ID": { "content": "$2" }
+    }
+  },
+  "invalidVideoIdForReplace": {
+    "message": "لا يمكن استبدال ملاحظات لفيديوهات مختلفة. الملاحظات المستوردة للفيديو $IMPORTED_VIDEO_ID$ ولكن الفيديو الحالي هو $CURRENT_VIDEO_ID$.",
+    "description": "رسالة خطأ عند محاولة استبدال ملاحظات فيديو بمعرف مختلف.",
+    "placeholders": {
+      "IMPORTED_VIDEO_ID": { "content": "$1" },
+      "CURRENT_VIDEO_ID": { "content": "$2" }
+    }
+  },
+  "notesMergeSuccess": {
+    "message": "تم دمج الملاحظات بنجاح!",
+    "description": "رسالة تنبيه تظهر عند دمج الملاحظات بنجاح."
+  },
+  "notesMergeError": {
+    "message": "خطأ في دمج الملاحظات: $ERROR_MESSAGE$",
+    "description": "رسالة خطأ لفشل دمج الملاحظات.",
+    "placeholders": {
+      "ERROR_MESSAGE": { "content": "$1" }
+    }
+  },
+  "notesImportError": {
+    "message": "خطأ في استيراد الملاحظات: $ERROR_MESSAGE$",
+    "description": "رسالة خطأ عامة لفشل استيراد الملاحظات.",
+    "placeholders": {
+      "ERROR_MESSAGE": { "content": "$1" }
+    }
+  },
+  "importVideoIdMismatchTitle": {
+    "message": "عدم تطابق معرف الفيديو",
+    "description": "عنوان لنافذة حوار عدم تطابق معرف الفيديو."
+  },
+  "importVideoIdMismatchMessage": {
+    "message": "الملاحظات المستوردة للفيديو <b>`$IMPORTED_VIDEO_ID$`</b> ولكن الفيديو الحالي هو <b>`$CURRENT_VIDEO_ID$`</b>. هل تريد فتح الفيديو؟",
+    "description": "رسالة لنافذة حوار عدم تطابق معرف الفيديو.",
+    "placeholders": {
+      "IMPORTED_VIDEO_ID": { "content": "$1" },
+      "CURRENT_VIDEO_ID": { "content": "$2" }
+    }
+  },
+  "importVideoIdMismatch": {
+    "message": "الملاحظات المستوردة للفيديو $IMPORTED_VIDEO_ID$ ولكن الفيديو الحالي هو $CURRENT_VIDEO_ID$. تم إلغاء الاستيراد.",
+    "description": "رسالة خطأ عندما لا يتطابق معرف فيديو الملاحظات المستوردة مع الفيديو الحالي.",
+    "placeholders": {
+      "IMPORTED_VIDEO_ID": { "content": "$1" },
+      "CURRENT_VIDEO_ID": { "content": "$2" }
+    }
+  },
+  "importCancelled": {
+    "message": "تم إلغاء الاستيراد.",
+    "description": "رسالة معلومات عند إلغاء المستخدم لعملية الاستيراد."
+  },
+  "invalidImportChoice": {
+    "message": "خيار استيراد غير صالح. يرجى كتابة 'merge' أو 'replace'.",
+    "description": "رسالة خطأ عند إدخال خيار غير صالح لوضع الاستيراد."
+  },
+  "uploadAllNotesJson": {
+    "message": "رفع كل الملاحظات",
+    "description": "زر لرفع ملف JSON لاستبدال جميع الملاحظات لكل الفيديوهات."
+  },
+  "downloadNotesJson": {
+    "message": "تنزيل الملاحظات",
+    "description": "زر لتنزيل ملاحظات الفيديو الحالي كملف JSON."
+  },
+  "uploadNotesJson": {
+    "message": "رفع الملاحظات",
+    "description": "زر لرفع ملف JSON لاستبدال أو دمج ملاحظات الفيديو الحالي."
+  },
+  "switchLanguage": {
+    "message": "تغيير اللغة",
+    "description": "تلميح/تسمية لزر تغيير اللغة."
+  },
+  "switchTheme": {
+    "message": "تغيير المظهر",
+    "description": "تلميح/تسمية لزر تغيير المظهر."
+  },
+  "invalidImportScope": {
+    "message": "نطاق استيراد غير صالح. هذا الملف ليس للاستيراد الشامل أو أنه تالف.",
+    "description": "رسالة خطأ عندما يكون ملف JSON المستورد ذو نطاق غير صالح."
+  },
+  "videoImportNotAllowedHere": {
+    "message": "لا يُسمح باستيراد ملاحظات الفيديو في سياق شامل. يرجى استخدام الرفع الخاص بالفيديو.",
+    "description": "رسالة خطأ عند محاولة استيراد ملاحظات فيديو فردي في السياق الشامل."
+  },
+    "videoImportNotAllowedTitle": {
+    "message": "استيراد ملاحظات الفيديو غير مسموح به",
+    "description": "عنوان لنافذة الحوار التي تمنع استيراد ملاحظات الفيديو."
+  },
+  "globalImportNotAllowedTitle": {
+    "message": "الاستيراد العام غير مسموح به",
+    "description": "عنوان لنافذة الحوار التي تمنع الاستيراد العام."
+  },
+  "globalImportNotAllowedHere": {
+    "message": "استيراد الملاحظات العامة غير مسموح به في هذا السياق. يرجى استخدام واجهة الاستيراد العامة في مدير الفيديو.",
+    "description": "رسالة خطأ عند محاولة استيراد الملاحظات العامة من شريط الأدوات الفرعي."
+  },
+  "confirmMergeAllNotes": {
+    "message": "هل تريد دمج الملاحظات المستوردة مع جميع الملاحظات الموجودة؟ (وإلا، يمكنك الاستبدال أو الإلغاء)",
+    "description": "رسالة تأكيد لدمج جميع الملاحظات."
+  },
+  "confirmReplaceAllNotes": {
+    "message": "هل تريد استبدال جميع الملاحظات الموجودة بالملاحظات المستوردة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "description": "رسالة تأكيد لاستبدال جميع الملاحظات."
+  },
+  "allNotesImportedSuccess": {
+    "message": "تم استبدال جميع الملاحظات بنجاح!",
+    "description": "رسالة تنبيه عند نجاح استبدال جميع الملاحظات."
+  },
+  "allNotesMergeSuccess": {
+    "message": "تم دمج جميع الملاحظات بنجاح!",
+    "description": "رسالة تنبيه عند نجاح دمج جميع الملاحظات."
+  },
+  "confirmMergeSpecificVideo": {
+    "message": "الفيديو \"$VIDEO_TITLE$\" موجود بالفعل. هل تريد دمج ملاحظاته مع الملاحظات المستوردة؟ (إلغاء للاستبدال)",
+    "description": "رسالة تأكيد لدمج ملاحظات فيديو معين أثناء استيراد شامل.",
+    "placeholders": {
+      "VIDEO_TITLE": { "content": "$1" }
+    }
+  },
+  "importDecisionTitle": {
+    "message": "مدير قرارات الاستيراد",
+    "description": "عنوان نافذة قرارات الاستيراد."
+  },
+  "loadingDecisions": {
+    "message": "جاري تجهيز قرارات الاستيراد...",
+    "description": "رسالة تحميل في نافذة قرارات الاستيراد."
+  },
+  "singleVideoImportTitle": {
+    "message": "استيراد ملاحظات لـ \"$VIDEO_TITLE$\"",
+    "description": "عنوان نافذة استيراد فيديو فردي، يظهر عنوان الفيديو.",
+    "placeholders": {
+      "VIDEO_TITLE": { "content": "$1" }
+    }
+  },
+  "singleVideoImportDescription": {
+    "message": "اختر ما إذا كنت تريد دمج الملاحظات الجديدة مع الملاحظات الموجودة، أو استبدال جميع الملاحظات الموجودة بالملاحظات المستوردة.",
+    "description": "نص وصفي لنافذة قرار استيراد فيديو فردي."
+  },
+  "globalMergeAll": {
+    "message": "دمج الكل",
+    "description": "زر لدمج جميع الفيديوهات المستوردة عالمياً."
+  },
+  "globalReplaceAll": {
+    "message": "استبدال الكل",
+    "description": "زر لاستبدال جميع الفيديوهات الموجودة عالمياً."
+  },
+  "globalSkipAll": {
+    "message": "تخطي الكل",
+    "description": "زر لتخطي جميع الفيديوهات المستوردة عالمياً."
+  },
+  "newVideo": {
+    "message": "فيديو جديد",
+    "description": "مؤشر حالة لفيديو جديد في قائمة قرارات الاستيراد."
+  },
+  "existingVideo": {
+    "message": "فيديو موجود",
+    "description": "مؤشر حالة لفيديو موجود في قائمة قرارات الاستيراد."
+  },
+  "skipOption": {
+    "message": "تخطي",
+    "description": "خيار لتخطي استيراد ملاحظات فيديو معين."
+  },
+  "applyChanges": {
+    "message": "تطبيق التغييرات",
+    "description": "زر لتأكيد وتطبيق قرارات الاستيراد."
+  },
+  "replaceOption": {
+    "message": "استبدال",
+    "description": "خيار لاستبدال الملاحظات."
+  },
+  "mergeOption": {
+    "message": "دمج",
+    "description": "خيار لدمج الملاحظات."
+  },
+  "mergeWithExistingNotes": {
+              "message": "دمج مع الملاحظات الموجودة",
+              "description": "تسمية لمربع اختيار دمج الملاحظات المستوردة مع الموجودة."
+            },
+            "enableAutoAddTranscript": {
+              "message": "تفعيل إضافة النص تلقائياً",
+              "description": "Tooltip for enabling auto transcript text."
+            },
+            "disableAutoAddTranscript": {
+              "message": "تعطيل إضافة النص تلقائياً",
+              "description": "Tooltip for disabling auto transcript text."
+            },
+            "showTranscript": {
+              "message": "إظهار النص",
+              "description": "Aria label for the button to show the video transcript."
+            },
+            "noteDeleted": {
+              "message": "تم حذف الملاحظة",
+              "description": "Toast message shown when a note is deleted successfully."
+            },
+            "videoGroupsTitle": {
+              "message": "مجموعات الفيديو",
+              "description": "Title for the video groups section in the template editor."
+            },
+            "addNewGroupPlaceholder": {
+              "message": "إضافة مجموعة جديدة",
+              "description": "Placeholder for the input field to add new video groups."
+            },
+            "addButton": {
+              "message": "إضافة",
+              "description": "Text for the button to add a new video group."
+            },
+            "groupExistsError": {
+              "message": "المجموعة موجودة بالفعل",
+              "description": "Error message shown when trying to add a group that already exists."
+            },
+            "deleteButton": {
+              "message": "حذف",
+              "description": "Text for the button to delete a video group or a note."
+            },
+            "noGroup": {
+              "message": "بدون مجموعة",
+              "description": "Label for videos that do not belong to any group."
+            },
+            "transcriptNotAvailable": {
+              "message": "النص غير متوفر لهذا الفيديو.",
+              "description": "Error message when transcript is not available."
+            }
+          }

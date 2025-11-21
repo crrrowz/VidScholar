@@ -1,0 +1,11 @@
+node_modules/
+.output/
+.wxt/
+dist/
+*.log
+.DS_Store
+*.zip
+/playwright-report
+/test-results
+PowerShellHistory.txt
+PowerShellHistory.txt

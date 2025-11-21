@@ -1,0 +1,3 @@
+fix: Simplify manifest name in wxt.config.ts
+
+The manifest name was incorrectly constructed as 'VidScholar｜VidScholar' due to redundant use of `pkg.name` and a hardcoded `fullName`. This commit simplifies the manifest name to solely use `pkg.name` from `package.json`, resulting in 'VidScholar'.
