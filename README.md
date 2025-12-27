@@ -13,16 +13,16 @@
 </p>
 
 <p align="center">
-  <a href="#-features">Features</a> •
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#-architecture">Architecture</a> •
-  <a href="#-development">Development</a> •
-  <a href="#-documentation">Documentation</a>
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#development">Development</a> •
+  <a href="#documentation">Documentation</a>
 </p>
 
 ---
 
-## 📖 Overview
+## Overview
 
 **VidScholar** is a production-grade browser extension that converts passive video watching into active learning. Take timestamped notes synced with YouTube playback, organise knowledge with templates, and revisit insights instantly.
 
@@ -42,7 +42,7 @@
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---------|-------------|
@@ -59,7 +59,7 @@
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -97,7 +97,7 @@ npm run dev
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 VidScholar follows a modern, enterprise-grade architecture:
 
@@ -151,7 +151,7 @@ VidScholar/
 
 ---
 
-## 💻 Development
+## Development
 
 ### Available Scripts
 
@@ -201,10 +201,11 @@ npm run e2e:debug         # Debug mode
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 | Document | Description |
 |----------|-------------|
+| [**VISUAL_ASSETS.md**](./docs/VISUAL_ASSETS.md) | Diagrams, screenshots, and other visual assets |
 | [**COMPLETE_ARCHITECTURE.md**](./docs/COMPLETE_ARCHITECTURE.md) | Full architectural design with diagrams |
 | [**IMPLEMENTATION_GUIDE.md**](./docs/IMPLEMENTATION_GUIDE.md) | Practical examples and patterns |
 | [**ARCHITECTURE.md**](./docs/ARCHITECTURE.md) | Core architecture overview |
