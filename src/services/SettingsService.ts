@@ -49,29 +49,36 @@ class SettingsService {
         const cloudSettings = await supabaseService.loadSettings();
 
         if (cloudSettings) {
-          console.log('SettingsService: Found cloud settings, syncing to local...');
+          // Compare Timestamps (Last Write Wins)
+          const cloudTime = cloudSettings.updated_at ? new Date(cloudSettings.updated_at).getTime() : 0;
+          const localTime = this.settings.lastModified || 0;
 
-          // MAP Cloud Settings to Local Interface
-          const syncedSettings: Partial<UserSettings> = {
-            theme: cloudSettings.theme as Theme,
-            locale: cloudSettings.language,
-            retentionDays: cloudSettings.retention_days,
-            videoGroups: cloudSettings.video_groups,
-            // Ensure presets are loaded if they exist in cloud JSONB
-            presets: cloudSettings.presets || defaultPresets
-          };
+          // If Cloud is significantly newer (> 2 seconds to avoid clock drift issues), sync down
+          if (cloudTime > localTime + 2000) {
+            console.log('SettingsService: Cloud settings are newer. Syncing down...');
+            const syncedSettings: Partial<UserSettings> = {
+              theme: cloudSettings.theme as Theme,
+              locale: cloudSettings.language,
+              retentionDays: cloudSettings.retention_days,
+              videoGroups: cloudSettings.video_groups,
+              presets: cloudSettings.presets || defaultPresets,
+              lastModified: cloudTime
+            };
 
-          // Update State & Local Storage
-          this.settings = { ...this.settings, ...syncedSettings };
-          await storageAdapter.set(this.STORAGE_KEY, this.settings);
-          this.notifyListeners();
+            this.settings = { ...this.settings, ...syncedSettings };
+            await storageAdapter.set(this.STORAGE_KEY, this.settings);
+            this.notifyListeners();
+          } else {
+            console.log('SettingsService: Local settings are up-to-date or newer. Pushing to cloud just in case...');
+            // Ensure cloud is in sync with our local latest
+            this.saveToCloud();
+          }
 
         } else {
-          // Cloud settings Missing -> Create them from DEFAULTS
+          // Cloud settings Missing -> Create them from DEFAULTS or CURRENT LOCAL
           console.log('SettingsService: No cloud settings found. Creating defaults in cloud...');
-
-          // Ensure we have robust defaults before saving
-          const settingsToSave = { ...DEFAULT_SETTINGS, ...this.settings }; // Prefer local if exists, else defaults
+          // ... (Rest of creation logic remains similar)
+          const settingsToSave = { ...DEFAULT_SETTINGS, ...this.settings, lastModified: Date.now() };
 
           // We must ensure videoGroups and presets are populated
           if (!settingsToSave.videoGroups || settingsToSave.videoGroups.length === 0) {
@@ -90,7 +97,6 @@ class SettingsService {
             presets: settingsToSave.presets
           });
 
-          // Update local state to reflect that we are now synced
           this.settings = settingsToSave;
           await storageAdapter.set(this.STORAGE_KEY, this.settings);
           this.notifyListeners();
@@ -133,7 +139,11 @@ class SettingsService {
    */
   async update(updates: Partial<UserSettings>): Promise<void> {
     const oldSettings = { ...this.settings };
-    this.settings = { ...this.settings, ...updates };
+    this.settings = {
+      ...this.settings,
+      ...updates,
+      lastModified: Date.now()
+    };
 
     try {
       // 1. Save locally

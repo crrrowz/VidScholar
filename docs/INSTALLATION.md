@@ -42,6 +42,29 @@ You can verify your versions by running `node --version` and `npm --version`.
         2.  Click "Load Temporary Add-on...".
         3.  Select the `.output/firefox-mv3/manifest.json` file.
 
+## Supabase Configuration
+
+To enable Cloud Sync, you must configure Supabase and Chrome OAuth.
+
+1.  **Create Supabase Project:**
+    *   Create a new project at [supabase.com](https://supabase.com).
+    *   Execute the SQL schema found in `supabase/schema.sql`.
+
+2.  **Environment Variables:**
+    *   Create `.env.local` in the root directory.
+    *   Add your Supabase credentials:
+        ```bash
+        VITE_SUPABASE_URL=your_project_url
+        VITE_SUPABASE_ANON_KEY=your_anon_key
+        ```
+
+3.  **Chrome OAuth Client ID:**
+    *   Go to [Google Cloud Console](https://console.cloud.google.com/).
+    *   Create a project and configure **OAuth consent screen**.
+    *   Create credentials: **OAuth client ID** > **Chrome extension**.
+    *   Add the extension ID (you can find it in `chrome://extensions` after loading the unpacked extension).
+    *   Add the generic Key in your `manifest.json` under `oauth2` > `client_id`. Or use `key` property in manifest to keep consistent ID.
+
 ## Available Scripts
 
 *   `npm run dev`: Starts the development server with live reloading.

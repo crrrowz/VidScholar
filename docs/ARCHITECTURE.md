@@ -63,7 +63,19 @@ Examples of singleton services:
 *   `languageService` (`src/services/LanguageService.ts`)
 *   `settingsService` (`src/services/SettingsService.ts`)
 
-### 5. Unused Features: Backup & Encryption
+*   `settingsService` (`src/services/SettingsService.ts`)
+*   `supabaseService` (`src/services/SupabaseService.ts`)
+
+### 5. Data Storage Strategy (Hybrid)
+
+The application uses a **Hybrid Storage Strategy** orchestrated by `StorageAdapter` (`src/storage/StorageAdapter.ts`).
+
+*   **Local First:** All data is written to `chrome.storage.local` immediately for instant UI feedback and offline capability.
+*   **Cloud Sync:** If the user is logged in (via Chrome Identity), data is asynchronously pushed to **Supabase**.
+*   **Conflict Resolution:** Last-write-wins policy based on timestamps, prioritizing cloud data on new device setup.
+*   **Unified Interface:** The rest of the app only interacts with `StorageAdapter` or high-level services, unaware of the underlying sync complexity.
+
+### 6. Unused Features: Backup & Encryption
 
 The codebase includes a `BackupService` and an `EncryptionService`.
 
@@ -82,7 +94,16 @@ The codebase includes a `BackupService` and an `EncryptionService`.
 6.  User interactions in the sidebar (e.g., adding a note) dispatch actions to the store.
 7.  The store updates its state.
 8.  A store subscription in `content.ts` is triggered, which then updates the sidebar UI to reflect the new state.
-9.  An auto-save mechanism persists the updated notes back to storage.
+7.  The store updates its state.
+8.  A store subscription in `content.ts` is triggered, which then updates the sidebar UI to reflect the new state.
+9.  `NoteStorage` saves the data via `StorageAdapter`.
+10. `StorageAdapter` writes to local storage and pushes changes to Supabase (if online).
+
+#### Cloud Sync Flow
+1.  **Initialize:** `SettingsService` checks Supabase settings on startup.
+2.  **Self-Healing:** If settings are missing (new user), local defaults are uploaded to Supabase.
+3.  **Update:** Changes to Theme, Language, or Presets trigger `settingsService.update()`, which syncs to Supabase.
+4.  **Notes:** Saving a note invokes `storageAdapter.saveVideoNotes()`, which queues a sync task.
 
 ## Future Direction
 
@@ -91,4 +112,7 @@ The intended direction for the project is to complete the transition to the new 
 *   Migrate all UI components to React.
 *   Refactor all services to be managed by the DI container.
 *   Eliminate the direct-import singleton pattern.
-*   Integrate the `BackupService` to provide backup and restore functionality.
+*   Migrate all UI components to React.
+*   Refactor all services to be managed by the DI container.
+*   Eliminate the direct-import singleton pattern.
+*   Integrate the `UI` for Backup & Restore (Import/Export is already functional).

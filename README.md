@@ -55,6 +55,7 @@
 | **🎨 Multiple Themes** | Light, Dark, Sepia, High-Contrast, OLED. |
 | **🌍 Localisation** | Full support for English and Arabic (RTL). |
 | **🔐 Encryption** | AES-256-GCM encryption for backups (PBKDF2 key derivation). |
+| **☁️ Cloud Sync** | Real-time synchronization of notes and settings via Supabase. |
 | **📤 Export/Import** | Export notes as JSON or Markdown. Full backup support. |
 
 ---
@@ -228,6 +229,7 @@ npm run e2e:debug         # Debug mode
 | **DI** | Custom container |
 | **Testing** | Jest + Playwright |
 | **Quality** | ESLint + Prettier + Husky |
+| **Database** | Supabase (PostgreSQL) |
 | **Platform** | Chrome & Firefox (Manifest V3) |
 
 ---
@@ -293,7 +295,7 @@ The codebase contains a mix of two patterns:
 ### Future: v3.0.0
 
 - [ ] React UI migration
-- [ ] Cloud sync support
+- [x] Cloud sync support (Supabase)
 - [ ] Plugin system
 - [ ] AI-powered summarisation
 

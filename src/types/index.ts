@@ -102,6 +102,7 @@ export interface UserSettings {
   videoGroups: string[];
   presets?: Record<string, any>;
   floatingButtonPosition?: { x: number; y: number };
+  lastModified?: number;
 }
 
 export interface Config {
