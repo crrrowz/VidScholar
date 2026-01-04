@@ -1,8 +1,7 @@
 // components/notes/NoteTextArea.ts
 import type { Note, AppState } from '../../types';
 import { themeService } from '../../services/ThemeService';
-import config from '../../utils/config';
-import { setActiveInput } from '../../utils/activeInputTracker'; // Import the tracker
+import { setActiveInput } from '../../utils/activeInputTracker';
 import { actions } from '../../state/actions';
 
 export function createNoteTextArea(state: AppState, note: Note, onUpdate: (immediate?: boolean) => void): HTMLElement {
@@ -50,9 +49,6 @@ export function createNoteTextArea(state: AppState, note: Note, onUpdate: (immed
     onUpdate(true);
 
     setTimeout(() => {
-      const focusedElement = document.activeElement;
-      // ... existing active input check logic can remain or simplified
-      // simplified for brevity as the original tracking logic was mainly for shortcuts
       setActiveInput(null);
     }, 50);
   });
