@@ -7,14 +7,13 @@ import { getCurrentVideoId, getVideoTitle } from '../utils/video';
 import { showToast } from '../utils/toast';
 import { languageService } from '../services/LanguageService';
 import { actions } from '../state/actions';
+import { storageAdapter } from '../storage/StorageAdapter';
+import { settingsService } from '../services/SettingsService';
 
 export class NoteStorage {
   private cache: NoteCache;
-  private cacheTimeout: number;
   private retentionDays: number;
   private _initialized: boolean;
-  private presetLock: boolean;
-  private presetInitQueue: any[];
   private defaultPresets: { [key: number]: string[] };
   private presetListeners: Set<(preset: number) => void> = new Set();
   private templateListeners: Set<() => void> = new Set();
@@ -22,12 +21,9 @@ export class NoteStorage {
   constructor() {
     this.cache = new NoteCache();
     const storageConfig = config.getStorageConfig();
-    this.cacheTimeout = storageConfig.cacheDuration;
     this.retentionDays = storageConfig.retentionDays;
     this._initialized = false;
-    this.presetLock = false;
-    this.presetInitQueue = [];
-    
+
     // Load presets from config
     const presets = config.getPresets();
     this.defaultPresets = {};
@@ -40,7 +36,7 @@ export class NoteStorage {
     if (this._initialized) return true;
 
     try {
-      await this._verifyStorageAccess();
+      await storageAdapter.initialize();
       this._initialized = true;
       return true;
     } catch (error) {
@@ -49,132 +45,126 @@ export class NoteStorage {
     }
   }
 
-  private async _verifyStorageAccess(): Promise<boolean> {
-    try {
-      await chrome.storage.sync.get('test');
-      return true;
-    } catch (error) {
-      console.error('Storage access verification failed:', error);
-      throw new Error('Storage access denied');
-    }
-  }
-
-  private async _acquirePresetLock(): Promise<void> {
-    while (this.presetLock) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    this.presetLock = true;
-  }
-
-  private _releasePresetLock(): void {
-    this.presetLock = false;
-  }
+  // ==========================================
+  // PRESETS & TEMPLATES
+  // ==========================================
 
   async getCurrentPreset(): Promise<number> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-    try {
-      const result = await chrome.storage.sync.get('current_preset');
-      return result.current_preset || 1;
-    } catch (error) {
-      console.error('Failed to get current preset:', error);
-      return 1;
-    }
+    const result = await storageAdapter.get<{ current_preset: number }>('current_preset');
+    return result?.current_preset || 1;
+  }
+
+  async savePresetNumber(number: number): Promise<boolean> {
+    return await storageAdapter.set('current_preset', number);
   }
 
   async savePresetTemplates(presetNumber: number, templates: string[]): Promise<boolean> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-
-    await this._acquirePresetLock();
     try {
-      const key = `preset_templates_${presetNumber}`;
-      await chrome.storage.sync.set({ [key]: templates });
+      const currentSettings = settingsService.getSettings();
+      const currentPresets = currentSettings.presets || {};
+
+      // Ensure preset object exists
+      if (!currentPresets[presetNumber]) {
+        currentPresets[presetNumber] = {
+          name: this.getPresetDefaultName(presetNumber),
+          description: '',
+          templates: []
+        };
+      }
+
+      // Update templates
+      currentPresets[presetNumber].templates = templates;
+
+      // Save via SettingsService (Syncs to Cloud)
+      await settingsService.update({ presets: currentPresets });
+
       this.notifyTemplateListeners();
       return true;
     } catch (error) {
       console.error('Failed to save preset templates:', error);
-      throw error;
-    } finally {
-      this._releasePresetLock();
+      return false;
     }
   }
 
   async loadPresetTemplates(presetNumber: number): Promise<string[]> {
-    if (!this._initialized) {
-      await this.initialize();
+    const currentSettings = settingsService.getSettings();
+    const presets = currentSettings.presets || {};
+
+    if (presets[presetNumber] && presets[presetNumber].templates) {
+      return presets[presetNumber].templates;
     }
 
-    await this._acquirePresetLock();
+    // Fallback to legacy or defaults
+    return this.defaultPresets[presetNumber] || [];
+  }
+
+  async savePresetName(presetNumber: number, name: string): Promise<void> {
     try {
-      const key = `preset_templates_${presetNumber}`;
-      const result = await chrome.storage.sync.get(key);
-      return result[key] || this.defaultPresets[presetNumber];
+      const currentSettings = settingsService.getSettings();
+      const currentPresets = currentSettings.presets || {};
+
+      if (!currentPresets[presetNumber]) {
+        currentPresets[presetNumber] = {
+          name: name,
+          description: '',
+          templates: []
+        };
+      } else {
+        currentPresets[presetNumber].name = name;
+      }
+
+      await settingsService.update({ presets: currentPresets });
     } catch (error) {
-      console.error('Failed to load preset templates:', error);
-      return this.defaultPresets[presetNumber];
-    } finally {
-      this._releasePresetLock();
+      console.error('Failed to save preset name:', error);
     }
   }
 
-  async saveNotes(notes: Note[], group?: string | null, targetVideoId?: string, videoTitle?: string): Promise<boolean> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
+  async loadPresetName(presetNumber: number): Promise<string | undefined> {
+    const currentSettings = settingsService.getSettings();
+    const presets = currentSettings.presets || {};
 
+    return presets[presetNumber]?.name;
+  }
+
+  // ==========================================
+  // CORE NOTE OPERATIONS
+  // ==========================================
+
+  async saveNotes(notes: Note[], group?: string | null, targetVideoId?: string, videoTitle?: string): Promise<boolean> {
     const videoId = targetVideoId || getCurrentVideoId();
     if (!videoId) {
       throw new NoteError('Video ID not found', 'loading');
     }
 
-    const storageKey = `notes_${videoId}`;
-
-    // If the notes array is empty, remove the video entry from storage
     if (notes.length === 0) {
       try {
-        await chrome.storage.sync.remove(storageKey);
+        await storageAdapter.deleteVideo(videoId);
         this.cache.delete(videoId);
         return true;
       } catch (error) {
-        console.error('noteStorage.saveNotes: Failed to remove empty notes for', videoId, error);
         throw new NoteError('Failed to remove empty notes', 'network');
       }
     }
 
-    // Otherwise, proceed with saving the non-empty notes
     try {
-      const title = videoTitle || getVideoTitle(); // This will get the current video title, consider passing it if targetVideoId is different
-      const dataToSave: StoredVideoData = {
-        videoId: videoId,
+      const title = videoTitle || getVideoTitle();
+      const success = await storageAdapter.saveVideoNotes({
+        videoId,
         videoTitle: title,
-        notes: notes,
-        lastModified: Date.now(),
+        notes,
         group: group || undefined
-      };
-      
-      await chrome.storage.sync.set({ [storageKey]: dataToSave });
+      });
 
       this.cache.set(videoId, notes);
-      return true;
+      return success;
     } catch (error: any) {
-      console.error('noteStorage.saveNotes: Failed to save notes for', videoId, error); // ENHANCED LOG
-      throw new NoteError(
-        'Failed to save notes',
-        error.message.includes('quota') ? 'storage' : 'network'
-      );
+      console.error('Failed to save notes:', error);
+      throw new NoteError('Failed to save notes', 'storage');
     }
   }
 
   async loadNotes(): Promise<Note[]> {
-    const currentVideoId = getCurrentVideoId();
-    if (!this._initialized) {
-      await this.initialize();
-    }
-
-    const videoId = currentVideoId; // Use currentVideoId directly
+    const videoId = getCurrentVideoId();
     if (!videoId) {
       throw new NoteError('Video ID not found', 'loading');
     }
@@ -185,237 +175,51 @@ export class NoteStorage {
     }
 
     try {
-      const storageKey = `notes_${videoId}`;
-      const result = await chrome.storage.sync.get(storageKey);
-      const data = result[storageKey] as StoredVideoData;
-      const notes = data?.notes || [];
-      
-      if (data?.group) {
-        actions.setVideoGroup(data.group);
+      const notes = await storageAdapter.loadVideoNotes(videoId);
+
+      // Update store with group info (if we can find it)
+      const allVideos = await storageAdapter.loadAllVideos();
+      const videoData = allVideos.find(v => v.videoId === videoId);
+
+      if (videoData?.group) {
+        actions.setVideoGroup(videoData.group);
       } else {
         actions.setVideoGroup(null);
       }
-      
+
       this.cache.set(videoId, notes);
       return notes;
     } catch (error: any) {
-      console.error('noteStorage.loadNotes: Failed to load notes from storage for video:', videoId, error);
-      throw new NoteError(
-        'Failed to load notes from storage',
-        error.message.includes('quota') ? 'storage' : 'network'
-      );
+      console.error('Failed to load notes:', error);
+      throw new NoteError('Failed to load notes', 'storage');
     }
   }
 
-  clearCache(): void {
-    this.cache.clear();
-  }
-
-  async savePresetNumber(number: number): Promise<boolean> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-    try {
-      await chrome.storage.sync.set({ 'current_preset': number });
-      this.notifyPresetListeners(number);
-      return true;
-    } catch (error) {
-      console.error('Failed to save preset number:', error);
-      return false;
-    }
-  }
-
-  addPresetListener(listener: (preset: number) => void): void {
-    this.presetListeners.add(listener);
-  }
-
-  removePresetListener(listener: (preset: number) => void): void {
-    this.presetListeners.delete(listener);
-  }
-
-  private notifyPresetListeners(preset: number): void {
-    this.presetListeners.forEach(listener => listener(preset));
-  }
-
-  addTemplateListener(listener: () => void): void {
-    this.templateListeners.add(listener);
-  }
-
-  removeTemplateListener(listener: () => void): void {
-    this.templateListeners.delete(listener);
-  }
-
-  private notifyTemplateListeners(): void {
-    this.templateListeners.forEach(listener => listener());
-  }
-
-  getDefaultTemplates(presetNumber: number): string[] {
-    return this.defaultPresets[presetNumber] || this.defaultPresets[1];
-  }
-
-  async savePresetName(presetNumber: number, name: string): Promise<void> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-    try {
-      const key = `preset_name_${presetNumber}`;
-      await chrome.storage.sync.set({ [key]: name });
-    } catch (error) {
-      console.error(`Failed to save preset name for preset ${presetNumber}:`, error);
-      throw error;
-    }
-  }
-
-  async loadPresetName(presetNumber: number): Promise<string | undefined> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-    try {
-      const key = `preset_name_${presetNumber}`;
-      const result = await chrome.storage.sync.get(key);
-      return result[key];
-    } catch (error) {
-      console.error(`Failed to load preset name for preset ${presetNumber}:`, error);
-      return undefined;
-    }
-  }
-
-  async saveVideoOrder(videoIds: string[]): Promise<boolean> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-    try {
-      await chrome.storage.sync.set({ videoOrder: videoIds });
-      return true;
-    } catch (error) {
-      console.error('Failed to save video order:', error);
-      return false;
-    }
-  }
-
-  async loadVideoOrder(): Promise<string[]> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-    try {
-      const result = await chrome.storage.sync.get('videoOrder');
-      return result.videoOrder || [];
-    } catch (error) {
-      console.error('Failed to load video order:', error);
-      return [];
-    }
-  }
-
-  getPresetDefaultName(presetNumber: number): string {
-    const presets = config.getPresets();
-    return presets[presetNumber]?.name || `Preset ${presetNumber}`;
-  }
-  async setRetentionDays(days: number): Promise<boolean> {
-    const storageConfig = config.getStorageConfig();
-    const valueToStore = days === Infinity ? 99999 : days;
-
-    if (valueToStore === 99999 || (days >= storageConfig.minRetentionDays && days <= storageConfig.maxRetentionDays)) {
-      this.retentionDays = days;
-      await chrome.storage.sync.set({ retentionDays: valueToStore });
-      return true;
-    }
-    return false;
-  }
-
-  async getRetentionDays(): Promise<number> {
-    try {
-      const result = await chrome.storage.sync.get('retentionDays');
-      const storedValue = result.retentionDays || this.retentionDays;
-      return storedValue === 99999 ? Infinity : storedValue;
-    } catch {
-      return this.retentionDays;
-    }
-  }
-
-  async loadSavedVideos(): Promise<Video[]> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
+  async deleteNote(noteId: string, videoId?: string): Promise<boolean> {
+    const targetVideoId = videoId || getCurrentVideoId();
+    if (!targetVideoId) return false;
 
     try {
-      const retentionDays = await this.getRetentionDays();
-      const retentionPeriod = retentionDays * 24 * 60 * 60 * 1000;
-      const currentTime = Date.now();
+      const notes = await this.loadNotes();
+      const updatedNotes = notes.filter(note => note.timestamp !== noteId);
+      const success = await this.saveNotes(updatedNotes, null, targetVideoId);
 
-      const allData = await chrome.storage.sync.get(null);
-      const videos: Video[] = [];
-
-      for (const [key, value] of Object.entries(allData)) {
-        if (!key.startsWith('notes_')) continue;
-
-        const videoId = key.replace('notes_', '');
-        const data = value as StoredVideoData; // Data from chrome.storage.sync
-        const videoDate = data.lastModified || 0; // Use lastModified for retention check
-
-        if (retentionDays !== Infinity && currentTime - videoDate > retentionPeriod) {
-          await chrome.storage.sync.remove(key);
-          continue;
-        }
-
-        const notes = data.notes || [];
-
-        let firstNoteTimestamp: number | undefined = undefined;
-        if (notes.length > 0) {
-          firstNoteTimestamp = notes.reduce((min, note) => {
-            return note.timestampInSeconds < min ? note.timestampInSeconds : min;
-          }, notes[0].timestampInSeconds);
-        }
-
-        videos.push({
-          id: data.videoId,
-          title: data.videoTitle || `Video ${data.videoId}`,
-          thumbnail: `https://i.ytimg.com/vi/${data.videoId}/mqdefault.jpg`,
-          notes: notes,
-          lastModified: data.lastModified,
-          firstNoteTimestamp: firstNoteTimestamp,
-          group: data.group
-        });
+      if (success) {
+        showToast(languageService.translate("noteDeleted"), 'success');
       }
-
-      const videoOrder = await this.loadVideoOrder();
-      const videoMap = new Map(videos.map(v => [v.id, v]));
-
-      const orderedVideos: Video[] = [];
-      videoOrder.forEach(id => {
-        if (videoMap.has(id)) {
-          orderedVideos.push(videoMap.get(id)!);
-          videoMap.delete(id);
-        }
-      });
-
-      const newVideos = [...videoMap.values()];
-      newVideos.sort((a, b) => b.lastModified - a.lastModified);
-
-      return [...newVideos, ...orderedVideos];
+      return success;
     } catch (error) {
-      console.error('Failed to load saved videos:', error);
-      throw new Error('Failed to load saved videos');
+      showToast(languageService.translate("failedToDeleteNote"), 'error');
+      return false;
     }
-  }
-
-  async handleVideoOpen(videoId: string, timestamp?: number): Promise<boolean> {
-    let url = `https://www.youtube.com/watch?v=${videoId}`;
-    if (timestamp) {
-      url += `&t=${Math.floor(timestamp)}s`;
-    }
-    window.open(url, '_blank');
-    return true;
   }
 
   async deleteVideo(videoId: string): Promise<boolean> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-
     try {
-      await chrome.storage.sync.remove(`notes_${videoId}`);
+      await storageAdapter.deleteVideo(videoId);
       this.cache.delete(videoId);
 
+      // Clean up order list
       const videoOrder = await this.loadVideoOrder();
       const index = videoOrder.indexOf(videoId);
       if (index > -1) {
@@ -429,81 +233,157 @@ export class NoteStorage {
 
       return true;
     } catch (error) {
-      console.error('Failed to delete video:', error);
       showToast(languageService.translate("failedToDeleteVideo"), 'error');
       return false;
     }
   }
 
-  async deleteNote(noteId: string, videoId?: string): Promise<boolean> {
-    const targetVideoId = videoId || getCurrentVideoId();
-    if (!targetVideoId) {
-      console.error("deleteNote: No video ID provided or found.");
-      showToast(languageService.translate("failedToDeleteNote"), 'error');
-      return false;
-    }
+  // ==========================================
+  // LIBRARY OPERATIONS
+  // ==========================================
 
+  async loadSavedVideos(): Promise<Video[]> {
     try {
-      const notes = await this.loadNotes();
-      const updatedNotes = notes.filter(note => note.timestamp !== noteId);
-      
-      await this.saveNotes(updatedNotes, targetVideoId);
-      
-      showToast(languageService.translate("noteDeleted"), 'success');
-      return true;
+      const retentionDays = await this.getRetentionDays();
+      const retentionPeriod = retentionDays * 24 * 60 * 60 * 1000;
+      const currentTime = Date.now();
+
+      const storedVideos = await storageAdapter.loadAllVideos();
+      const videos: Video[] = [];
+
+      for (const data of storedVideos) {
+        // Retention check
+        const videoDate = data.lastModified || 0;
+        if (retentionDays !== Infinity && currentTime - videoDate > retentionPeriod) {
+          await storageAdapter.deleteVideo(data.videoId);
+          continue;
+        }
+
+        const notes = data.notes || [];
+        let firstNoteTimestamp: number | undefined = undefined;
+
+        if (notes.length > 0) {
+          firstNoteTimestamp = notes.reduce((min, note) => {
+            return note.timestampInSeconds < min ? note.timestampInSeconds : min;
+          }, notes[0].timestampInSeconds);
+        }
+
+        videos.push({
+          id: data.videoId,
+          title: data.videoTitle || `Video ${data.videoId}`,
+          thumbnail: data.thumbnail || `https://i.ytimg.com/vi/${data.videoId}/mqdefault.jpg`,
+          notes: notes,
+          lastModified: data.lastModified,
+          firstNoteTimestamp: firstNoteTimestamp,
+          group: data.group
+        });
+      }
+
+      // Apply sort order
+      const videoOrder = await this.loadVideoOrder();
+      const videoMap = new Map(videos.map(v => [v.id, v]));
+      const orderedVideos: Video[] = [];
+
+      videoOrder.forEach(id => {
+        if (videoMap.has(id)) {
+          orderedVideos.push(videoMap.get(id)!);
+          videoMap.delete(id);
+        }
+      });
+
+      const remainingVideos = [...videoMap.values()]
+        .sort((a, b) => b.lastModified - a.lastModified);
+
+      return [...remainingVideos, ...orderedVideos];
     } catch (error) {
-      console.error(`Failed to delete note ${noteId} from video ${targetVideoId}:`, error);
-      showToast(languageService.translate("failedToDeleteNote"), 'error');
-      return false;
+      console.error('Failed to load saved videos:', error);
+      throw new Error('Failed to load saved videos');
     }
   }
 
   async overwriteAllNotes(notesByVideo: StoredVideoData[]): Promise<boolean> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-
     try {
-      await this.clearAllNotes(); 
-      this.cache.clear();
+      await this.clearAllNotes();
 
-      const newStorageItems: { [key: string]: StoredVideoData } = {};
-      for (const videoData of notesByVideo) {
-        newStorageItems[`notes_${videoData.videoId}`] = {
-          videoId: videoData.videoId,
-          videoTitle: videoData.videoTitle,
-          notes: videoData.notes,
-          lastModified: videoData.lastModified || Date.now(),
-          group: videoData.group
-        };
+      for (const video of notesByVideo) {
+        await storageAdapter.saveVideoNotes({
+          videoId: video.videoId,
+          videoTitle: video.videoTitle,
+          notes: video.notes,
+          group: video.group
+        });
       }
-      await chrome.storage.sync.set(newStorageItems);
+
       showToast(languageService.translate("allNotesImportedSuccess"), 'success');
       return true;
     } catch (error) {
-      console.error('overwriteAllNotes: Failed to overwrite all notes:', error);
       showToast(languageService.translate("allNotesImportedError"), 'error');
       return false;
     }
   }
 
   async clearAllNotes(): Promise<boolean> {
-    if (!this._initialized) {
-      await this.initialize();
-    }
-
     try {
-      const allData = await chrome.storage.sync.get(null);
-      const noteKeys = Object.keys(allData).filter(key => key.startsWith('notes_'));
-      await chrome.storage.sync.remove(noteKeys);
+      await storageAdapter.clearAllNotes();
       this.cache.clear();
       showToast(languageService.translate("libraryCleared"), 'success');
       return true;
     } catch (error) {
-      console.error('Failed to clear all notes:', error);
       return false;
     }
   }
+
+  // ==========================================
+  // HELPERS
+  // ==========================================
+
+  async saveVideoOrder(videoIds: string[]): Promise<boolean> {
+    return await storageAdapter.set('videoOrder', videoIds);
+  }
+
+  async loadVideoOrder(): Promise<string[]> {
+    const order = await storageAdapter.get<string[]>('videoOrder');
+    return order || [];
+  }
+
+  async setRetentionDays(days: number): Promise<boolean> {
+    const valueToStore = days === Infinity ? 99999 : days;
+    this.retentionDays = days;
+    return await storageAdapter.set('retentionDays', valueToStore);
+  }
+
+  async getRetentionDays(): Promise<number> {
+    const days = await storageAdapter.get<number>('retentionDays');
+    const value = days || this.retentionDays;
+    return value === 99999 ? Infinity : value;
+  }
+
+  getPresetDefaultName(presetNumber: number): string {
+    const presets = config.getPresets();
+    return presets[presetNumber]?.name || `Preset ${presetNumber}`;
+  }
+
+  async handleVideoOpen(videoId: string, timestamp?: number): Promise<boolean> {
+    let url = `https://www.youtube.com/watch?v=${videoId}`;
+    if (timestamp) {
+      url += `&t=${Math.floor(timestamp)}s`;
+    }
+    window.open(url, '_blank');
+    return true;
+  }
+
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  // Listener helpers
+  addPresetListener(listener: (preset: number) => void): void { this.presetListeners.add(listener); }
+  removePresetListener(listener: (preset: number) => void): void { this.presetListeners.delete(listener); }
+  addTemplateListener(listener: () => void): void { this.templateListeners.add(listener); }
+  removeTemplateListener(listener: () => void): void { this.templateListeners.delete(listener); }
+  private notifyPresetListeners(preset: number): void { this.presetListeners.forEach(listener => listener(preset)); }
+  private notifyTemplateListeners(): void { this.templateListeners.forEach(listener => listener()); }
+  getDefaultTemplates(presetNumber: number): string[] { return this.defaultPresets[presetNumber] || this.defaultPresets[1]; }
 }
 
 export const noteStorage = new NoteStorage();

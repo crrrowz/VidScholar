@@ -1,6 +1,8 @@
 // src/services/LanguageService.ts
 
 import { showToast } from "../utils/toast";
+import { storageAdapter } from '../storage/StorageAdapter';
+import { settingsService } from './SettingsService';
 
 class LanguageService {
   private static instance: LanguageService;
@@ -11,7 +13,7 @@ class LanguageService {
   private currentDirection: 'ltr' | 'rtl' = 'ltr';
   private directionListeners: Set<(() => void)> = new Set(); // Set of callbacks for direction changes
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): LanguageService {
     if (!LanguageService.instance) {
@@ -23,7 +25,7 @@ class LanguageService {
   public async init(): Promise<void> {
     // Load all supported locales upfront
     await Promise.all(this.supportedLocales.map(locale => this.loadMessages(locale)));
-    
+
     this.currentLocale = await this.getPreferredLocale();
     this.currentDirection = this.getDirectionForLocale(this.currentLocale); // Set initial direction
     // No need to set currentMessages here, translate will pick from allMessages
@@ -43,10 +45,13 @@ class LanguageService {
 
   public async getPreferredLocale(): Promise<string> {
     try {
-      const result = await chrome.storage.sync.get('preferredLocale');
-      if (result.preferredLocale && this.supportedLocales.includes(result.preferredLocale)) {
+      // Use storageAdapter instead of direct chrome.storage
+      const result = await storageAdapter.get<{ preferredLocale: string }>('preferredLocale');
+
+      if (result && result.preferredLocale && this.supportedLocales.includes(result.preferredLocale)) {
         return result.preferredLocale;
       }
+
       const browserUILocale = chrome.i18n.getUILanguage().split('-')[0];
       if (this.supportedLocales.includes(browserUILocale)) {
         return browserUILocale;
@@ -59,7 +64,11 @@ class LanguageService {
 
   public async setPreferredLocale(locale: string): Promise<void> {
     if (this.supportedLocales.includes(locale)) {
-      await chrome.storage.sync.set({ preferredLocale: locale });
+      // Use storageAdapter instead of direct chrome.storage
+      await storageAdapter.set('preferredLocale', locale);
+      // Sync with consolidated settings (triggering Cloud Sync)
+      await settingsService.update({ locale });
+
       this.currentLocale = locale;
       this.currentDirection = this.getDirectionForLocale(locale); // Update direction
       this.notifyListeners(); // Notify locale listeners
@@ -118,7 +127,7 @@ class LanguageService {
         const placeholderContent = messageObj.placeholders![placeholderKey].content;
         const subIndexMatch = placeholderContent.match(/\$(\d+)/);
         if (subIndexMatch && substitutions[parseInt(subIndexMatch[1]) - 1] !== undefined) {
-                    const placeholderRegex = new RegExp(`\\$${placeholderKey}\\$`, 'gi');
+          const placeholderRegex = new RegExp(`\\$${placeholderKey}\\$`, 'gi');
           message = message.replace(placeholderRegex, substitutions[parseInt(subIndexMatch[1]) - 1]);
         }
       });

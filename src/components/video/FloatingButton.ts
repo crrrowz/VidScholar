@@ -175,8 +175,8 @@ export function createFloatingButton(): HTMLElement {
 
     // Check if note already exists within 10 seconds
     if (lastNoteTimestamp !== null && Math.abs(currentTime - lastNoteTimestamp) <= DUPLICATE_THRESHOLD) {
-      // Flash the button to indicate duplicate
-      flashButtonColor(button, '#4caf50'); // green flash
+      // Flash the button red to indicate duplicate
+      flashButtonColor(button, '#f44336'); // red flash for duplicate
       return;
     }
 

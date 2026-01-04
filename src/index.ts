@@ -7,10 +7,16 @@ export * from './types';
 // Constants
 export * from './constants';
 
+// Storage (new unified storage system)
+export * from './storage';
+
+// IO (Export/Import services)
+export * from './io';
+
 // State Management
 export * from './state';
 
-// Classes
+// Classes (legacy - being replaced by storage module)
 export * from './classes';
 
 // Services

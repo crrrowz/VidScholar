@@ -14,6 +14,7 @@ import { languageService } from '../src/services/LanguageService';
 import { settingsService } from '../src/services/SettingsService';
 import { createStore, getStore } from '../src/state/Store';
 import { actions, enableAutoSave } from '../src/state/actions';
+import { setupKeyboardManager } from '../src/utils/keyboardManager';
 
 export default defineContentScript({
   matches: ['*://*.youtube.com/watch*'],
@@ -28,6 +29,9 @@ export default defineContentScript({
       } catch (error) {
         console.error('Content script init: Failed to initialize SettingsService:', error);
       }
+
+      // Setup keyboard manager to allow YouTube shortcuts when not focused on extension inputs
+      setupKeyboardManager();
 
       // Create the central store
       createStore({

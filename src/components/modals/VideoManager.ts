@@ -3,16 +3,14 @@ import type { Video } from '../../types';
 import { noteStorage } from '../../classes/NoteStorage';
 import { actions } from '../../state/actions';
 import { createButton } from '../ui/Button';
-import { themeService } from '../../services/ThemeService';
 import { showToast } from '../../utils/toast';
 import config from '../../utils/config';
 import { formatTimestamp } from '../../utils/time';
 import { languageService } from '../../services/LanguageService';
-import { styleToolbarButton } from '../../utils/ui';
+import { normalizeStringForSearch } from '../../utils/ui';
 import { shareService } from '../../services/ShareService';
 import { showConfirmDialog } from './ConfirmDialog';
 import { showPromptDialog } from './PromptDialog';
-import { normalizeStringForSearch } from '../../utils/ui';
 import Sortable from 'sortablejs';
 import { settingsService } from '../../services/SettingsService';
 
@@ -39,29 +37,32 @@ export async function showVideoManager(): Promise<void> {
     shareService.setCloseVideoManagerCallback(null);
     overlay.classList.remove('visible');
     setTimeout(() => {
-        overlay.remove();
-        document.body.style.overflow = '';
+      overlay.remove();
+      document.body.style.overflow = '';
     }, 200);
   };
-  
+
   document.querySelector("#vidscholar-root")?.appendChild(overlay);
   requestAnimationFrame(() => overlay.classList.add('visible'));
-  
+
   try {
+    // Force save any pending changes before loading the library
+    await actions.saveNotes();
+
     const [videos, retentionDays] = await Promise.all([
       noteStorage.loadSavedVideos().catch(() => []),
       noteStorage.getRetentionDays().catch(() => 30)
     ]);
-  
+
     const videoManagerUI = createVideoManagerUI(videos || [], retentionDays, closeManager);
     overlay.appendChild(videoManagerUI);
     document.body.style.overflow = 'hidden';
     shareService.setCloseVideoManagerCallback(closeManager);
-  
+
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-          closeManager();
-          document.removeEventListener('keydown', handleEsc);
+        closeManager();
+        document.removeEventListener('keydown', handleEsc);
       }
     };
     document.addEventListener('keydown', handleEsc);
@@ -108,7 +109,7 @@ function createVideoManagerUI(
 
   const searchContainer = document.createElement('div');
   searchContainer.className = 'video-manager-search';
-  
+
   const searchInput = document.createElement('input');
   searchInput.placeholder = languageService.translate("searchPlaceholder");
   const searchIcon = document.createElement('span');
@@ -150,11 +151,11 @@ function createVideoManagerUI(
       }
 
       if (!isNaN(newRetention)) {
-          await noteStorage.setRetentionDays(newRetention);
-          const displayValue = getRetentionDisplay(newRetention);
-          showToast(languageService.translate("savedDays", [displayValue]), 'success');
-          retentionBtn.innerHTML = `<span class="retention-label">${languageService.translate("autoDeleteLabel")}</span> <b>${displayValue}</b>`;
-          initialRetention = newRetention; 
+        await noteStorage.setRetentionDays(newRetention);
+        const displayValue = getRetentionDisplay(newRetention);
+        showToast(languageService.translate("savedDays", [displayValue]), 'success');
+        retentionBtn.innerHTML = `<span class="retention-label">${languageService.translate("autoDeleteLabel")}</span> <b>${displayValue}</b>`;
+        initialRetention = newRetention;
       }
     },
     'retention-btn',
@@ -162,7 +163,7 @@ function createVideoManagerUI(
   );
   const retentionDisplay = getRetentionDisplay(initialRetention);
   retentionBtn.innerHTML = `<span class="retention-label">${languageService.translate("autoDeleteLabel")}</span> <b>${retentionDisplay}</b>`;
-  
+
   const deleteAllBtn = createButton(
     icons.DELETE_SWEEP,
     null,
@@ -173,10 +174,10 @@ function createVideoManagerUI(
         confirmButtonType: 'danger'
       });
       if (confirmed) {
-          await noteStorage.clearAllNotes();
-          actions.setNotes([]);
-          closeCallback();
-          chrome.runtime.sendMessage({ type: 'NOTES_UPDATED_GLOBALLY' }).catch(e => console.warn('Failed to send NOTES_UPDATED_GLOBALLY message:', e));
+        await noteStorage.clearAllNotes();
+        actions.setNotes([]);
+        closeCallback();
+        chrome.runtime.sendMessage({ type: 'NOTES_UPDATED_GLOBALLY' }).catch(e => console.warn('Failed to send NOTES_UPDATED_GLOBALLY message:', e));
       }
     },
     'delete-all-btn',
@@ -266,7 +267,7 @@ function createVideoManagerUI(
         groupContentContainer.style.display = 'flex';
         groupToggle.querySelector('.material-icons:not(.group-drag-handle)')!.classList.add('rotated');
       }
-      
+
       groupedVideos[groupName].forEach(video => {
         if (!video.id) return;
         const card = createCard(video, closeCallback, () => card.remove());
@@ -284,10 +285,10 @@ function createVideoManagerUI(
           await noteStorage.saveVideoOrder(allVideoIds);
         }
       });
-      
+
       groupToggle.onclick = (e) => {
         if ((e.target as HTMLElement).classList.contains('group-drag-handle')) return;
-        
+
         const isHid = groupContentContainer.style.display === 'none';
         if (isHid) {
           openGroups.add(groupName);
@@ -311,9 +312,9 @@ function createVideoManagerUI(
     handle: '.group-drag-handle',
     direction: languageService.getCurrentDirection(),
     onEnd: async () => {
-        const groupElements = [...contentList.querySelectorAll('.video-group-section')] as HTMLElement[];
-        const newGroupOrder = groupElements.map(el => el.dataset.groupName!);
-        settingsService.update({ videoGroups: newGroupOrder });
+      const groupElements = [...contentList.querySelectorAll('.video-group-section')] as HTMLElement[];
+      const newGroupOrder = groupElements.map(el => el.dataset.groupName!);
+      settingsService.update({ videoGroups: newGroupOrder });
     }
   });
 
@@ -335,105 +336,105 @@ function createVideoManagerUI(
 }
 
 function createCard(video: Video, closeCallback: () => void, onDelete: () => void): HTMLElement {
-    const icons = config.getIcons();
-    const card = document.createElement('div');
-    card.className = 'video-card';
-    card.dataset.videoId = video.id;
-    
-    const topRow = document.createElement('div');
-    topRow.className = 'video-card-top-row';
+  const icons = config.getIcons();
+  const card = document.createElement('div');
+  card.className = 'video-card';
+  card.dataset.videoId = video.id;
 
-    const thumbWrapper = document.createElement('div');
-    thumbWrapper.className = 'video-card-thumbnail';
-    thumbWrapper.onclick = () => { closeCallback(); setTimeout(() => noteStorage.handleVideoOpen(video.id, video.firstNoteTimestamp), 50); };
-    const thumb = document.createElement('img');
-    thumb.src = video.thumbnail || '';
-    
-    const playO = document.createElement('div');
-    playO.className = 'play-overlay';
-    playO.innerHTML = `<span class="material-icons">${icons.PLAY_CIRCLE}</span>`;
-    
-    thumbWrapper.append(thumb, playO);
+  const topRow = document.createElement('div');
+  topRow.className = 'video-card-top-row';
 
-    const info = document.createElement('div');
-    info.className = 'video-card-info';
-    
-    const title = document.createElement('h3');
-    title.textContent = video.title || 'Untitled';
-    
-    const handle = document.createElement('span');
-    handle.className = 'material-icons drag-handle';
-    handle.textContent = 'drag_indicator';
+  const thumbWrapper = document.createElement('div');
+  thumbWrapper.className = 'video-card-thumbnail';
+  thumbWrapper.onclick = () => { closeCallback(); setTimeout(() => noteStorage.handleVideoOpen(video.id, video.firstNoteTimestamp), 50); };
+  const thumb = document.createElement('img');
+  thumb.src = video.thumbnail || '';
 
-    const titleWrapper = document.createElement('div');
-    titleWrapper.appendChild(title);
+  const playO = document.createElement('div');
+  playO.className = 'play-overlay';
+  playO.innerHTML = `<span class="material-icons">${icons.PLAY_CIRCLE}</span>`;
 
-    const btns = document.createElement('div');
-    btns.className = 'video-card-actions';
-    
-    const openBtn = createButton(icons.OPEN, languageService.translate("openVideo"), () => { closeCallback(); setTimeout(() => noteStorage.handleVideoOpen(video.id, video.firstNoteTimestamp), 50); }, undefined, 'primary');
-    
-    const delBtn = createButton(icons.DELETE, languageService.translate("delete"), async () => { 
-      const confirmed = await showConfirmDialog({
-        title: languageService.translate("confirmDeleteTitle"),
-        message: languageService.translate("confirmDelete", [video.title]),
-        confirmButtonType: 'danger'
-      });
-      if (confirmed) {
-        await noteStorage.deleteVideo(video.id); 
-        onDelete(); 
-        chrome.runtime.sendMessage({ type: 'NOTES_UPDATED_GLOBALLY' }).catch(e => console.warn('Failed to send NOTES_UPDATED_GLOBALLY message:', e));
-      }
-    }, undefined, 'danger');
-    
-    btns.append(openBtn, delBtn);
-    info.append(titleWrapper, handle, btns);
-    topRow.append(thumbWrapper, info);
+  thumbWrapper.append(thumb, playO);
 
-    const notesContainer = document.createElement('div');
-    notesContainer.className = 'video-card-notes-container';
-    
-    const notes = video.notes || [];
-    if(notes.length > 0) {
-        const toggle = document.createElement('div');
-        toggle.className = 'notes-toggle';
-        toggle.innerHTML = `<span class="material-icons">${icons.EXPAND_MORE}</span> <b>${notes.length}</b> ${languageService.translate("notesTerm")}`;
-        
-        toggle.onclick = () => {
-            const isHid = notesContainer.style.display === 'none';
-            notesContainer.style.display = isHid ? 'flex' : 'none';
-            toggle.querySelector('.material-icons')!.classList.toggle('rotated', isHid);
-        };
+  const info = document.createElement('div');
+  info.className = 'video-card-info';
 
-        const list = document.createElement('div');
-        list.className = 'notes-list';
-        
-        notes.forEach(note => {
-            const row = document.createElement('div');
-            row.className = 'note-row';
-            
-            const safeTime = Math.floor(note.timestampInSeconds || 0);
-            row.onclick = () => { closeCallback(); setTimeout(() => noteStorage.handleVideoOpen(video.id, safeTime), 50); };
-            row.onmouseover = () => row.style.backgroundColor = 'var(--color-primary-hover)';
-            row.onmouseout = () => row.style.backgroundColor = '';
+  const title = document.createElement('h3');
+  title.textContent = video.title || 'Untitled';
 
-            const timeSpan = document.createElement('span');
-            timeSpan.textContent = formatTimestamp(safeTime);
-            timeSpan.classList.add('btn--note-timestamp');
-            
-            const txt = document.createElement('span');
-            txt.className = 'note-text';
-            txt.textContent = note.text;
-            
-            row.append(timeSpan, txt);
-            list.appendChild(row);
-        });
-        
-        notesContainer.appendChild(list);
-        card.append(topRow, toggle, notesContainer);
-    } else {
-        card.appendChild(topRow);
+  const handle = document.createElement('span');
+  handle.className = 'material-icons drag-handle';
+  handle.textContent = 'drag_indicator';
+
+  const titleWrapper = document.createElement('div');
+  titleWrapper.appendChild(title);
+
+  const btns = document.createElement('div');
+  btns.className = 'video-card-actions';
+
+  const openBtn = createButton(icons.OPEN, languageService.translate("openVideo"), () => { closeCallback(); setTimeout(() => noteStorage.handleVideoOpen(video.id, video.firstNoteTimestamp), 50); }, undefined, 'primary');
+
+  const delBtn = createButton(icons.DELETE, languageService.translate("delete"), async () => {
+    const confirmed = await showConfirmDialog({
+      title: languageService.translate("confirmDeleteTitle"),
+      message: languageService.translate("confirmDelete", [video.title]),
+      confirmButtonType: 'danger'
+    });
+    if (confirmed) {
+      await noteStorage.deleteVideo(video.id);
+      onDelete();
+      chrome.runtime.sendMessage({ type: 'NOTES_UPDATED_GLOBALLY' }).catch(e => console.warn('Failed to send NOTES_UPDATED_GLOBALLY message:', e));
     }
+  }, undefined, 'danger');
 
-    return card;
+  btns.append(openBtn, delBtn);
+  info.append(titleWrapper, handle, btns);
+  topRow.append(thumbWrapper, info);
+
+  const notesContainer = document.createElement('div');
+  notesContainer.className = 'video-card-notes-container';
+
+  const notes = video.notes || [];
+  if (notes.length > 0) {
+    const toggle = document.createElement('div');
+    toggle.className = 'notes-toggle';
+    toggle.innerHTML = `<span class="material-icons">${icons.EXPAND_MORE}</span> <b>${notes.length}</b> ${languageService.translate("notesTerm")}`;
+
+    toggle.onclick = () => {
+      const isHid = notesContainer.style.display === 'none';
+      notesContainer.style.display = isHid ? 'flex' : 'none';
+      toggle.querySelector('.material-icons')!.classList.toggle('rotated', isHid);
+    };
+
+    const list = document.createElement('div');
+    list.className = 'notes-list';
+
+    notes.forEach(note => {
+      const row = document.createElement('div');
+      row.className = 'note-row';
+
+      const safeTime = Math.floor(note.timestampInSeconds || 0);
+      row.onclick = () => { closeCallback(); setTimeout(() => noteStorage.handleVideoOpen(video.id, safeTime), 50); };
+      row.onmouseover = () => row.style.backgroundColor = 'var(--color-primary-hover)';
+      row.onmouseout = () => row.style.backgroundColor = '';
+
+      const timeSpan = document.createElement('span');
+      timeSpan.textContent = formatTimestamp(safeTime);
+      timeSpan.classList.add('btn--note-timestamp');
+
+      const txt = document.createElement('span');
+      txt.className = 'note-text';
+      txt.textContent = note.text;
+
+      row.append(timeSpan, txt);
+      list.appendChild(row);
+    });
+
+    notesContainer.appendChild(list);
+    card.append(topRow, toggle, notesContainer);
+  } else {
+    card.appendChild(topRow);
+  }
+
+  return card;
 }

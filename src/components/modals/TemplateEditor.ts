@@ -85,7 +85,7 @@ export async function showTemplateEditor(): Promise<void> {
     closeButton.classList.add('btn--icon');
     // The closeButton now has default flex behavior within tabContainer
     tabContainer.appendChild(closeButton);
-    
+
     editContainer.appendChild(tabContainer);
 
     // Template Content Section
@@ -125,14 +125,16 @@ export async function showTemplateEditor(): Promise<void> {
           .filter(template => template);
 
         await noteStorage.savePresetTemplates(currentPreset, newTemplates);
-        
+
         const newPresetName = presetNameInput.value.trim();
         if (newPresetName) {
           await noteStorage.savePresetName(currentPreset, newPresetName);
         } else {
-          await chrome.storage.sync.remove(`preset_name_${currentPreset}`);
+          // Revert to default name
+          const defaultName = noteStorage.getPresetDefaultName(currentPreset);
+          await noteStorage.savePresetName(currentPreset, defaultName);
         }
-        
+
         actions.setTemplates(newTemplates);
         overlay.remove();
         showToast(languageService.translate("templatesSavedSuccessfully"), "success");
@@ -183,7 +185,7 @@ export async function showTemplateEditor(): Promise<void> {
     addGroupContainer.appendChild(addGroupInput);
     addGroupContainer.appendChild(addGroupButton);
     groupContent.appendChild(addGroupContainer);
-    
+
     function renderGroups(groups: string[]) {
       groupListContainer.innerHTML = '';
       groups.forEach(group => {
@@ -200,7 +202,7 @@ export async function showTemplateEditor(): Promise<void> {
         const buttonContainer = document.createElement('div');
         buttonContainer.className = 'group-item-actions';
 
-        const moveButton = createButton('drag_indicator', null, () => {}, undefined, 'ghost');
+        const moveButton = createButton('drag_indicator', null, () => { }, undefined, 'ghost');
         moveButton.classList.add('drag-handle');
         moveButton.style.cursor = 'grab';
 

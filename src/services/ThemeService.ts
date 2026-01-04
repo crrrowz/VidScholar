@@ -1,11 +1,14 @@
 // services/ThemeService.ts
 import type { Theme } from '../types';
 import config from '../utils/config';
+import { storageAdapter } from '../storage/StorageAdapter';
+import { settingsService } from './SettingsService';
 
 export class ThemeService {
   private static instance: ThemeService;
   private currentTheme: Theme = 'dark';
   private listeners: Set<(theme: Theme) => void> = new Set();
+  private initialized: boolean = false;
 
   private constructor() {
     this.initialize();
@@ -18,25 +21,29 @@ export class ThemeService {
     return ThemeService.instance;
   }
 
-  private initialize(): void {
+  private async initialize(): Promise<void> {
+    if (this.initialized) return;
+
+    // Use storageAdapter instead of direct chrome.storage
+    const result = await storageAdapter.get<{ theme: Theme }>('theme');
     const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
-    chrome.storage.sync.get(['theme'], (result) => {
-      if (result.theme) {
-        this.currentTheme = result.theme;
-      } else {
-        this.currentTheme = prefersDarkScheme.matches ? 'dark' : 'light';
-      }
-      this.applyTheme(this.currentTheme);
-    });
+    if (result && result.theme) {
+      this.currentTheme = result.theme;
+    } else {
+      this.currentTheme = prefersDarkScheme.matches ? 'dark' : 'light';
+    }
 
-    prefersDarkScheme.addEventListener('change', (e) => {
-      chrome.storage.sync.get(['theme'], (result) => {
-        if (!result.theme) {
-          this.currentTheme = e.matches ? 'dark' : 'light';
-          this.applyTheme(this.currentTheme);
-        }
-      });
+    this.applyTheme(this.currentTheme);
+    this.initialized = true;
+
+    // Listener for system preference changes
+    prefersDarkScheme.addEventListener('change', async (e) => {
+      const stored = await storageAdapter.get<{ theme: Theme }>('theme');
+      if (!stored || !stored.theme) {
+        this.currentTheme = e.matches ? 'dark' : 'light';
+        this.applyTheme(this.currentTheme);
+      }
     });
   }
 
@@ -44,9 +51,12 @@ export class ThemeService {
     return this.currentTheme;
   }
 
-  public setTheme(theme: Theme): void {
+  public async setTheme(theme: Theme): Promise<void> {
     this.currentTheme = theme;
-    chrome.storage.sync.set({ theme });
+    // Save to isolated storage (legacy support/fast switch)
+    await storageAdapter.set('theme', theme);
+    // Sync with consolidated settings (triggering Cloud Sync)
+    await settingsService.update({ theme });
     this.applyTheme(theme);
   }
 

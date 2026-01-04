@@ -24,7 +24,7 @@ export default defineConfig({
     },
 
     default_locale: 'en',
-    permissions: ['storage'],
+    permissions: ['storage', 'identity'],
 
     host_permissions: [
       'https://www.youtube.com/*',
@@ -43,5 +43,8 @@ export default defineConfig({
         matches: ['https://www.youtube.com/*']
       }
     ]
-  }
+  },
+  runner: {
+    startUrls: ["https://www.youtube.com/watch?v=TytzmV6__4E"],
+  },
 });

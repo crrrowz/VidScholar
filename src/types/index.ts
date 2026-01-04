@@ -60,8 +60,9 @@ export interface Video {
 
 // Export Types
 export interface VideoNotesExport {
-  version: string;
-  exportDate: string;
+  type: 'video_notes';
+  version?: string;
+  exportDate?: string;
   videoId: string;
   videoTitle: string;
   videoUrl?: string;
@@ -70,9 +71,10 @@ export interface VideoNotesExport {
 }
 
 export interface AllNotesExport {
-  version: string;
-  exportDate: string;
-  totalVideos: number;
+  type: 'all_notes';
+  version?: string;
+  exportDate?: string;
+  totalVideos?: number;
   notesByVideo: StoredVideoData[];
 }
 
@@ -98,7 +100,47 @@ export interface UserSettings {
   enableEncryption: boolean;
   enableAutoBackup: boolean;
   videoGroups: string[];
+  presets?: Record<string, any>;
   floatingButtonPosition?: { x: number; y: number };
+}
+
+export interface Config {
+  project: {
+    name: string;
+    description: string;
+    version: string;
+    hashtag: string;
+    website: string;
+  };
+  icons: Record<string, string>;
+  theme: {
+    light: ThemeColors;
+    dark: ThemeColors;
+    twitter: string;
+  };
+  storage: {
+    cacheDuration: number;
+    retentionDays: number;
+    maxRetentionDays: number;
+    minRetentionDays: number;
+  };
+  presets: Record<string, {
+    name: string;
+    description: string;
+    templates: string[];
+  }>;
+  ui: {
+    sidebarWidth: string;
+    maxSidebarHeight: string;
+    noteMaxHeight: string;
+    noteMinHeight: string;
+    autoSaveDelay: number;
+    navigationDelay: number;
+    toastDuration: number;
+    maxAttempts: number;
+    checkInterval: number;
+  };
+  videoGroups: string[];
 }
 
 // Plugin Types

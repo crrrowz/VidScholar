@@ -1,15 +1,12 @@
 // components/toolbar/SubToolbar.ts
 import { getStore } from '../../state/Store';
-import { noteStorage } from '../../classes/NoteStorage';
 import { actions } from '../../state/actions';
 import { createButton } from '../ui/Button';
 import { createPresetButtons } from './PresetButtons';
 import { themeService } from '../../services/ThemeService';
 import { shareService } from '../../services/ShareService';
-import { showToast } from '../../utils/toast';
 import { showTemplateEditor } from '../modals/TemplateEditor';
 import { showVideoManager } from '../modals/VideoManager';
-import { updateTemplateSelect } from './MainToolbar';
 import config from '../../utils/config';
 import { languageService } from '../../services/LanguageService';
 import { settingsService } from '../../services/SettingsService';
@@ -24,7 +21,7 @@ export async function createSubToolbar(): Promise<HTMLElement> {
 
   const leftGroupContainer = document.createElement("div");
   leftGroupContainer.className = "sub-toolbar-left-group-container sub-toolbar-flex-fill";
-  
+
   const rightButtonGroup = document.createElement("div");
   rightButtonGroup.className = "sub-toolbar-button-group right sub-toolbar-flex-fill";
 
@@ -38,7 +35,7 @@ export async function createSubToolbar(): Promise<HTMLElement> {
   const updateGroupSelect = () => {
     const currentGroups = settingsService.get('videoGroups');
     const currentVideoGroup = getStore().getState().currentVideoGroup;
-    
+
     groupSelect.innerHTML = '';
 
     // Create a default/placeholder option that is not selectable
@@ -64,11 +61,13 @@ export async function createSubToolbar(): Promise<HTMLElement> {
 
   updateGroupSelect();
 
-  groupSelect.onchange = () => {
+  groupSelect.onchange = async () => {
     const selectedGroup = groupSelect.value;
     actions.setVideoGroup(selectedGroup || null);
+    // Save immediately to ensure sync with VideoManager
+    await actions.saveNotes();
   };
-  
+
   settingsService.subscribe(updateGroupSelect);
   getStore().subscribe(updateGroupSelect); // To update when video group changes
 
@@ -77,7 +76,7 @@ export async function createSubToolbar(): Promise<HTMLElement> {
   const bottomButtonsContainer = document.createElement("div");
   bottomButtonsContainer.className = "sub-toolbar-bottom-buttons";
   bottomButtonsContainer.classList.add('sub-toolbar-bottom-buttons-group');
-  
+
   const editTemplateButton = createButton(
     icons.EDIT,
     null,
@@ -92,7 +91,7 @@ export async function createSubToolbar(): Promise<HTMLElement> {
     null,
     () => shareService.copyAllNotes(getStore().getState().notes),
     'copyAllNotesButton',
-    'default' 
+    'default'
   );
   copyAllButton.title = languageService.translate("copyAllNotes");
 
@@ -104,7 +103,7 @@ export async function createSubToolbar(): Promise<HTMLElement> {
       shareService.exportNotesAsJson(currentState.notes, currentState.videoTitle || 'notes', 'video_notes');
     },
     'downloadNotesButton',
-    'default' 
+    'default'
   );
   downloadNotesButton.title = languageService.translate("downloadNotesJson");
 
@@ -112,10 +111,10 @@ export async function createSubToolbar(): Promise<HTMLElement> {
     icons.UPLOAD,
     null,
     async () => {
-      await shareService.importNotesFromJson(false); 
+      await shareService.importNotesFromJson(false);
     },
     'uploadNotesButton',
-    'default' 
+    'default'
   );
   uploadNotesButton.title = languageService.translate("uploadNotesJson");
 
@@ -138,7 +137,7 @@ export async function createSubToolbar(): Promise<HTMLElement> {
   toggleThemeButton.title = languageService.translate("switchTheme");
 
   const toggleLanguageButton = createButton(
-    null, 
+    null,
     null,
     async () => {
       const newLocale = languageService.currentLocale === 'en' ? 'ar' : 'en';
@@ -166,10 +165,10 @@ export async function createSubToolbar(): Promise<HTMLElement> {
         });
         return; // Prevents any action completely
       }
-  
+
       // Toggle auto mode
       actions.toggleAutoAddTranscript();
-  
+
       // تحديث أيقونة الزر
       const toggleEl = document.getElementById('toggleAutoAddTranscriptButton');
       if (toggleEl) {
@@ -200,10 +199,10 @@ export async function createSubToolbar(): Promise<HTMLElement> {
     } else {
       toggleAutoAddTranscriptButton.disabled = false;
       if (state.autoAddTranscript) {
-          toggleAutoAddTranscriptButton.classList.add('active');
-          document.body.classList.add('vidscholar-hide-transcript');
+        toggleAutoAddTranscriptButton.classList.add('active');
+        document.body.classList.add('vidscholar-hide-transcript');
       } else {
-          toggleAutoAddTranscriptButton.classList.remove('active');
+        toggleAutoAddTranscriptButton.classList.remove('active');
       }
     }
   };
@@ -219,41 +218,41 @@ export async function createSubToolbar(): Promise<HTMLElement> {
   bottomButtonsContainer.appendChild(toggleThemeButton);
   bottomButtonsContainer.appendChild(toggleLanguageButton);
   bottomButtonsContainer.appendChild(toggleAutoAddTranscriptButton);
-  
+
   leftGroupContainer.appendChild(groupSelect); // Group select at top
   leftGroupContainer.appendChild(bottomButtonsContainer); // All other buttons at bottom
-  
+
   rightButtonGroup.appendChild(presetGroup);
 
   container.appendChild(leftGroupContainer);
   container.appendChild(rightButtonGroup);
 
-      const updateTexts = () => {
-        copyAllButton.title = languageService.translate("copyAllNotes");
-        downloadNotesButton.title = languageService.translate("downloadNotesJson");
-        uploadNotesButton.title = languageService.translate("uploadNotesJson");
-        editTemplateButton.title = languageService.translate("editTemplates");
-        manageVideosButton.title = languageService.translate("manageSavedVideos");
-  
-        const langBtn = container.querySelector('#toggleLanguageButton');
-        if (langBtn) {
-            langBtn.setAttribute('aria-label', languageService.translate("switchLanguage"));
-            const span = langBtn.querySelector('#currentLanguageText');
-            if (span) span.textContent = languageService.currentLocale.toUpperCase();
-        }
-  
-        const themeBtn = container.querySelector('#toggleThemeButton');
-        if (themeBtn) {
-            const isLight = themeService.getCurrentTheme() === 'light';
-            themeBtn.title = languageService.translate("switchTheme");
-            const icon = themeBtn.querySelector('.material-icons');
-            if (icon) icon.textContent = isLight ? 'light_mode' : 'dark_mode';
-        }
-        updateGroupSelect(); // Update group select dropdown for translation
-      };
+  const updateTexts = () => {
+    copyAllButton.title = languageService.translate("copyAllNotes");
+    downloadNotesButton.title = languageService.translate("downloadNotesJson");
+    uploadNotesButton.title = languageService.translate("uploadNotesJson");
+    editTemplateButton.title = languageService.translate("editTemplates");
+    manageVideosButton.title = languageService.translate("manageSavedVideos");
+
+    const langBtn = container.querySelector('#toggleLanguageButton');
+    if (langBtn) {
+      langBtn.setAttribute('aria-label', languageService.translate("switchLanguage"));
+      const span = langBtn.querySelector('#currentLanguageText');
+      if (span) span.textContent = languageService.currentLocale.toUpperCase();
+    }
+
+    const themeBtn = container.querySelector('#toggleThemeButton');
+    if (themeBtn) {
+      const isLight = themeService.getCurrentTheme() === 'light';
+      themeBtn.title = languageService.translate("switchTheme");
+      const icon = themeBtn.querySelector('.material-icons');
+      if (icon) icon.textContent = isLight ? 'light_mode' : 'dark_mode';
+    }
+    updateGroupSelect(); // Update group select dropdown for translation
+  };
   languageService.addListener(updateTexts);
   themeService.addListener(updateTexts);
   updateTexts();
-  
+
   return container;
 }

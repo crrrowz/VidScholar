@@ -56,6 +56,10 @@ class ConfigLoader {
   public getHashtag() {
     return this.config.project.hashtag;
   }
+
+  public getVideoGroups() {
+    return this.config.videoGroups || [];
+  }
 }
 
 export const config = ConfigLoader.getInstance();

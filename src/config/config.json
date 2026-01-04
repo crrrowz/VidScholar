@@ -1,4 +1,11 @@
 {
+  "project": {
+    "name": "VidScholar",
+    "description": "Smart Video Learning Assistant",
+    "version": "1.0.0",
+    "hashtag": "VidScholar",
+    "website": "https://vidscholar.com"
+  },
   "icons": {
     "ADD_NOTE": "add_circle_outline",
     "INSERT_TEMPLATE": "note_add",
@@ -50,7 +57,7 @@
     "maxRetentionDays": 99999999,
     "minRetentionDays": 7
   },
-"presets": {
+  "presets": {
     "1": {
       "name": "High Importance",
       "description": "Critical concepts, exam topics, and core definitions",
@@ -140,5 +147,11 @@
     "toastDuration": 3000,
     "maxAttempts": 20,
     "checkInterval": 500
-  }
+  },
+  "videoGroups": [
+    "First-Year English Courses",
+    "Programming Courses",
+    "IELTS",
+    "General Study"
+  ]
 }
