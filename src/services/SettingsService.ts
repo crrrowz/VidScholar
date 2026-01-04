@@ -51,11 +51,23 @@ class SettingsService {
         if (cloudSettings) {
           // Compare Timestamps (Last Write Wins)
           const cloudTime = cloudSettings.updated_at ? new Date(cloudSettings.updated_at).getTime() : 0;
-          const localTime = this.settings.lastModified || 0;
 
-          // If Cloud is significantly newer (> 2 seconds to avoid clock drift issues), sync down
-          if (cloudTime > localTime + 2000) {
-            console.log('SettingsService: Cloud settings are newer. Syncing down...');
+          // Legacy Check: If stored settings exist but have no timestamp, treat as priority
+          const localTimestamp = this.settings.lastModified;
+          const isLegacy = stored && !localTimestamp;
+
+          if (isLegacy) {
+            console.log('SettingsService: Legacy local settings detected. Prioritizing local...');
+            this.settings.lastModified = Date.now();
+            await storageAdapter.set(this.STORAGE_KEY, this.settings);
+            this.saveToCloud();
+          }
+          // If Cloud is significantly newer (> 60 seconds), sync down. 
+          // We use a large threshold to avoid clock drift issues and race conditions where server timestamp > local timestamp for the same save event.
+          else if (cloudTime > (localTimestamp || 0) + 60000) {
+            console.log(`SettingsService: Cloud settings are newer by ${(cloudTime - (localTimestamp || 0)) / 1000}s. Syncing down...`);
+            console.log('Local:', new Date(localTimestamp || 0).toISOString(), 'Cloud:', new Date(cloudTime).toISOString());
+
             const syncedSettings: Partial<UserSettings> = {
               theme: cloudSettings.theme as Theme,
               locale: cloudSettings.language,
@@ -103,8 +115,8 @@ class SettingsService {
         }
       }
     } catch (error) {
-      console.error('Failed to load settings:', error);
-      this.settings = { ...DEFAULT_SETTINGS };
+      console.error('SettingsService: Failed to load settings from cloud (Retaining local state):', error);
+      // Do NOT reset to defaults here, as it wipes local settings if cloud fails
     }
   }
 

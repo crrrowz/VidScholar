@@ -45,13 +45,16 @@ class LanguageService {
 
   public async getPreferredLocale(): Promise<string> {
     try {
-      // Use storageAdapter instead of direct chrome.storage
-      const result = await storageAdapter.get<{ preferredLocale: string }>('preferredLocale');
+      // Unified Source of Truth: Read directly from userSettings storage object
+      // This prevents conflict between 'preferredLocale' and 'userSettings.locale'
+      // Note: We access storageAdapter directly because settingsService might not be initialized yet
+      const settings = await storageAdapter.get<any>('userSettings');
 
-      if (result && result.preferredLocale && this.supportedLocales.includes(result.preferredLocale)) {
-        return result.preferredLocale;
+      if (settings && settings.locale && this.supportedLocales.includes(settings.locale)) {
+        return settings.locale;
       }
 
+      // Fallback to browser language if no stored setting
       const browserUILocale = chrome.i18n.getUILanguage().split('-')[0];
       if (this.supportedLocales.includes(browserUILocale)) {
         return browserUILocale;
@@ -64,8 +67,8 @@ class LanguageService {
 
   public async setPreferredLocale(locale: string): Promise<void> {
     if (this.supportedLocales.includes(locale)) {
-      // Use storageAdapter instead of direct chrome.storage
-      await storageAdapter.set('preferredLocale', locale);
+      // Trigger settings update, which handles storage and cloud sync
+      // await storageAdapter.set('preferredLocale', locale); // REMOVED: Redundant source of truth
       // Sync with consolidated settings (triggering Cloud Sync)
       await settingsService.update({ locale });
 

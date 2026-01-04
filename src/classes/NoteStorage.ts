@@ -3,7 +3,7 @@ import type { Note, Video, StoredVideoData } from '../types';
 import { NoteCache } from './NoteCache';
 import { NoteError } from './NoteError';
 import config from '../utils/config';
-import { getCurrentVideoId, getVideoTitle } from '../utils/video';
+import { getCurrentVideoId, getVideoTitle, getChannelName } from '../utils/video';
 import { showToast } from '../utils/toast';
 import { languageService } from '../services/LanguageService';
 import { actions } from '../state/actions';
@@ -152,7 +152,8 @@ export class NoteStorage {
         videoId,
         videoTitle: title,
         notes,
-        group: group || undefined
+        group: group || undefined,
+        channelName: getChannelName()
       });
 
       this.cache.set(videoId, notes);
@@ -275,7 +276,8 @@ export class NoteStorage {
           notes: notes,
           lastModified: data.lastModified,
           firstNoteTimestamp: firstNoteTimestamp,
-          group: data.group
+          group: data.group,
+          channelName: data.channelName
         });
       }
 
@@ -310,7 +312,8 @@ export class NoteStorage {
           videoId: video.videoId,
           videoTitle: video.videoTitle,
           notes: video.notes,
-          group: video.group
+          group: video.group,
+          channelName: video.channelName
         });
       }
 

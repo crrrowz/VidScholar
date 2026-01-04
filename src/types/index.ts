@@ -46,6 +46,7 @@ export interface StoredVideoData {
   lastModified: number;
   firstNoteTimestamp?: number;
   group?: string;
+  channelName?: string;
 }
 
 export interface Video {
@@ -56,6 +57,7 @@ export interface Video {
   lastModified: number;
   firstNoteTimestamp?: number;
   group?: string;
+  channelName?: string;
 }
 
 // Export Types
@@ -68,6 +70,7 @@ export interface VideoNotesExport {
   videoUrl?: string;
   notes: Note[];
   group?: string;
+  channelName?: string;
 }
 
 export interface AllNotesExport {

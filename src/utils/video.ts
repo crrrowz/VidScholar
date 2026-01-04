@@ -17,6 +17,16 @@ export function getVideoTitle(): string {
     ?.textContent?.trim() || '';
 }
 
+export function getChannelName(): string {
+  // Selectors based on provided HTML structure (2025)
+  const channelName =
+    document.querySelector('#channel-name #text-container #text a') ||
+    document.querySelector('ytd-video-owner-renderer #channel-name #text a') ||
+    document.querySelector('#owner-name a');
+
+  return channelName?.textContent?.trim() || '';
+}
+
 export async function generateVideoUrl(timestamp: string): Promise<string> {
   const currentUrl = window.location.href;
   const videoId = new URL(currentUrl).searchParams.get('v');
@@ -35,23 +45,23 @@ export async function waitForYouTubeUI(): Promise<HTMLElement> {
     const uiConfig = config.getUIConfig();
     let attempts = 0;
     const maxAttempts = uiConfig.maxAttempts;
-    
+
     const checkForUI = () => {
       const container = document.querySelector("#secondary") as HTMLElement;
       if (container) {
         resolve(container);
         return;
       }
-      
+
       attempts++;
       if (attempts >= maxAttempts) {
         reject(new Error('YouTube UI not found after ' + maxAttempts + ' attempts'));
         return;
       }
-      
+
       setTimeout(checkForUI, uiConfig.checkInterval);
     };
-    
+
     checkForUI();
   });
 }
@@ -60,10 +70,10 @@ export function jumpToTimestamp(timestamp: string): void {
   const video = getVideoPlayer();
   if (video) {
     const parts = timestamp.split(':').map(Number);
-    const seconds = parts.length === 3 
+    const seconds = parts.length === 3
       ? parts[0] * 3600 + parts[1] * 60 + parts[2]
       : parts[0] * 60 + parts[1];
-    
+
     video.currentTime = seconds;
     video.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
@@ -72,7 +82,7 @@ export function jumpToTimestamp(timestamp: string): void {
 export function isElementInView(element: HTMLElement, container: HTMLElement): boolean {
   const elementRect = element.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
-  
+
   return (
     elementRect.bottom <= containerRect.bottom &&
     elementRect.top >= containerRect.top

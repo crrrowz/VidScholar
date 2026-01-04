@@ -24,12 +24,13 @@ export class ThemeService {
   private async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    // Use storageAdapter instead of direct chrome.storage
-    const result = await storageAdapter.get<{ theme: Theme }>('theme');
+    // Unified Source of Truth: Read directly from userSettings storage object
+    // Note: We access storageAdapter directly because settingsService might not be initialized yet
+    const settings = await storageAdapter.get<any>('userSettings');
     const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
-    if (result && result.theme) {
-      this.currentTheme = result.theme;
+    if (settings && settings.theme) {
+      this.currentTheme = settings.theme;
     } else {
       this.currentTheme = prefersDarkScheme.matches ? 'dark' : 'light';
     }
@@ -53,8 +54,8 @@ export class ThemeService {
 
   public async setTheme(theme: Theme): Promise<void> {
     this.currentTheme = theme;
-    // Save to isolated storage (legacy support/fast switch)
-    await storageAdapter.set('theme', theme);
+    // Save to isolated storage REMOVED.
+    // await storageAdapter.set('theme', theme); // Remove redundant storage
     // Sync with consolidated settings (triggering Cloud Sync)
     await settingsService.update({ theme });
     this.applyTheme(theme);
@@ -76,7 +77,9 @@ export class ThemeService {
    * NOTE: For new components, prefer using CSS variables directly.
    */
   public getThemeColors() {
-    return config.getTheme(this.currentTheme);
+    // Map custom themes to base light/dark for colors
+    const baseTheme = (this.currentTheme === 'light' || this.currentTheme === 'sepia') ? 'light' : 'dark';
+    return config.getTheme(baseTheme);
   }
 
   public addListener(listener: (theme: Theme) => void): void {
