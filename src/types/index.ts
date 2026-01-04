@@ -29,12 +29,16 @@ export type Theme = 'light' | 'dark' | 'sepia' | 'high-contrast' | 'oled';
 
 export interface ThemeColors {
   primary: string;
+  primaryText: string;
   bg: string;
   text: string;
   cardBg: string;
   border: string;
   hoverBg: string;
   activeBg: string;
+  icon: string;
+  iconHover: string;
+  delete: string;
 }
 
 // Storage Types
@@ -47,6 +51,7 @@ export interface StoredVideoData {
   firstNoteTimestamp?: number;
   group?: string;
   channelName?: string;
+  channelId?: string;
 }
 
 export interface Video {
@@ -58,6 +63,7 @@ export interface Video {
   firstNoteTimestamp?: number;
   group?: string;
   channelName?: string;
+  channelId?: string;
 }
 
 // Export Types
@@ -71,6 +77,7 @@ export interface VideoNotesExport {
   notes: Note[];
   group?: string;
   channelName?: string;
+  channelId?: string;
 }
 
 export interface AllNotesExport {

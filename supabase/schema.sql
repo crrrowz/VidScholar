@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS vidscholar_notes (
     thumbnail TEXT,
     notes JSONB DEFAULT '[]'::jsonb,
     group_name TEXT,
+    channel_name TEXT,
+    channel_id TEXT,
     last_modified BIGINT DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

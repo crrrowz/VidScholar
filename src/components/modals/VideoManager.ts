@@ -1,4 +1,4 @@
-// src/components/modals/VideoManager.ts
+import { getCurrentVideoId } from '../../utils/video';
 import type { Video } from '../../types';
 import { noteStorage } from '../../classes/NoteStorage';
 import { actions } from '../../state/actions';
@@ -412,21 +412,235 @@ function createCard(video: Video, closeCallback: () => void, onDelete: () => voi
     notes.forEach(note => {
       const row = document.createElement('div');
       row.className = 'note-row';
+      row.style.display = 'flex';
+      row.style.justifyContent = 'space-between';
+      row.style.alignItems = 'center';
+      row.style.padding = '8px'; // Add some padding
+
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'note-content-wrapper';
+      contentDiv.style.flex = '1';
+      contentDiv.style.cursor = 'pointer';
+      contentDiv.style.display = 'flex';
+      contentDiv.style.alignItems = 'center';
 
       const safeTime = Math.floor(note.timestampInSeconds || 0);
-      row.onclick = () => { closeCallback(); setTimeout(() => noteStorage.handleVideoOpen(video.id, safeTime), 50); };
-      row.onmouseover = () => row.style.backgroundColor = 'var(--color-primary-hover)';
-      row.onmouseout = () => row.style.backgroundColor = '';
+
+      // Click on content opens video (UNLESS editing)
+      contentDiv.onclick = (e) => {
+        const target = e.target as HTMLElement;
+        if (target.isContentEditable || target.closest('[contenteditable="true"]')) {
+          return;
+        }
+        closeCallback();
+        setTimeout(() => noteStorage.handleVideoOpen(video.id, safeTime), 50);
+      };
 
       const timeSpan = document.createElement('span');
       timeSpan.textContent = formatTimestamp(safeTime);
       timeSpan.classList.add('btn--note-timestamp');
+      timeSpan.style.marginRight = '8px';
 
       const txt = document.createElement('span');
       txt.className = 'note-text';
       txt.textContent = note.text;
+      Object.assign(txt.style, {
+        flex: '1',
+        padding: '4px',
+        borderRadius: '4px',
+        transition: 'all 0.2s ease',
+        display: 'block', // Ensure it takes width
+        whiteSpace: 'pre-wrap', // Respect newlines
+        wordBreak: 'break-word' // Prevent overflow
+      });
 
-      row.append(timeSpan, txt);
+      contentDiv.append(timeSpan, txt);
+
+      // Actions container
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'note-actions';
+      actionsDiv.style.display = 'flex';
+      actionsDiv.style.gap = '4px';
+
+      // Edit Button
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn btn--icon btn--ghost';
+      editBtn.innerHTML = `<span class="material-icons" style="font-size: 16px;">edit</span>`;
+      editBtn.title = languageService.translate("edit");
+
+      editBtn.onclick = (e) => {
+        e.stopPropagation();
+
+        // 1. Enter Edit Mode styling
+        txt.contentEditable = 'true';
+        Object.assign(txt.style, {
+          width: '100%', // Ensure full width
+          backgroundColor: 'var(--color-surface, #fff)',
+          border: '2px solid var(--color-primary, #2196f3)',
+          padding: '12px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          fontSize: '15px',
+          lineHeight: '1.5',
+          outline: 'none',
+          minHeight: '60px',
+          maxHeight: '200px', // Increased max height
+          overflowY: 'auto',  // Force scrollbar
+          display: 'block',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          zIndex: '100'
+        });
+        txt.focus();
+
+        // Prevent clicks on text from bubbling to row navigation
+        txt.onclick = (ev) => ev.stopPropagation();
+
+        // Select all text
+        const range = document.createRange();
+        range.selectNodeContents(txt);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+
+        let isSaving = false;
+
+        // Helper to cleanup and save
+        const saveChanges = async () => {
+          if (isSaving) return;
+          isSaving = true;
+
+          // Stop editing interaction
+          txt.onclick = null;
+
+          const newText = txt.textContent?.trim();
+
+          // If changed, save
+          if (newText && newText !== note.text) {
+            note.text = newText;
+            await noteStorage.saveNotes(video.notes, video.group, video.id, video.title);
+
+            // Update global store if this is the current video
+            if (getCurrentVideoId() === video.id) {
+              actions.setNotes([...video.notes]);
+            }
+
+            showToast(languageService.translate("noteSaved"), 'success');
+          } else if (!newText) {
+            // Revert if empty
+            txt.textContent = note.text;
+          }
+
+          // Revert Styling
+          txt.contentEditable = 'false';
+          // Reset to default styles (preserving structural ones)
+          Object.assign(txt.style, {
+            backgroundColor: '',
+            border: '',
+            padding: '4px',
+            borderRadius: '4px',
+            boxShadow: '',
+            fontSize: '',
+            lineHeight: '',
+            outline: '',
+            minWidth: '',
+            cursor: '',
+            position: '',
+            zIndex: '',
+            maxHeight: '',
+            overflowY: '',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+          });
+
+          // Remove listeners
+          txt.removeEventListener('blur', blurHandler);
+          txt.removeEventListener('keydown', keyHandler);
+        };
+
+        // Listener: Save on blur (click away)
+        const blurHandler = () => {
+          setTimeout(saveChanges, 100);
+        };
+        txt.addEventListener('blur', blurHandler);
+
+        // Listener: Save on Enter, Revert on Escape
+        const keyHandler = (ev: KeyboardEvent) => {
+          if (ev.key === 'Enter' && !ev.shiftKey) { // Allow Shift+Enter for new lines
+            ev.preventDefault();
+            txt.blur();
+          } else if (ev.key === 'Escape') {
+            // Revert immediately
+            txt.textContent = note.text;
+            isSaving = true; // prevent save logic
+            txt.blur();
+
+            // Manual cleanup 
+            txt.onclick = null;
+            txt.contentEditable = 'false';
+            Object.assign(txt.style, {
+              backgroundColor: '',
+              border: '',
+              padding: '4px',
+              borderRadius: '4px',
+              boxShadow: '',
+              fontSize: '',
+              lineHeight: '',
+              outline: '',
+              minWidth: '',
+              cursor: '',
+              position: '',
+              zIndex: '',
+              maxHeight: '',
+              overflowY: '',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word'
+            });
+            txt.removeEventListener('blur', blurHandler);
+            txt.removeEventListener('keydown', keyHandler);
+          }
+        };
+        txt.addEventListener('keydown', keyHandler);
+      };
+
+      // Delete Button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn btn--icon btn--ghost';
+      deleteBtn.innerHTML = `<span class="material-icons" style="font-size: 16px; color: var(--color-danger);">delete</span>`;
+      deleteBtn.title = languageService.translate("delete");
+      deleteBtn.onclick = async (e) => {
+        e.stopPropagation();
+
+        // Direct delete (Reference Note: user requested no confirmation)
+        const updatedNotes = video.notes.filter(n => n !== note);
+        await noteStorage.saveNotes(updatedNotes, video.group, video.id, video.title);
+
+        // Update local object reference so further edits/deletes work on correct data
+        video.notes = updatedNotes;
+
+        // Update global store if this is the current video
+        if (getCurrentVideoId() === video.id) {
+          actions.setNotes([...updatedNotes]);
+        }
+
+        // Remove the row from UI
+        row.remove();
+
+        // Update the count in the toggle
+        if (toggle) {
+          const countEl = toggle.querySelector('b');
+          if (countEl) countEl.textContent = updatedNotes.length.toString();
+        }
+
+        showToast(languageService.translate("noteDeleted"), 'success');
+      };
+
+      actionsDiv.append(editBtn, deleteBtn);
+      row.append(contentDiv, actionsDiv);
+
+      row.onmouseover = () => row.style.backgroundColor = 'var(--color-primary-hover)';
+      row.onmouseout = () => row.style.backgroundColor = '';
+
       list.appendChild(row);
     });
 

@@ -140,7 +140,7 @@
   "ui": {
     "sidebarWidth": "400px",
     "maxSidebarHeight": "calc(100vh - 100px)",
-    "noteMaxHeight": "80px",
+    "noteMaxHeight": "400px",
     "noteMinHeight": "24px",
     "autoSaveDelay": 2000,
     "navigationDelay": 1000,

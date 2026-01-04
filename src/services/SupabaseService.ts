@@ -17,6 +17,8 @@ interface VideoRecord {
     thumbnail?: string;
     notes: Note[];
     group_name?: string;
+    channel_name?: string;
+    channel_id?: string;
     last_modified: number;
     created_at?: string;
     updated_at?: string;
@@ -149,6 +151,8 @@ class SupabaseService {
         videoTitle: string;
         notes: Note[];
         group?: string;
+        channelName?: string;
+        channelId?: string;
     }): Promise<boolean> {
         if (!this.isAvailable()) return false;
 
@@ -160,6 +164,8 @@ class SupabaseService {
                 thumbnail: `https://i.ytimg.com/vi/${data.videoId}/mqdefault.jpg`,
                 notes: data.notes,
                 group_name: data.group || undefined,
+                channel_name: data.channelName || undefined,
+                channel_id: data.channelId || undefined,
                 last_modified: Date.now(),
             };
 
@@ -233,6 +239,8 @@ class SupabaseService {
                 notes: record.notes || [],
                 lastModified: record.last_modified,
                 group: record.group_name,
+                channelName: record.channel_name,
+                channelId: record.channel_id,
             }));
         } catch (error) {
             console.error('SupabaseService.loadAllVideos failed:', error);

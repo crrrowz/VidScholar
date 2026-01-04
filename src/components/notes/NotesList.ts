@@ -17,7 +17,7 @@ export function createNotesList(
 ): HTMLElement {
   const container = document.createElement("div");
   container.id = "notesContainer";
-  
+
   Object.assign(container.style, {
     flex: '1',
     overflowY: "auto",
@@ -25,7 +25,7 @@ export function createNotesList(
   });
 
   updateNotesList(container, getStore().getState(), callbacks);
-  
+
   return container;
 }
 
@@ -77,4 +77,18 @@ export function scrollToNewNote(timestamp: string): void {
       break;
     }
   }
+}
+
+export function focusNoteTextarea(timestamp: string): void {
+  // Use a small delay to ensure the DOM has updated after state change
+  setTimeout(() => {
+    // Find textarea by its unique ID (timestamp with ':' replaced by '-')
+    const textareaId = `note-textarea-${timestamp.replace(/:/g, '-')}`;
+    const textarea = document.getElementById(textareaId) as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.focus();
+      // Place cursor at end of text
+      textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
+    }
+  }, 300);
 }

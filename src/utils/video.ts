@@ -27,6 +27,33 @@ export function getChannelName(): string {
   return channelName?.textContent?.trim() || '';
 }
 
+export function getChannelId(): string {
+  // 1. Try meta tag (most reliable)
+  const metaTag = document.querySelector('meta[itemprop="channelId"]');
+  if (metaTag) {
+    return metaTag.getAttribute('content') || '';
+  }
+
+  // 2. Try channel link
+  const channelLink =
+    document.querySelector('#channel-name #text-container #text a') as HTMLAnchorElement ||
+    document.querySelector('ytd-video-owner-renderer #channel-name #text a') as HTMLAnchorElement ||
+    document.querySelector('#owner-name a') as HTMLAnchorElement;
+
+  if (channelLink && channelLink.href) {
+    // Extract ID from /channel/UC... or /@handle
+    const match = channelLink.href.match(/\/channel\/([^/?]+)/);
+    if (match) return match[1];
+
+    // If it's a handle (/@handle), we might just return the handle or empty if strict ID is needed.
+    // Ideally we want the UC ID, but the handle is better than nothing.
+    const handleMatch = channelLink.href.match(/\/@([^/?]+)/);
+    if (handleMatch) return '@' + handleMatch[1];
+  }
+
+  return '';
+}
+
 export async function generateVideoUrl(timestamp: string): Promise<string> {
   const currentUrl = window.location.href;
   const videoId = new URL(currentUrl).searchParams.get('v');

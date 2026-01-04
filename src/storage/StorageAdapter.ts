@@ -99,6 +99,7 @@ class StorageAdapter {
         notes: Note[];
         group?: string;
         channelName?: string;
+        channelId?: string;
     }): Promise<boolean> {
         await this.ensureInitialized();
 
@@ -110,6 +111,7 @@ class StorageAdapter {
             lastModified: Date.now(),
             group: data.group,
             channelName: data.channelName,
+            channelId: data.channelId,
         };
         await this.setLocal(`notes_${data.videoId}`, localData);
 

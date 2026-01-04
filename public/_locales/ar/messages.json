@@ -43,19 +43,18 @@
     "message": "فشل نسخ الملاحظات إلى الحافظة",
     "description": "رسالة تنبيه تظهر عند فشل نسخ جميع الملاحظات."
   },
-    "templatesSavedSuccessfully": {
-      "message": "تم حفظ القوالب بنجاح!",
-      "description": "Message displayed when templates are successfully saved."
-    },
-    "presetNamePlaceholder": {
-      "message": "اسم الإعداد المسبق",
-      "description": "Placeholder for the preset name input field."
-    },
-    "failedToSaveTemplates": {
-      "message": "فشل حفظ القوالب.",
-      "description": "رسالة تنبيه تظهر عند فشل حفظ القوالب."
-    },
-
+  "templatesSavedSuccessfully": {
+    "message": "تم حفظ القوالب بنجاح!",
+    "description": "Message displayed when templates are successfully saved."
+  },
+  "presetNamePlaceholder": {
+    "message": "اسم الإعداد المسبق",
+    "description": "Placeholder for the preset name input field."
+  },
+  "failedToSaveTemplates": {
+    "message": "فشل حفظ القوالب.",
+    "description": "رسالة تنبيه تظهر عند فشل حفظ القوالب."
+  },
   "addNote": {
     "message": "إضافة ملاحظة",
     "description": "نص تلميحي لزر 'إضافة ملاحظة'."
@@ -96,6 +95,14 @@
     "message": "حسنا",
     "description": "نص زر 'حسنا'."
   },
+  "cancel": {
+    "message": "إلغاء",
+    "description": "نص زر الإلغاء العام."
+  },
+  "save": {
+    "message": "حفظ",
+    "description": "نص زر الحفظ العام."
+  },
   "openVideo": {
     "message": "فتح الفيديو",
     "description": "نص تلميحي لزر 'فتح الفيديو'."
@@ -126,19 +133,20 @@
     "message": "هل أنت متأكد أنك تريد حذف جميع الملاحظات؟ لا يمكن التراجع عن هذا الإجراء.",
     "description": "نص الرسالة لنافذة تأكيد 'حذف الكل'."
   },
-      "confirm": {
-        "message": "تأكيد",
-        "description": "نص عام لزر التأكيد."
-      },
-      "presetGroup": {
-        "message": "مجموعة $PRESET_NUMBER$",
-        "description": "اسم مجموعة القوالب مع رقم.",
-        "placeholders": {
-          "PRESET_NUMBER": {
-            "content": "$1"
-          }
-        }
-      },  "switchedToPreset": {
+  "confirm": {
+    "message": "تأكيد",
+    "description": "نص عام لزر التأكيد."
+  },
+  "presetGroup": {
+    "message": "مجموعة $PRESET_NUMBER$",
+    "description": "اسم مجموعة القوالب مع رقم.",
+    "placeholders": {
+      "PRESET_NUMBER": {
+        "content": "$1"
+      }
+    }
+  },
+  "switchedToPreset": {
     "message": "تم التبديل إلى المجموعة $PRESET_NUMBER$",
     "description": "رسالة تنبيه تظهر عند تبديل المجموعات.",
     "placeholders": {
@@ -155,10 +163,11 @@
     "message": "حذف الملاحظة",
     "description": "نص تلميحي لزر حذف الملاحظة."
   },
-      "editTemplatesTitle": {
-        "message": "تعديل القوالب",
-        "description": "عنوان نافذة محرر القوالب."
-      },  "templatePlaceholder": {
+  "editTemplatesTitle": {
+    "message": "تعديل القوالب",
+    "description": "عنوان نافذة محرر القوالب."
+  },
+  "templatePlaceholder": {
     "message": "أدخل قالباً واحداً في كل سطر...",
     "description": "النص التوضيحي (Placeholder) لحقل إدخال القوالب."
   },
@@ -272,27 +281,28 @@
     "message": "أدخل عدد الأيام للاحتفاظ بالملاحظات (مثال: 30):",
     "description": "نص يطلب تحديد أيام الاحتفاظ بالملاحظات."
   },
-      "savedDays": {
-        "message": "تم الحفظ! $DAYS$ يوم",
-        "description": "رسالة تنبيه لتحديث أيام الاحتفاظ بنجاح.",
-        "placeholders": {
-          "DAYS": {
-            "content": "$1"
-          }
-        }
-      },
-      "daysUnit": {
-        "message": "أيام",
-        "description": "وحدة لعدد الأيام."
-      },
-      "dayUnit": {
-        "message": "يوم",
-        "description": "وحدة ليوم واحد."
-      },
-      "couldNotLoadData": {
-        "message": "تعذر تحميل البيانات",
-        "description": "رسالة خطأ عند فشل تحميل بيانات مدير الفيديو."
-      },  "downloadAllNotesJson": {
+  "savedDays": {
+    "message": "تم الحفظ! $DAYS$ يوم",
+    "description": "رسالة تنبيه لتحديث أيام الاحتفاظ بنجاح.",
+    "placeholders": {
+      "DAYS": {
+        "content": "$1"
+      }
+    }
+  },
+  "daysUnit": {
+    "message": "أيام",
+    "description": "وحدة لعدد الأيام."
+  },
+  "dayUnit": {
+    "message": "يوم",
+    "description": "وحدة ليوم واحد."
+  },
+  "couldNotLoadData": {
+    "message": "تعذر تحميل البيانات",
+    "description": "رسالة خطأ عند فشل تحميل بيانات مدير الفيديو."
+  },
+  "downloadAllNotesJson": {
     "message": "تنزيل كل الملاحظات",
     "description": "زر لتنزيل جميع الملاحظات لجميع الفيديوهات كملف JSON واحد."
   },
@@ -336,16 +346,24 @@
     "message": "لا يمكن دمج ملاحظات لفيديوهات مختلفة. الملاحظات المستوردة للفيديو $IMPORTED_VIDEO_ID$ ولكن الفيديو الحالي هو $CURRENT_VIDEO_ID$.",
     "description": "رسالة خطأ عند محاولة دمج ملاحظات فيديو بمعرف مختلف.",
     "placeholders": {
-      "IMPORTED_VIDEO_ID": { "content": "$1" },
-      "CURRENT_VIDEO_ID": { "content": "$2" }
+      "IMPORTED_VIDEO_ID": {
+        "content": "$1"
+      },
+      "CURRENT_VIDEO_ID": {
+        "content": "$2"
+      }
     }
   },
   "invalidVideoIdForReplace": {
     "message": "لا يمكن استبدال ملاحظات لفيديوهات مختلفة. الملاحظات المستوردة للفيديو $IMPORTED_VIDEO_ID$ ولكن الفيديو الحالي هو $CURRENT_VIDEO_ID$.",
     "description": "رسالة خطأ عند محاولة استبدال ملاحظات فيديو بمعرف مختلف.",
     "placeholders": {
-      "IMPORTED_VIDEO_ID": { "content": "$1" },
-      "CURRENT_VIDEO_ID": { "content": "$2" }
+      "IMPORTED_VIDEO_ID": {
+        "content": "$1"
+      },
+      "CURRENT_VIDEO_ID": {
+        "content": "$2"
+      }
     }
   },
   "notesMergeSuccess": {
@@ -356,14 +374,18 @@
     "message": "خطأ في دمج الملاحظات: $ERROR_MESSAGE$",
     "description": "رسالة خطأ لفشل دمج الملاحظات.",
     "placeholders": {
-      "ERROR_MESSAGE": { "content": "$1" }
+      "ERROR_MESSAGE": {
+        "content": "$1"
+      }
     }
   },
   "notesImportError": {
     "message": "خطأ في استيراد الملاحظات: $ERROR_MESSAGE$",
     "description": "رسالة خطأ عامة لفشل استيراد الملاحظات.",
     "placeholders": {
-      "ERROR_MESSAGE": { "content": "$1" }
+      "ERROR_MESSAGE": {
+        "content": "$1"
+      }
     }
   },
   "importVideoIdMismatchTitle": {
@@ -374,16 +396,24 @@
     "message": "الملاحظات المستوردة للفيديو <b>`$IMPORTED_VIDEO_ID$`</b> ولكن الفيديو الحالي هو <b>`$CURRENT_VIDEO_ID$`</b>. هل تريد فتح الفيديو؟",
     "description": "رسالة لنافذة حوار عدم تطابق معرف الفيديو.",
     "placeholders": {
-      "IMPORTED_VIDEO_ID": { "content": "$1" },
-      "CURRENT_VIDEO_ID": { "content": "$2" }
+      "IMPORTED_VIDEO_ID": {
+        "content": "$1"
+      },
+      "CURRENT_VIDEO_ID": {
+        "content": "$2"
+      }
     }
   },
   "importVideoIdMismatch": {
     "message": "الملاحظات المستوردة للفيديو $IMPORTED_VIDEO_ID$ ولكن الفيديو الحالي هو $CURRENT_VIDEO_ID$. تم إلغاء الاستيراد.",
     "description": "رسالة خطأ عندما لا يتطابق معرف فيديو الملاحظات المستوردة مع الفيديو الحالي.",
     "placeholders": {
-      "IMPORTED_VIDEO_ID": { "content": "$1" },
-      "CURRENT_VIDEO_ID": { "content": "$2" }
+      "IMPORTED_VIDEO_ID": {
+        "content": "$1"
+      },
+      "CURRENT_VIDEO_ID": {
+        "content": "$2"
+      }
     }
   },
   "importCancelled": {
@@ -422,7 +452,7 @@
     "message": "لا يُسمح باستيراد ملاحظات الفيديو في سياق شامل. يرجى استخدام الرفع الخاص بالفيديو.",
     "description": "رسالة خطأ عند محاولة استيراد ملاحظات فيديو فردي في السياق الشامل."
   },
-    "videoImportNotAllowedTitle": {
+  "videoImportNotAllowedTitle": {
     "message": "استيراد ملاحظات الفيديو غير مسموح به",
     "description": "عنوان لنافذة الحوار التي تمنع استيراد ملاحظات الفيديو."
   },
@@ -454,7 +484,9 @@
     "message": "الفيديو \"$VIDEO_TITLE$\" موجود بالفعل. هل تريد دمج ملاحظاته مع الملاحظات المستوردة؟ (إلغاء للاستبدال)",
     "description": "رسالة تأكيد لدمج ملاحظات فيديو معين أثناء استيراد شامل.",
     "placeholders": {
-      "VIDEO_TITLE": { "content": "$1" }
+      "VIDEO_TITLE": {
+        "content": "$1"
+      }
     }
   },
   "importDecisionTitle": {
@@ -469,7 +501,9 @@
     "message": "استيراد ملاحظات لـ \"$VIDEO_TITLE$\"",
     "description": "عنوان نافذة استيراد فيديو فردي، يظهر عنوان الفيديو.",
     "placeholders": {
-      "VIDEO_TITLE": { "content": "$1" }
+      "VIDEO_TITLE": {
+        "content": "$1"
+      }
     }
   },
   "singleVideoImportDescription": {
@@ -513,51 +547,51 @@
     "description": "خيار لدمج الملاحظات."
   },
   "mergeWithExistingNotes": {
-              "message": "دمج مع الملاحظات الموجودة",
-              "description": "تسمية لمربع اختيار دمج الملاحظات المستوردة مع الموجودة."
-            },
-            "enableAutoAddTranscript": {
-              "message": "تفعيل إضافة النص تلقائياً",
-              "description": "Tooltip for enabling auto transcript text."
-            },
-            "disableAutoAddTranscript": {
-              "message": "تعطيل إضافة النص تلقائياً",
-              "description": "Tooltip for disabling auto transcript text."
-            },
-            "showTranscript": {
-              "message": "إظهار النص",
-              "description": "Aria label for the button to show the video transcript."
-            },
-            "noteDeleted": {
-              "message": "تم حذف الملاحظة",
-              "description": "Toast message shown when a note is deleted successfully."
-            },
-            "videoGroupsTitle": {
-              "message": "مجموعات الفيديو",
-              "description": "Title for the video groups section in the template editor."
-            },
-            "addNewGroupPlaceholder": {
-              "message": "إضافة مجموعة جديدة",
-              "description": "Placeholder for the input field to add new video groups."
-            },
-            "addButton": {
-              "message": "إضافة",
-              "description": "Text for the button to add a new video group."
-            },
-            "groupExistsError": {
-              "message": "المجموعة موجودة بالفعل",
-              "description": "Error message shown when trying to add a group that already exists."
-            },
-            "deleteButton": {
-              "message": "حذف",
-              "description": "Text for the button to delete a video group or a note."
-            },
-            "noGroup": {
-              "message": "بدون مجموعة",
-              "description": "Label for videos that do not belong to any group."
-            },
-            "transcriptNotAvailable": {
-              "message": "النص غير متوفر لهذا الفيديو.",
-              "description": "Error message when transcript is not available."
-            }
-          }
+    "message": "دمج مع الملاحظات الموجودة",
+    "description": "تسمية لمربع اختيار دمج الملاحظات المستوردة مع الموجودة."
+  },
+  "enableAutoAddTranscript": {
+    "message": "تفعيل إضافة النص تلقائياً",
+    "description": "Tooltip for enabling auto transcript text."
+  },
+  "disableAutoAddTranscript": {
+    "message": "تعطيل إضافة النص تلقائياً",
+    "description": "Tooltip for disabling auto transcript text."
+  },
+  "showTranscript": {
+    "message": "إظهار النص",
+    "description": "Aria label for the button to show the video transcript."
+  },
+  "noteDeleted": {
+    "message": "تم حذف الملاحظة",
+    "description": "Toast message shown when a note is deleted successfully."
+  },
+  "videoGroupsTitle": {
+    "message": "مجموعات الفيديو",
+    "description": "Title for the video groups section in the template editor."
+  },
+  "addNewGroupPlaceholder": {
+    "message": "إضافة مجموعة جديدة",
+    "description": "Placeholder for the input field to add new video groups."
+  },
+  "addButton": {
+    "message": "إضافة",
+    "description": "Text for the button to add a new video group."
+  },
+  "groupExistsError": {
+    "message": "المجموعة موجودة بالفعل",
+    "description": "Error message shown when trying to add a group that already exists."
+  },
+  "deleteButton": {
+    "message": "حذف",
+    "description": "Text for the button to delete a video group or a note."
+  },
+  "noGroup": {
+    "message": "بدون مجموعة",
+    "description": "Label for videos that do not belong to any group."
+  },
+  "transcriptNotAvailable": {
+    "message": "النص غير متوفر لهذا الفيديو.",
+    "description": "Error message when transcript is not available."
+  }
+}

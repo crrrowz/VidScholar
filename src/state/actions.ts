@@ -13,7 +13,7 @@ export const actions = {
     const store = getStore();
     const state = store.getState();
     const newNotes = [...state.notes, note];
-    
+
     store.setState({
       notes: newNotes,
       selectedNote: note,
@@ -24,10 +24,10 @@ export const actions = {
   updateNote(noteId: string, updates: Partial<Note>): void {
     const store = getStore();
     const state = store.getState();
-    
+
     store.setState({
-      notes: state.notes.map(note => 
-        note.timestamp === noteId 
+      notes: state.notes.map(note =>
+        note.timestamp === noteId
           ? { ...note, ...updates }
           : note
       )
@@ -37,12 +37,12 @@ export const actions = {
   async deleteNote(note: Note): Promise<void> {
     const store = getStore();
     const state = store.getState();
-    
+
     // Optimistically update the UI
     store.setState({
       notes: state.notes.filter(n => n.timestamp !== note.timestamp),
-      selectedNote: state.selectedNote?.timestamp === note.timestamp 
-        ? null 
+      selectedNote: state.selectedNote?.timestamp === note.timestamp
+        ? null
         : state.selectedNote
     });
 
@@ -57,10 +57,10 @@ export const actions = {
   sortNotes(): void {
     const store = getStore();
     const state = store.getState();
-    
+
     store.setState({
-      notes: [...state.notes].sort((a, b) => 
-        a.timestampInSeconds - b.timestampInSeconds
+      notes: [...state.notes].sort((a, b) =>
+        b.timestampInSeconds - a.timestampInSeconds
       )
     });
   },
@@ -77,7 +77,7 @@ export const actions = {
   addTemplate(template: string): void {
     const store = getStore();
     const state = store.getState();
-    
+
     store.setState({
       templates: [...state.templates, template]
     });
@@ -114,7 +114,7 @@ export const actions = {
   // Batch Actions
   initializeState(notes: Note[], templates: string[], theme: 'light' | 'dark'): void {
     const store = getStore();
-    
+
     store.batchUpdate(() => {
       store.setState({ notes, templates, currentTheme: theme });
     });
@@ -135,7 +135,7 @@ export const actions = {
 // Middleware for auto-save
 export function enableAutoSave(delayMs: number = 500): () => void {
   let timeoutId: any;
-  
+
   const unsubscribe = getStore().subscribe((state) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {

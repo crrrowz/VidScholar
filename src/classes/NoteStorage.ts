@@ -3,7 +3,7 @@ import type { Note, Video, StoredVideoData } from '../types';
 import { NoteCache } from './NoteCache';
 import { NoteError } from './NoteError';
 import config from '../utils/config';
-import { getCurrentVideoId, getVideoTitle, getChannelName } from '../utils/video';
+import { getCurrentVideoId, getVideoTitle, getChannelName, getChannelId } from '../utils/video';
 import { showToast } from '../utils/toast';
 import { languageService } from '../services/LanguageService';
 import { actions } from '../state/actions';
@@ -50,12 +50,16 @@ export class NoteStorage {
   // ==========================================
 
   async getCurrentPreset(): Promise<number> {
-    const result = await storageAdapter.get<{ current_preset: number }>('current_preset');
-    return result?.current_preset || 1;
+    const result = await storageAdapter.get<number>('current_preset');
+    return result ?? 1;
   }
 
   async savePresetNumber(number: number): Promise<boolean> {
-    return await storageAdapter.set('current_preset', number);
+    const success = await storageAdapter.set('current_preset', number);
+    if (success) {
+      this.notifyPresetListeners(number);
+    }
+    return success;
   }
 
   async savePresetTemplates(presetNumber: number, templates: string[]): Promise<boolean> {
@@ -107,13 +111,14 @@ export class NoteStorage {
         currentPresets[presetNumber] = {
           name: name,
           description: '',
-          templates: []
+          templates: this.defaultPresets[presetNumber] || []
         };
       } else {
         currentPresets[presetNumber].name = name;
       }
 
       await settingsService.update({ presets: currentPresets });
+      this.notifyTemplateListeners();
     } catch (error) {
       console.error('Failed to save preset name:', error);
     }
@@ -153,7 +158,8 @@ export class NoteStorage {
         videoTitle: title,
         notes,
         group: group || undefined,
-        channelName: getChannelName()
+        channelName: getChannelName(),
+        channelId: getChannelId()
       });
 
       this.cache.set(videoId, notes);
@@ -185,7 +191,36 @@ export class NoteStorage {
       if (videoData?.group) {
         actions.setVideoGroup(videoData.group);
       } else {
-        actions.setVideoGroup(null);
+        // Auto-detect group from channel history
+        // Retry capturing channel info as it might load late
+        let attempts = 0;
+        const tryDetectGroup = () => {
+          const currentChannelId = getChannelId();
+          const currentChannelName = getChannelName();
+
+          if (!currentChannelId && !currentChannelName && attempts < 5) {
+            attempts++;
+            setTimeout(tryDetectGroup, 500);
+            return;
+          }
+
+          // Find last video from same channel that has a group
+          const lastChannelVideo = allVideos
+            .filter(v => v.group && (
+              (currentChannelId && v.channelId === currentChannelId) ||
+              (!currentChannelId && currentChannelName && v.channelName === currentChannelName)
+            ))
+            .sort((a, b) => (b.lastModified || 0) - (a.lastModified || 0))[0];
+
+          if (lastChannelVideo?.group) {
+            actions.setVideoGroup(lastChannelVideo.group);
+            showToast(languageService.translate("autoAssignedGroup") + ": " + lastChannelVideo.group, 'success');
+          } else {
+            actions.setVideoGroup(null);
+          }
+        };
+
+        tryDetectGroup();
       }
 
       this.cache.set(videoId, notes);
