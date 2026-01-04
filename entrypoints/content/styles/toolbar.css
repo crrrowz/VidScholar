@@ -1,0 +1,115 @@
+/* toolbar.css - Toolbar Styles */
+
+/* === SUB TOOLBAR === */
+.sub-toolbar-container {
+    display: flex;
+    align-items: stretch;
+    padding: 8px 12px;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    flex-wrap: nowrap;
+    gap: 12px;
+}
+
+.sub-toolbar-flex-fill {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    flex: 1;
+    align-items: stretch;
+}
+
+.sub-toolbar-group-select {
+    flex: 1;
+    width: 100%;
+    padding: var(--space-sm);
+    border-radius: var(--radius-lg);
+    text-overflow: ellipsis;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    vertical-align: middle;
+    margin: 0;
+}
+
+.sub-toolbar-bottom-buttons-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    width: 100%;
+}
+
+.sub-toolbar-button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+}
+
+.sub-toolbar-button-group.right {
+    flex: 0 0 20%;
+    align-self: stretch;
+    height: 100%;
+}
+
+/* === NEW SUB-TOOLBAR GROUPING === */
+.sub-toolbar-left-group-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    flex: 1;
+    align-items: stretch;
+}
+
+.sub-toolbar-button-group.left-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    width: 100%;
+    flex: 1;
+    height: auto;
+    min-width: 0;
+}
+
+.sub-toolbar-button-group.left-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    width: 100%;
+    flex: 1;
+    height: auto;
+    min-width: 0;
+}
+
+/* === PRESET GROUP === */
+.preset-group {
+    background-color: var(--color-surface-elevated);
+    border-radius: var(--radius-lg);
+    padding: 2px;
+}
+
+.sub-toolbar-button-group.right .preset-group {
+    flex-grow: 1;
+}
+
+.preset-group .btn {
+    width: 32px;
+    height: 32px;
+    color: var(--color-text-primary);
+    border: none;
+}
+
+.preset-group .btn.active {
+    background-color: var(--color-primary);
+    color: var(--color-primary-contrast);
+}
+
+.preset-group .btn:hover:not(.active) {
+    background-color: var(--color-surface-hover);
+}
+
+/* === AUTO ADD TRANSCRIPT BUTTON === */
+#toggleAutoAddTranscriptButton.active {
+    background-color: var(--color-success);
+    color: white;
+}

@@ -1,0 +1,124 @@
+/* forms.css - Form Elements Styles */
+
+/* === BASE INPUT STYLES === */
+input,
+textarea,
+select {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    color: var(--color-text-primary);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+    border-color: var(--color-border-hover);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
+    background: var(--color-surface-elevated);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--color-text-muted);
+}
+
+/* === INPUT STATES === */
+.input-error {
+    border-color: var(--color-danger) !important;
+}
+
+.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.25) !important;
+}
+
+.input-success {
+    border-color: var(--color-success) !important;
+}
+
+/* === NUMBER INPUT SPINNER REMOVAL === */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* === CHECKBOX & RADIO === */
+input[type="checkbox"],
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    flex-shrink: 0;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--color-primary-contrast);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+input[type="radio"] {
+    border-radius: var(--radius-full);
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-contrast);
+}
+
+/* === IMPORT CHECKBOX WRAPPER === */
+.import-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.import-checkbox-wrapper.global-merge-checkbox {
+    margin-bottom: var(--space-md);
+}
+
+.import-checkbox-wrapper label {
+    font-weight: var(--font-weight-bold);
+}

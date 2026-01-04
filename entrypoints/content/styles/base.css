@@ -1,0 +1,77 @@
+/* base.css - Reset & Base Styles */
+
+/* === RESET === */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--line-height-normal);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[dir="rtl"] {
+  font-family: var(--font-ar) !important;
+}
+
+/* === FOCUS STATES === */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  border-radius: var(--radius-md);
+}
+
+/* === DIVIDER === */
+.divider,
+hr {
+  height: 1px;
+  background: var(--color-border);
+  border: none;
+  margin: var(--space-md) 0;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-hover);
+}
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* === YOUTUBE INTEGRATION === */
+body.vidscholar-hide-transcript ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-searchable-transcript"] {
+  position: absolute;
+  visibility: hidden !important;
+  top: 1000px;
+}

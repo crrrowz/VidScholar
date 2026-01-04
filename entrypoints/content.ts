@@ -108,10 +108,15 @@ export default defineContentScript({
           }
 
           const sidebar = await createSidebar();
-          const floatingButton = createFloatingButton();
-          const videoPlayerContainer = document.querySelector('.html5-video-player');
-          if (videoPlayerContainer) {
-            videoPlayerContainer.appendChild(floatingButton);
+
+          // Only add floating button if it doesn't already exist
+          const existingFloatingButton = document.getElementById('floating-add-note-button');
+          if (!existingFloatingButton) {
+            const floatingButton = createFloatingButton();
+            const videoPlayerContainer = document.querySelector('.html5-video-player');
+            if (videoPlayerContainer) {
+              videoPlayerContainer.appendChild(floatingButton);
+            }
           }
 
           if (!sidebar) {

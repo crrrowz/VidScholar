@@ -1,0 +1,83 @@
+/* notes.css - Notes & Sidebar Styles */
+
+/* === NOTE === */
+.note {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+    padding: var(--space-sm);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+}
+
+.note.selected {
+    background: var(--color-primary-active);
+}
+
+.note-hover-effect {
+    background: var(--color-surface-hover) !important;
+}
+
+.note-left-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 60px;
+    flex-shrink: 0;
+}
+
+.note-top-buttons {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+/* === NOTE ROW (Video Manager) === */
+.note-row {
+    background-color: var(--color-surface);
+    display: flex;
+    gap: var(--space-md);
+    padding: 10px;
+    border-radius: 5px;
+    border: 3px solid var(--color-border);
+    margin-bottom: 10px;
+}
+
+.note-row:hover {
+    background-color: var(--color-surface-elevated);
+}
+
+.note-text {
+    font-size: var(--text-base);
+    color: var(--color-text-primary);
+}
+
+/* === NOTES TOGGLE === */
+.notes-toggle {
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.notes-toggle b {
+    color: var(--color-text-secondary);
+}
+
+.notes-toggle .material-icons {
+    font-size: var(--icon-md);
+    transition: transform var(--transition-fast);
+}
+
+.notes-toggle .material-icons.rotated {
+    transform: rotate(180deg);
+}
+
+.notes-list {
+    padding: var(--space-lg);
+}

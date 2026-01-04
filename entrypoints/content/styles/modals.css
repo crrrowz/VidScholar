@@ -1,0 +1,441 @@
+/* modals.css - Modal Styles (Template Editor, Video Manager, Generic Modal) */
+
+/* === GENERIC MODAL === */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--color-overlay);
+    backdrop-filter: blur(4px);
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.modal-overlay[data-visible="true"] {
+    opacity: 1;
+}
+
+.modal {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform var(--transition-base);
+}
+
+.modal-overlay[data-visible="true"] .modal {
+    transform: scale(1);
+}
+
+.modal-header {
+    background: var(--color-surface-elevated);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.modal-footer {
+    background: var(--color-surface-elevated);
+    border-top: 1px solid var(--color-border);
+}
+
+/* === TEMPLATE EDITOR === */
+.template-editor-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-overlay);
+    backdrop-filter: blur(4px);
+    z-index: var(--z-modal);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.template-editor-container {
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    padding: var(--space-xl);
+    border-radius: var(--radius-xl);
+    width: 90%;
+    max-width: 600px;
+    height: 80vh;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    box-shadow: var(--shadow-xl);
+    gap: 20px;
+}
+
+.template-editor-header {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.template-editor-header h3 {
+    margin: 0;
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-bold);
+}
+
+.template-editor-textarea {
+    width: 100%;
+    flex: 1;
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    resize: none;
+    font-family: inherit;
+    font-size: var(--text-base);
+    line-height: 1.6;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.template-editor-footer {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+/* === TEMPLATE EDITOR TABS === */
+.template-editor-tabs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.template-editor-tab-buttons-container {
+    display: flex;
+    flex: 1;
+    margin-inline-end: 20px;
+}
+
+.template-editor-tab-button {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 8px 8px 0 0;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid transparent;
+}
+
+.template-editor-tab-button.active-tab {
+    color: var(--color-text-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+.template-editor-input-preset-name {
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    vertical-align: middle;
+    margin: 0;
+}
+
+.template-editor-input-add-group {
+    flex: 1;
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    width: auto;
+    vertical-align: middle;
+    margin: 0;
+}
+
+.template-editor-content-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.template-editor-group-content-section {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    height: 0;
+}
+
+.template-editor-group-list-container {
+    flex: 1;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    min-height: 0;
+    height: 0;
+    padding-inline-end: 16px;
+    padding: 10px;
+}
+
+/* Custom Scrollbar for Template Editor */
+.template-editor-group-list-container::-webkit-scrollbar,
+.group-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.template-editor-group-list-container::-webkit-scrollbar-track,
+.group-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.template-editor-group-list-container::-webkit-scrollbar-thumb,
+.group-list-container::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary-active);
+    border-radius: 3px;
+    border: 1px solid var(--color-surface);
+}
+
+.template-editor-group-list-container::-webkit-scrollbar-thumb:hover,
+.group-list-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.template-editor-add-group-container {
+    display: flex;
+    margin-top: var(--space-md);
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    gap: 8px;
+}
+
+.template-editor-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    background-color: var(--color-surface-hover);
+}
+
+.group-item-board {
+    border: 1px solid var(--color-border);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface-elevated);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+    gap: 10px;
+}
+
+.group-item-board:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.delete-group-btn .material-icons {
+    font-size: var(--icon-md);
+    color: var(--color-danger);
+    transition: all var(--transition-fast);
+}
+
+.delete-group-btn:hover .material-icons {
+    color: var(--color-danger-hover);
+    transform: scale(1.1);
+}
+
+.group-item-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.template-editor-group-item .drag-handle {
+    position: static;
+}
+
+.edit-group-btn .material-icons,
+.save-group-btn .material-icons {
+    font-size: var(--icon-md);
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.edit-group-btn:hover .material-icons,
+.save-group-btn:hover .material-icons {
+    color: var(--color-text-primary);
+    transform: scale(1.1);
+}
+
+.edit-group-input {
+    flex: 1;
+    padding: var(--space-xs);
+    border: 1px solid var(--color-border-focus);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface-elevated);
+}
+
+.group-item-board>span {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: var(--space-sm);
+}
+
+/* === GROUP MANAGEMENT === */
+.group-management-content {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    flex-basis: 0;
+    overflow: hidden;
+    gap: var(--space-md);
+}
+
+.group-list-container {
+    flex: 1;
+    overflow-y: scroll;
+    min-height: 0;
+    flex-basis: 0;
+}
+
+.group-management-title {
+    margin-bottom: var(--space-md);
+}
+
+.add-group-container-with-margin {
+    margin-top: var(--space-md);
+}
+
+.group-list-container-with-margin {
+    margin-bottom: var(--space-md);
+}
+
+/* === VIDEO MANAGER === */
+.video-manager-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--color-overlay);
+    backdrop-filter: blur(4px);
+    z-index: var(--z-modal);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.video-manager-overlay.visible {
+    opacity: 1;
+}
+
+.video-manager-ui {
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    width: 90%;
+    max-width: 850px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    overflow-y: scroll;
+    position: relative;
+    border: 1px solid var(--color-border);
+}
+
+.video-manager-header {
+    padding: var(--space-lg) var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--color-surface-elevated);
+}
+
+.video-manager-header h2 {
+    margin: 0;
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-bold);
+    display: inline;
+}
+
+.video-manager-header .video-count {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-left: var(--space-sm);
+}
+
+.video-manager-toolbar {
+    padding: var(--space-lg) var(--space-xl);
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+    flex-wrap: wrap;
+}
+
+.video-manager-search {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.video-manager-search input {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md) var(--space-sm) 38px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: var(--text-base);
+    outline: none;
+}
+
+.video-manager-search .material-icons {
+    position: absolute;
+    left: var(--space-md);
+    color: var(--color-text-secondary);
+    font-size: var(--icon-md);
+}
+
+#retention-btn {
+    padding: var(--space-sm) var(--space-md);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    margin-left: auto;
+}
+
+#retention-btn .retention-label {
+    color: var(--color-text-secondary);
+}
+
+#retention-btn b {
+    color: var(--color-text-primary);
+}
+
+.video-manager-global-actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-left: auto;
+    align-items: center;
+}
+
+.video-manager-content {
+    flex: 1;
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.empty-list-message {
+    text-align: center;
+    padding: 60px;
+    color: var(--color-text-muted);
+}
