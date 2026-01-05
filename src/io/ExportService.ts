@@ -13,7 +13,7 @@ import { settingsService } from '../services/SettingsService';
 import { showToast } from '../utils/toast';
 import { languageService } from '../services/LanguageService';
 import { encryptionService } from '../services/EncryptionService';
-import { getCurrentVideoId, getVideoTitle, generateVideoUrl } from '../utils/video';
+import { getCurrentVideoId, getVideoTitle, generateVideoUrl, getChannelName, getChannelId } from '../utils/video';
 import { getStore } from '../state/Store';
 import config from '../utils/config';
 import type { Note, StoredVideoData, VideoNotesExport, AllNotesExport } from '../types';
@@ -75,14 +75,18 @@ class ExportService {
         }
 
         const notes = await notesRepository.loadNotes(videoId);
-        const videoTitle = getVideoTitle();
-        const group = getStore().getState().currentVideoGroup;
+        const videoData = await notesRepository.loadVideoData(videoId);
+
+        const videoTitle = getVideoTitle() || videoData?.videoTitle || '';
+        const group = getStore().getState().currentVideoGroup || videoData?.group;
+        const channelName = getChannelName() || videoData?.channelName;
+        const channelId = getChannelId() || videoData?.channelId;
 
         const format = options?.format ?? 'json';
 
         switch (format) {
             case 'json':
-                await this.exportVideoAsJson(videoId, videoTitle, notes, group);
+                await this.exportVideoAsJson(videoId, videoTitle, notes, group, channelName, channelId);
                 break;
             case 'markdown':
                 await this.exportVideoAsMarkdown(videoId, videoTitle, notes);
@@ -100,14 +104,19 @@ class ExportService {
         videoId: string,
         videoTitle: string,
         notes: Note[],
-        group?: string | null
+        group?: string | null,
+        channelName?: string | null,
+        channelId?: string | null
     ): Promise<void> {
+        // Force keys to be present for debugging visibility
         const data: VideoNotesExport = {
             type: 'video_notes',
             videoId,
             videoTitle,
             notes,
-            group: group || undefined
+            group: group || '', // Force empty string if undefined so key appears
+            channelName: channelName || '',
+            channelId: channelId || ''
         };
 
         const filename = this.sanitizeFilename(`${videoTitle}_notes.json`);
@@ -177,13 +186,16 @@ class ExportService {
     async exportAllNotes(options?: ExportOptions): Promise<void> {
         try {
             const videos = await notesRepository.loadAllVideos();
+            console.log('VidScholar Export Debug - Loaded Videos:', videos);
 
             const notesByVideo: StoredVideoData[] = videos.map(video => ({
                 videoId: video.id,
                 videoTitle: video.title,
                 notes: video.notes,
                 lastModified: video.lastModified,
-                group: video.group
+                group: video.group || '',
+                channelName: video.channelName || '',
+                channelId: video.channelId || ''
             }));
 
             const format = options?.format ?? 'json';
@@ -209,10 +221,14 @@ class ExportService {
      * Export all notes as JSON
      */
     private async exportAllAsJson(notesByVideo: StoredVideoData[]): Promise<void> {
+        console.log('DEBUG: exportAllAsJson received:', notesByVideo); // Log raw input
+
         const data: AllNotesExport = {
             type: 'all_notes',
             notesByVideo
         };
+
+        console.log('DEBUG: Final JSON Object to be stringified:', data); // Log final object
 
         const filename = `vidscholar_all_notes_${this.getDateString()}.json`;
         await this.downloadFile(JSON.stringify(data, null, 2), filename, 'application/json');
@@ -234,6 +250,9 @@ class ExportService {
             markdown += `**Video URL:** https://www.youtube.com/watch?v=${video.id}\n`;
             if (video.group) {
                 markdown += `**Group:** ${video.group}\n`;
+            }
+            if (video.channelName) {
+                markdown += `**Channel:** ${video.channelName}\n`;
             }
             markdown += `**Notes:** ${video.notes.length}\n\n`;
 
@@ -268,6 +287,9 @@ class ExportService {
             text += `Video: https://www.youtube.com/watch?v=${video.id}\n`;
             if (video.group) {
                 text += `Group: ${video.group}\n`;
+            }
+            if (video.channelName) {
+                text += `Channel: ${video.channelName}\n`;
             }
             text += `Notes: ${video.notes.length}\n\n`;
 
@@ -316,7 +338,9 @@ class ExportService {
                         videoTitle: v.title,
                         notes: v.notes,
                         lastModified: v.lastModified,
-                        group: v.group
+                        group: v.group,
+                        channelName: v.channelName,
+                        channelId: v.channelId
                     })),
                     settings,
                     templates

@@ -7,9 +7,10 @@
 </p>
 
 <p align="center">
-  <strong>Version 2.0.0</strong> · 
+  <strong>Version 2.1.0</strong> · 
   <strong>Manifest V3</strong> · 
-  <strong>Chrome & Firefox</strong>
+  <strong>Chrome & Firefox</strong> ·
+  <strong>Cloud Sync Ready</strong>
 </p>
 
 <p align="center">
@@ -73,8 +74,8 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/VidScholar-share-wxt.git
-cd VidScholar-share-wxt
+git clone https://github.com/crrrowz/VidScholar.git
+cd VidScholar
 
 # 2. Install dependencies
 npm install
@@ -224,12 +225,12 @@ npm run e2e:debug         # Debug mode
 | **Language** | TypeScript (strict mode) |
 | **Framework** | WXT (Web Extension Tooling) |
 | **UI** | Vanilla TypeScript + DOM |
-| **Styling** | Tailwind CSS |
+| **Styling** | Custom CSS with Design Tokens |
 | **State** | Custom Redux-like store |
 | **DI** | Custom container |
 | **Testing** | Jest + Playwright |
 | **Quality** | ESLint + Prettier + Husky |
-| **Database** | Supabase (PostgreSQL) |
+| **Cloud Sync** | Supabase (PostgreSQL) |
 | **Platform** | Chrome & Firefox (Manifest V3) |
 
 ---
@@ -277,27 +278,31 @@ The codebase contains a mix of two patterns:
 
 ## 🗺️ Roadmap
 
-### Current: v2.0.0 (Foundation Phase) ✅
+### Current: v2.1.0 (Production Release) ✅
 
 - [x] Redux-like state management
 - [x] Dependency injection container
 - [x] TypeScript strict mode
 - [x] Testing infrastructure
 - [x] Encryption & backup services
+- [x] Cloud sync support (Supabase)
+- [x] Floating add note button
+- [x] Inline note form
+- [x] Full Arabic (RTL) support
 
 ### Upcoming: v2.1.0
 
-- [ ] Complete DI adoption across all services
-- [ ] Backup/restore UI integration
-- [ ] Additional export formats
-- [ ] Performance optimisation
+- [ ] Additional export formats (PDF, HTML)
+- [ ] Note search functionality
+- [ ] Improved video library filtering
+- [ ] Performance optimizations
 
 ### Future: v3.0.0
 
 - [ ] React UI migration
-- [x] Cloud sync support (Supabase)
 - [ ] Plugin system
-- [ ] AI-powered summarisation
+- [ ] AI-powered summarization
+- [ ] Cross-browser sync
 
 ---
 
@@ -314,7 +319,7 @@ We welcome contributions! Please see our [**CONTRIBUTING.md**](./CONTRIBUTING.md
 
 ```bash
 # 1. Fork and clone
-git clone https://github.com/YOUR_USERNAME/VidScholar-share-wxt.git
+git clone https://github.com/YOUR_USERNAME/VidScholar.git
 
 # 2. Create feature branch
 git checkout -b feature/your-feature-name

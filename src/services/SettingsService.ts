@@ -29,7 +29,8 @@ class SettingsService {
   private readonly STORAGE_KEY = 'userSettings';
 
   constructor() {
-    this.initialize();
+    // Note: Do NOT call initialize() here - it will be called explicitly in content.ts
+    // This prevents race conditions when the singleton is imported
   }
 
   /**
@@ -52,15 +53,44 @@ class SettingsService {
           // Compare Timestamps (Last Write Wins)
           const cloudTime = cloudSettings.updated_at ? new Date(cloudSettings.updated_at).getTime() : 0;
 
-          // Legacy Check: If stored settings exist but have no timestamp, treat as priority
+          // FIRST INSTALL CHECK: If no local settings exist, always sync from cloud
           const localTimestamp = this.settings.lastModified;
-          const isLegacy = stored && !localTimestamp;
+          const isFirstInstall = !stored;
 
-          if (isLegacy) {
-            console.log('SettingsService: Legacy local settings detected. Prioritizing local...');
-            this.settings.lastModified = Date.now();
+          if (isFirstInstall) {
+            // First install - use cloud settings (even if cloudTime is 0, they exist in cloud)
+            console.log('SettingsService: First install detected. Syncing settings from cloud...');
+            const syncedSettings: Partial<UserSettings> = {
+              theme: cloudSettings.theme as Theme,
+              locale: cloudSettings.language,
+              retentionDays: cloudSettings.retention_days,
+              videoGroups: cloudSettings.video_groups,
+              presets: cloudSettings.presets || defaultPresets,
+              lastModified: cloudTime || Date.now() // Use cloudTime if available, otherwise now
+            };
+
+            this.settings = { ...this.settings, ...syncedSettings };
             await storageAdapter.set(this.STORAGE_KEY, this.settings);
-            this.saveToCloud();
+            this.notifyListeners();
+            // Don't push back to cloud - we just synced from it!
+          }
+          // Legacy Check: If stored settings exist but have no timestamp, use CLOUD instead
+          // (Old local settings without timestamp should not override cloud)
+          else if (stored && !localTimestamp) {
+            console.log('SettingsService: Legacy local settings (no timestamp). Using cloud settings...');
+            const syncedSettings: Partial<UserSettings> = {
+              theme: cloudSettings.theme as Theme,
+              locale: cloudSettings.language,
+              retentionDays: cloudSettings.retention_days,
+              videoGroups: cloudSettings.video_groups,
+              presets: cloudSettings.presets || defaultPresets,
+              lastModified: cloudTime || Date.now()
+            };
+
+            this.settings = { ...this.settings, ...syncedSettings };
+            await storageAdapter.set(this.STORAGE_KEY, this.settings);
+            this.notifyListeners();
+            // Don't push to cloud - we just synced from it!
           }
           // If Cloud is significantly newer (> 60 seconds), sync down. 
           // We use a large threshold to avoid clock drift issues and race conditions where server timestamp > local timestamp for the same save event.

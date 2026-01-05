@@ -21,14 +21,15 @@ export default defineContentScript({
   runAt: 'document_idle',
   main() {
     async function init() {
-      // Initialize Language Service first
-      await languageService.init();
-      // Initialize Settings Service
+      // Initialize Settings Service FIRST to load cloud settings
       try {
         await settingsService.initialize();
       } catch (error) {
         console.error('Content script init: Failed to initialize SettingsService:', error);
       }
+
+      // Initialize Language Service AFTER settings are loaded from cloud
+      await languageService.init();
 
       // Setup keyboard manager to allow YouTube shortcuts when not focused on extension inputs
       setupKeyboardManager();
@@ -83,6 +84,47 @@ export default defineContentScript({
             }
             updateSidebarNotes(newState);
           });
+
+          // Robust Polling: Check for cloud updates at intervals (2s, 5s, 10s)
+          // Uses forceRefresh=true to bypass local cache
+          // Robust Polling: Check for cloud updates at intervals (2s, 5s, 10s)
+          // Uses forceRefresh=true to bypass local cache
+          const checkCloudUpdates = async (attempt: number) => {
+            if (!document.querySelector("#vidscholar-root")) return; // Stop if sidebar closed
+
+            try {
+              const state = getStore().getState();
+
+              // Skip refresh if we have unsaved local changes!
+              // This acts as a "lock" to prevent race conditions when user is actively adding notes
+              const currentNotesJson = JSON.stringify(state.notes);
+              if (state.isSaving || currentNotesJson !== state.lastSavedContent) {
+                console.log(`Cloud sync skipped (Attempt ${attempt}): Local changes pending.`);
+                // Retry later if it's an early attempt
+                if (attempt < 3) {
+                  setTimeout(() => checkCloudUpdates(attempt + 1), 2000);
+                }
+                return;
+              }
+
+              const refreshedNotes = await noteStorage.loadNotes(true) || [];
+              const currentNotes = state.notes;
+
+              if (JSON.stringify(refreshedNotes) !== JSON.stringify(currentNotes)) {
+                console.log(`Cloud sync detected (Attempt ${attempt}), updating UI...`);
+                actions.setNotes(refreshedNotes);
+              } else if (attempt < 3) {
+                // Schedule next attempt
+                const delays = [2000, 5000, 10000];
+                setTimeout(() => checkCloudUpdates(attempt + 1), delays[attempt]);
+              }
+            } catch (err) {
+              // Silent fail on polling errors
+            }
+          };
+
+          // Start first check after 2 seconds
+          setTimeout(() => checkCloudUpdates(1), 2000);
 
         } catch (error) {
           console.error('Initialization failed:', error);
@@ -151,6 +193,7 @@ export default defineContentScript({
         actions.setSidebarInitialized(false);
         actions.setVideoTitle('');
         actions.setVideoGroup(null); // Explicitly reset video group on navigation
+        actions.setNotes([]); // Clear notes from previous video
         clearTimeout(navigationTimeout);
 
         const uiConfig = config.getUIConfig();

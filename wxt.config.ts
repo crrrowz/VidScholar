@@ -11,6 +11,13 @@ export default defineConfig({
     include: ["public/icon.png", "public/icon-48.png", "public/icon-128.png"],
   },
 
+  // Vite configuration - Remove console.log in production builds
+  vite: () => ({
+    esbuild: {
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+    },
+  }),
+
   manifest: {
     name: pkg.name,
     description: pkg.description,
@@ -45,6 +52,6 @@ export default defineConfig({
     ]
   },
   runner: {
-    startUrls: ["https://www.youtube.com/watch?v=TytzmV6__4E"],
+    startUrls: ["https://www.youtube.com/watch?v=Wx_tMB72LCU"],
   },
 });

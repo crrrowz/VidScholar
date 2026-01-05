@@ -1,6 +1,6 @@
 # VidScholar - Complete Architectural Design
 
-> **Version:** 2.0.0  
+> **Version:** 2.1.0  
 > **Status:** Production-Ready Architecture  
 > **Last Updated:** December 27, 2024
 

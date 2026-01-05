@@ -58,11 +58,59 @@ export async function showInlineNoteForm(
     // Store listener reference on the form element for cleanup
     (form as any)._outsideClickListener = handleOutsideClick;
 
+    // Calculate position relative to container
+    const BUTTON_SIZE = 48; // px
+    const FORM_OFFSET = 12; // px
+
+    // Get numeric Top/Left position from style
+    const buttonTop = parseInt(button.style.top || '0');
+    const buttonLeft = parseInt(button.style.left || '0');
+
+    // Determine positioning based on available space
+    const videoPlayer = getVideoPlayer();
+    let showAbove = false;
+    let showToLeft = false;
+    let playerWidth = 0;
+
+    if (videoPlayer) {
+        const playerContainer = videoPlayer.closest('.html5-video-player');
+        if (playerContainer) {
+            const rect = playerContainer.getBoundingClientRect();
+            const playerHeight = rect.height;
+            playerWidth = rect.width; // Store for right-align calculation
+
+            // Vertical check (Bottom half -> Show Above)
+            if (buttonTop > playerHeight / 2) {
+                showAbove = true;
+            }
+            // Horizontal check (Right half -> Align Right/Show to Left)
+            if (buttonLeft > playerWidth / 2) {
+                showToLeft = true;
+            }
+        }
+    }
+
+    // Dynamic Top Position
+    let formTop;
+    if (showAbove) {
+        const ESTIMATED_FORM_HEIGHT = 280;
+        formTop = Math.max(0, buttonTop - ESTIMATED_FORM_HEIGHT - FORM_OFFSET);
+    } else {
+        formTop = buttonTop + BUTTON_SIZE + FORM_OFFSET;
+    }
+
+    // Dynamic Horizontal Origin
+    const transformOriginX = showToLeft ? 'right' : 'left';
+    const transformOriginY = showAbove ? 'bottom' : 'top';
+
     Object.assign(form.style, {
         position: 'absolute',
         zIndex: '10001',
-        top: `${parseInt(button.style.top) + 60}px`,
-        left: button.style.left,
+        top: `${formTop}px`,
+        // If showing to left (align right), use 'right' property relative to container width
+        left: showToLeft ? 'auto' : button.style.left,
+        right: showToLeft ? `${playerWidth - (buttonLeft + BUTTON_SIZE)}px` : 'auto',
+
         backgroundColor: themeColors.cardBg || themeColors.bg,
         borderRadius: '12px',
         padding: '12px',
@@ -71,10 +119,11 @@ export async function showInlineNoteForm(
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
-        minWidth: '280px', // Slightly wider for footer
+        minWidth: '280px',
         maxWidth: '320px',
         opacity: '0',
-        transform: 'translateY(-10px)',
+        transform: showAbove ? 'translateY(10px)' : 'translateY(-10px)',
+        transformOrigin: `${transformOriginY} ${transformOriginX}`,
         transition: 'all 0.2s ease-out'
     });
     // Set form direction based on UI language
@@ -162,7 +211,7 @@ export async function showInlineNoteForm(
     textarea.dir = 'auto'; // Auto-detect typing direction
 
     // If editing existing note, populate textarea
-    const isEditMode = !!existingText;
+    const isEditMode = existingTimestamp !== undefined && existingTimestamp !== null;
     if (existingText) {
         textarea.value = existingText;
     }
@@ -196,7 +245,7 @@ export async function showInlineNoteForm(
     // Buttons container (Right side mostly, or End based on dir)
     const buttonsContainer = document.createElement('div');
     Object.assign(buttonsContainer.style, {
-        display: isEditMode ? 'flex' : 'none', // Show immediately if editing
+        display: 'flex', // Always show buttons
         gap: '8px',
         alignItems: 'center'
     });
@@ -228,9 +277,8 @@ export async function showInlineNoteForm(
         null,
         () => {
             const text = textarea.value.trim();
-            if (text) {
-                saveNote(timestamp, text, button, isEditMode, existingTimestamp);
-            }
+            // Allow saving empty notes as requested by user
+            saveNote(timestamp, text, button, isEditMode, existingTimestamp);
             closeForm(form, button, onClose);
         },
         'inlineSaveBtn',
@@ -255,7 +303,7 @@ export async function showInlineNoteForm(
     form.appendChild(footerContainer);
 
     // Add form to video player container
-    const videoPlayer = getVideoPlayer();
+    // Reuse videoPlayer variable declared earlier
     if (videoPlayer) {
         const playerContainer = videoPlayer.closest('.html5-video-player');
         if (playerContainer) {
@@ -317,16 +365,16 @@ export async function showInlineNoteForm(
         textarea.focus();
     });
 
-    // Show buttons when user starts typing
+    // Reset auto-close on input, but buttons remain visible
     textarea.addEventListener('input', () => {
         if (textarea.value.trim().length > 0) {
-            buttonsContainer.style.display = 'flex';
             if (autoCloseTimeout) {
                 clearTimeout(autoCloseTimeout);
                 autoCloseTimeout = null;
             }
         } else {
-            buttonsContainer.style.display = 'none';
+            // Optional: Restart timer if empty? Or just ensure it's cleared if they start typing.
+            // If we want it to close after 5s of emptiness even if buttons are there:
             startAutoCloseTimer(form, button, onClose);
         }
     });

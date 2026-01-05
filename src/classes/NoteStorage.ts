@@ -135,7 +135,14 @@ export class NoteStorage {
   // CORE NOTE OPERATIONS
   // ==========================================
 
-  async saveNotes(notes: Note[], group?: string | null, targetVideoId?: string, videoTitle?: string): Promise<boolean> {
+  async saveNotes(
+    notes: Note[],
+    group?: string | null,
+    targetVideoId?: string,
+    videoTitle?: string,
+    channelName?: string,
+    channelId?: string
+  ): Promise<boolean> {
     const videoId = targetVideoId || getCurrentVideoId();
     if (!videoId) {
       throw new NoteError('Video ID not found', 'loading');
@@ -158,8 +165,8 @@ export class NoteStorage {
         videoTitle: title,
         notes,
         group: group || undefined,
-        channelName: getChannelName(),
-        channelId: getChannelId()
+        channelName: channelName || getChannelName(),
+        channelId: channelId || getChannelId()
       });
 
       this.cache.set(videoId, notes);
@@ -170,15 +177,17 @@ export class NoteStorage {
     }
   }
 
-  async loadNotes(): Promise<Note[]> {
+  async loadNotes(forceRefresh: boolean = false): Promise<Note[]> {
     const videoId = getCurrentVideoId();
     if (!videoId) {
       throw new NoteError('Video ID not found', 'loading');
     }
 
-    const cachedNotes = this.cache.get(videoId);
-    if (cachedNotes) {
-      return cachedNotes;
+    if (!forceRefresh) {
+      const cachedNotes = this.cache.get(videoId);
+      if (cachedNotes) {
+        return cachedNotes;
+      }
     }
 
     try {
@@ -312,7 +321,8 @@ export class NoteStorage {
           lastModified: data.lastModified,
           firstNoteTimestamp: firstNoteTimestamp,
           group: data.group,
-          channelName: data.channelName
+          channelName: data.channelName,
+          channelId: data.channelId
         });
       }
 
@@ -348,7 +358,8 @@ export class NoteStorage {
           videoTitle: video.videoTitle,
           notes: video.notes,
           group: video.group,
-          channelName: video.channelName
+          channelName: video.channelName,
+          channelId: video.channelId
         });
       }
 

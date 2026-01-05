@@ -9,7 +9,7 @@
 import { storageAdapter } from './StorageAdapter';
 import { StorageKeys, NOTES_PREFIX, extractVideoId } from './StorageKeys';
 import type { Note, Video, StoredVideoData } from '../types';
-import { getCurrentVideoId, getVideoTitle } from '../utils/video';
+import { getCurrentVideoId, getVideoTitle, getChannelName, getChannelId } from '../utils/video';
 
 /**
  * Notes Cache for performance
@@ -81,6 +81,8 @@ class NotesRepository {
             videoId?: string;
             videoTitle?: string;
             group?: string | null;
+            channelName?: string;
+            channelId?: string;
         }
     ): Promise<boolean> {
         await this.ensureInitialized();
@@ -106,7 +108,9 @@ class NotesRepository {
             videoId,
             videoTitle: options?.videoTitle || getVideoTitle() || videoId,
             notes,
-            group: options?.group || undefined
+            group: options?.group || undefined,
+            channelName: options?.channelName || getChannelName(),
+            channelId: options?.channelId || getChannelId()
         });
         this.cache.set(videoId, notes);
 
@@ -231,7 +235,9 @@ class NotesRepository {
                 notes,
                 lastModified: data.lastModified,
                 firstNoteTimestamp,
-                group: data.group
+                group: data.group,
+                channelName: data.channelName,
+                channelId: data.channelId
             });
         }
 
@@ -294,7 +300,9 @@ class NotesRepository {
                 videoId: video.videoId,
                 videoTitle: video.videoTitle,
                 notes: video.notes,
-                group: video.group
+                group: video.group,
+                channelName: video.channelName,
+                channelId: video.channelId
             });
         }
         this.cache.clear();

@@ -12,10 +12,6 @@
     transition: all var(--transition-fast);
 }
 
-.note.selected {
-    background: var(--color-primary-active);
-}
-
 .note-hover-effect {
     background: var(--color-surface-hover) !important;
 }

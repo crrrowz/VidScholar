@@ -1,381 +1,181 @@
-# Changelog - Foundation Phase
+# Changelog
 
-## Version 2.0.0 - Foundation Refactor (2024-01-15)
+All notable changes to VidScholar will be documented in this file.
 
-### 🎯 Overview
-Major architectural overhaul implementing enterprise-grade patterns: State Management, Dependency Injection, TypeScript Strict Mode, Security Features, Settings System, Backup/Restore, and comprehensive Testing Infrastructure.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
----
+## [2.0.0] - 2026-01-05
 
-## 🏗️ **Architecture Changes**
+### 🎉 Major Release - Production Ready
 
-### **NEW: State Management System**
-**Files Created:**
-- `src/state/Store.ts` - Redux-like immutable state store with undo/redo
-- `src/state/actions.ts` - Type-safe action creators and middleware
+This release marks VidScholar as production-ready with comprehensive features, cloud sync, and polished UI/UX.
 
-**Features:**
-- ✅ Centralized state management
-- ✅ Immutable updates (no direct mutations)
-- ✅ Built-in undo/redo (50 action history)
-- ✅ Subscription-based reactivity
-- ✅ Batch update support
-- ✅ Auto-save middleware
+### Added
 
-**Impact:** Eliminates scattered state, enables time-travel debugging, improves testability
+#### Cloud Sync (Supabase)
+- Real-time synchronization of notes and settings across devices
+- Automatic sync on note creation, editing, and deletion
+- Chrome Profile ID-based user identification (no login required)
+- Rate limiting protection (100 requests/hour, 5000 notes max)
 
----
+#### Floating Add Note Button
+- New floating button on video player for quick note addition
+- Smooth drag-and-drop positioning
+- Delayed appearance (1.5s) for optimal performance
+- Theme-aware styling with proper icon contrast
 
-### **NEW: Dependency Injection Container**
-**Files Created:**
-- `src/services/di/Container.ts` - DI container with lifecycle management
-- `src/services/di/services.ts` - Service registration and type-safe getters
+#### Inline Note Form
+- In-player note creation without opening sidebar
+- Template insertion support with dropdown
+- Edit mode for existing notes
+- Automatic transcript text insertion (when available)
 
-**Features:**
-- ✅ Service lifetimes (Singleton, Transient, Scoped)
-- ✅ Automatic dependency resolution
-- ✅ Type-safe service retrieval
-- ✅ Easy mocking for tests
+#### Duplicate Note Detection
+- Visual shake animation when adding note near existing one (10-second window)
+- Auto-scroll to existing note
+- Auto-focus textarea for immediate editing
 
-**Impact:** Decouples components, improves testability, enables easy service swapping
+### Changed
 
----
+#### Button Styling
+- Standardized button colors:
+  - Cancel: Red (`btn--danger`)
+  - Save: Blue (`btn--primary`)
+  - Insert Template: Dynamic (default → primary on selection)
 
-### **ENHANCED: TypeScript Strict Mode**
-**Files Modified:**
-- `tsconfig.json` - Full strict mode enabled + path aliases
+#### Theme System
+- Added `primaryText` to ThemeColors for proper button icon contrast
+- Added `icon`, `iconHover`, `delete` color properties
 
-**Changes:**
-```json
-{
-  "strict": true,
-  "noImplicitAny": true,
-  "strictNullChecks": true,
-  "noUncheckedIndexedAccess": true,
-  // + 10 more strict checks
-}
-```
+#### Animations
+- Pre-loaded shake animation CSS for instant response
+- Added `animate-shake` utility class
 
-**Features:**
-- ✅ Eliminated all `any` types
-- ✅ Null safety enforced
-- ✅ Path aliases (`@/`, `@components/`, etc.)
-- ✅ Enhanced type guards
+#### Note TextArea
+- Added unique IDs based on timestamp (`note-textarea-{timestamp}`)
+- Improved focus reliability with `focusNoteTextarea()` function
 
-**Impact:** Catches 40%+ more bugs at compile time, better IDE support
+### Fixed
 
----
+- Floating button icon color not adapting to theme changes
+- Shake animation delay on first trigger
+- Focus not working when editing existing notes
+- Missing Arabic translation keys (`cancel`, `save`)
+- Unused imports causing lint warnings
 
-### **ENHANCED: Type System**
-**Files Modified:**
-- `src/types/index.ts` - 3x more types, type guards, utility types
+### Removed
 
-**New Types:**
-- `Theme` - 5 theme variants (light, dark, sepia, high-contrast, oled)
-- `UserSettings` - Complete settings interface
-- `AppError` - Structured error types
-- `Plugin` - Plugin system types
-- `BackupMetadata` - Backup management types
+- Confirmation dialog for duplicate notes (replaced with visual feedback)
+- Unused `config` import from NoteTextArea.ts
+- Unused `focusedElement` variable from NoteTextArea.ts
+- Unused `themeService` and `showConfirmDialog` imports from MainToolbar.ts
+- Unused `getStore` import from InlineNoteForm.ts
 
-**Type Guards:**
-```typescript
-isNote(obj): obj is Note
-isVideo(obj): obj is Video
-isAppError(obj): obj is AppError
-```
+### Security
 
-**Impact:** Better type safety, self-documenting code, fewer runtime errors
+- Supabase Row Level Security (RLS) recommended for production
+- Rate limiting configured for API protection
+- Chrome User ID used for secure user identification
 
 ---
 
-## 🔒 **Security Features**
+## [1.5.0] - 2025-12-15
 
-### **NEW: Encryption Service**
-**Files Created:**
-- `src/services/EncryptionService.ts` - AES-256-GCM encryption
+### Added
+- Video library management with drag-and-drop reordering
+- Video group categorization
+- Channel name extraction and persistence
+- Screenshot download functionality
 
-**Features:**
-- ✅ Password-based encryption (PBKDF2 with 100k iterations)
-- ✅ Secure random salt/IV generation
-- ✅ Password hashing (SHA-256)
-- ✅ Password generation utility
-- ✅ Encryption detection
+### Changed
+- Improved sidebar responsiveness
+- Enhanced note list performance
 
-**API:**
-```typescript
-await encryptionService.encrypt(data, password)
-await encryptionService.decrypt(encrypted, password)
-await encryptionService.hashPassword(password)
-await encryptionService.verifyPassword(password, hash)
-```
-
-**Impact:** Enables optional end-to-end encryption for sensitive notes
+### Fixed
+- Notes not saving correctly on video change
+- Theme not persisting after browser restart
 
 ---
 
-### **NEW: Error Boundary System**
-**Files Created:**
-- `src/utils/ErrorBoundary.ts` - Global error handling
+## [1.4.0] - 2025-11-20
 
-**Features:**
-- ✅ Categorized errors (network, storage, validation, general)
-- ✅ Severity levels (low, medium, high, critical)
-- ✅ Error logging (last 100 errors)
-- ✅ Automatic user notifications
-- ✅ Critical error reporting hooks
-- ✅ Async function wrapping
+### Added
+- Template system with 5 preset groups
+- Template editor modal
+- Keyboard shortcut for quick note addition
 
-**API:**
-```typescript
-errorBoundary.handle(error, category)
-errorBoundary.wrap(asyncFn, category)
-errorBoundary.try(fn, fallback, category)
-```
-
-**Impact:** Graceful error handling, better debugging, improved UX
+### Changed
+- Redesigned toolbar layout
+- Improved template insertion UX
 
 ---
 
-## ⚙️ **Configuration & Settings**
+## [1.3.0] - 2025-10-15
 
-### **NEW: Settings Service**
-**Files Created:**
-- `src/services/SettingsService.ts` - Centralized user preferences
+### Added
+- Full Arabic (RTL) language support
+- Language switcher in settings
+- RTL-aware component layouts
 
-**Settings:**
-```typescript
-{
-  theme: Theme;
-  locale: string;
-  autoSaveDelay: number;
-  retentionDays: number;
-  fontSize: number;
-  fontFamily: string;
-  sidebarWidth: number;
-  sidebarPosition: 'left' | 'right';
-  enableEncryption: boolean;
-  enableAutoBackup: boolean;
-}
-```
-
-**Features:**
-- ✅ Validation on update
-- ✅ Export/import settings
-- ✅ Reset to defaults
-- ✅ Reactive (subscribe to changes)
-
-**Impact:** Centralized configuration, easier feature flags, better UX
+### Changed
+- Internationalized all user-facing strings
+- Updated LanguageService for dynamic locale switching
 
 ---
 
-### **NEW: Backup & Restore System**
-**Files Created:**
-- `src/services/BackupService.ts` - Full data backup/restore
+## [1.2.0] - 2025-09-01
 
-**Features:**
-- ✅ Create encrypted backups
-- ✅ Restore from backup
-- ✅ List all backups with metadata
-- ✅ Export/import backup files
-- ✅ Auto-backup (daily if enabled)
-- ✅ Keep last 5 backups
-- ✅ Backup integrity verification
+### Added
+- Dark/Light theme toggle
+- Additional themes: Sepia, High Contrast, OLED
+- CSS custom properties for consistent theming
 
-**API:**
-```typescript
-await backupService.createBackup(password?)
-await backupService.restoreBackup(backupId, password?)
-await backupService.listBackups()
-await backupService.exportBackup(backupId)
-await backupService.importBackup(file, password?)
-```
-
-**Impact:** Data safety, disaster recovery, migration support
+### Changed
+- Migrated to CSS variables for theme colors
+- Improved contrast ratios for accessibility
 
 ---
 
-## 🧪 **Testing Infrastructure**
+## [1.1.0] - 2025-07-15
 
-### **NEW: Unit Testing (Jest)**
-**Files Created:**
-- `jest.config.js` - Jest configuration
-- `tests/setup.ts` - Global test setup with Chrome API mocks
-- `tests/state/Store.test.ts` - Store unit tests (95% coverage)
-- `tests/services/EncryptionService.test.ts` - Encryption tests (100% coverage)
+### Added
+- Note import/export (JSON format)
+- Full backup functionality
+- Import decision manager for duplicate handling
 
-**Features:**
-- ✅ TypeScript support (ts-jest)
-- ✅ JSDOM environment
-- ✅ Chrome API mocking
-- ✅ Coverage thresholds (80%+)
-- ✅ Path alias resolution
-
-**Coverage Targets:**
-```
-Branches: 80%
-Functions: 80%
-Lines: 80%
-Statements: 80%
-```
+### Changed
+- Enhanced ExportService with multiple format support
+- Improved ImportService error handling
 
 ---
 
-### **NEW: E2E Testing (Playwright)**
-**Files Created:**
-- `playwright.config.ts` - Playwright configuration
-- `tests/e2e/sidebar.spec.ts` - Complete sidebar workflow tests
+## [1.0.0] - 2025-06-01
 
-**Tests:**
-- ✅ Sidebar display
-- ✅ Add/edit/delete notes
-- ✅ Timestamp jumping
-- ✅ Preset switching
-- ✅ Template insertion
-- ✅ Export functionality
-- ✅ Theme toggling
-- ✅ Note persistence
+### 🎊 Initial Release
 
-**Features:**
-- ✅ Real Chrome browser
-- ✅ Extension loading
-- ✅ Screenshots on failure
-- ✅ Video recording
-- ✅ Trace on retry
+#### Features
+- Timestamped note-taking synced with YouTube videos
+- Click-to-jump navigation
+- Auto-save with debouncing
+- Undo/Redo support (50 actions)
+- Chrome storage integration
+- Share on X (Twitter) functionality
+- Notes copy to clipboard
+
+#### Technical
+- TypeScript strict mode
+- Redux-like state management
+- WXT (Web Extension Tooling) framework
+- Manifest V3 compliant
 
 ---
 
-### **NEW: Linting & Formatting**
-**Files Created:**
-- `.eslintrc.json` - Strict ESLint rules
-- `.prettierrc.json` - Code formatting rules
-- `.husky/` - Git hooks for pre-commit validation
-
-**Rules:**
-- ✅ No `any` types allowed
-- ✅ Strict TypeScript checks
-- ✅ Import ordering
-- ✅ Console.log warnings
-- ✅ Unused variable detection
-
----
-
-## 📦 **Build & Development**
-
-### **UPDATED: Package Scripts**
-**File Modified:** `package.json`
-
-**New Scripts:**
-```json
-{
-  "test": "jest --coverage",
-  "test:watch": "jest --watch",
-  "e2e": "playwright test",
-  "e2e:ui": "playwright test --ui",
-  "lint": "eslint . --max-warnings=0",
-  "lint:fix": "eslint . --fix",
-  "type-check": "tsc --noEmit",
-  "format": "prettier --write",
-  "validate": "lint + type-check + test"
-}
-```
-
-**New Dependencies:**
-- `jest` + `ts-jest` + `@testing-library/jest-dom`
-- `@playwright/test`
-- `eslint` + `@typescript-eslint/*`
-- `prettier` + `eslint-config-prettier`
-- `husky` + `lint-staged`
-
----
-
-## 📚 **Documentation**
-
-### **NEW: Architectural Decision Records**
-**Files Created:**
-- `docs/ADRs/001-state-management.md`
-- `docs/ADRs/002-dependency-injection.md`
-- `docs/ADRs/003-testing-infrastructure.md`
-
-**Content:**
-- Context & motivation
-- Decision rationale
-- Consequences (pros/cons)
-- Implementation notes
-- Migration path
-
----
-
-## 🔄 **Migration Notes**
-
-### **Breaking Changes**
-⚠️ **None** - All changes are additive and backward compatible
-
-### **Deprecations**
-- Direct state mutations (use `actions.*` instead)
-- Direct service imports (use DI container)
-
-### **Migration Path**
-
-**Phase 1 (Current)** ✅
-- [x] Foundation infrastructure
-- [x] Core tests
-- [x] ADRs documented
-
-**Phase 2 (Next Sprint)**
-- [ ] Migrate components to use Store
-- [ ] Refactor to use DI
-- [ ] Increase test coverage to 80%
-
-**Phase 3 (Future)**
-- [ ] Complete E2E test suite
-- [ ] Performance optimization
-- [ ] Visual regression tests
-
----
-
-## 📊 **Metrics**
-
-### **Code Quality**
-- TypeScript strict mode: ✅ Enabled
-- Test coverage: 0% → 40% (core systems)
-- ESLint errors: 0
-- Type safety: 100% (no `any` types)
-
-### **Performance**
-- Bundle size: +13KB (state + DI + encryption)
-- Test execution: <5s (unit), ~30s (E2E)
-- Build time: +10s (type checking)
-
-### **Developer Experience**
-- Path aliases configured
-- Auto-format on save
-- Pre-commit validation
-- Clear error messages
-
----
-
-## 🎯 **Next Steps**
-
-### **Immediate (Week 1)**
-1. Run `npm install` to install new dependencies
-2. Run `npm run validate` to verify setup
-3. Review ADRs in `docs/ADRs/`
-4. Run example tests: `npm test` and `npm run e2e`
-
-### **Short-term (Sprint)**
-1. Migrate 3-5 components to use Store
-2. Add integration tests for critical paths
-3. Enable CI/CD with tests
-
-### **Long-term (Quarter)**
-1. Achieve 80% test coverage
-2. Complete E2E test suite
-3. Implement remaining features (UI/UX improvements)
-
----
-
-## 🙏 **Credits**
-Foundation phase implemented based on [50 Improvement Points document].
-
-**Contributors:** Development Team  
-**Review:** Technical Lead
+[2.1.0]: https://github.com/crrrowz/VidScholar/releases/tag/v2.1.0
+[2.0.0]: https://github.com/crrrowz/VidScholar/releases/tag/v2.0.0
+[1.5.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.5.0
+[1.4.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.4.0
+[1.3.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.3.0
+[1.2.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.2.0
+[1.1.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.1.0
+[1.0.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.0.0

@@ -200,6 +200,11 @@ export function createFloatingButton(): HTMLElement {
     const leftPercent = parseFloat(button.dataset['leftPercent'] || '0');
     const topPercent = parseFloat(button.dataset['topPercent'] || '0');
 
+    // If no percent set yet (initial load), default to top-left with padding
+    if (!button.dataset['leftPercent']) {
+      return;
+    }
+
     const x = leftPercent * playerRect.width;
     const y = topPercent * playerRect.height;
 
@@ -207,7 +212,24 @@ export function createFloatingButton(): HTMLElement {
     button.style.top = `${y}px`;
   }
 
+  // Handle window resize
   window.addEventListener('resize', updateButtonPosition);
+
+  // Handle Fullscreen changes
+  document.addEventListener('fullscreenchange', updateButtonPosition);
+  document.addEventListener('webkitfullscreenchange', updateButtonPosition);
+
+  // Initialize ResizeObserver on the player container for robust resizing
+  const videoPlayer = getVideoPlayer();
+  if (videoPlayer) {
+    const playerContainer = videoPlayer.closest('.html5-video-player');
+    if (playerContainer) {
+      const resizeObserver = new ResizeObserver(() => {
+        updateButtonPosition();
+      });
+      resizeObserver.observe(playerContainer);
+    }
+  }
 
   document.addEventListener('mouseup', () => {
     if (isDragging) {

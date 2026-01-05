@@ -261,8 +261,63 @@ export async function showTemplateEditor(): Promise<void> {
     new Sortable(groupListContainer, {
       animation: 150,
       handle: '.drag-handle',
-      direction: languageService.getCurrentDirection(),
+      ghostClass: 'sortable-ghost',
+      dragClass: 'sortable-drag',
+      chosenClass: 'sortable-chosen',
+      scroll: false,
+      onStart: () => {
+        let scrollInterval: ReturnType<typeof setInterval> | null = null;
+        let currentScrollSpeed = 0;
+
+        const handleDragOver = (e: DragEvent) => {
+          const rect = groupListContainer.getBoundingClientRect();
+          const mouseY = e.clientY;
+          const containerHeight = rect.height;
+          const scrollZone = containerHeight * 0.45;
+          const maxSpeed = 30;
+          const minSpeed = 5;
+
+          const distanceFromTop = mouseY - rect.top;
+          const distanceFromBottom = rect.bottom - mouseY;
+
+          if (distanceFromTop < scrollZone && distanceFromTop >= 0) {
+            const proximity = 1 - (distanceFromTop / scrollZone);
+            currentScrollSpeed = -(minSpeed + (maxSpeed - minSpeed) * proximity);
+          }
+          else if (distanceFromBottom < scrollZone && distanceFromBottom >= 0) {
+            const proximity = 1 - (distanceFromBottom / scrollZone);
+            currentScrollSpeed = minSpeed + (maxSpeed - minSpeed) * proximity;
+          }
+          else if (mouseY < rect.top) {
+            currentScrollSpeed = -maxSpeed;
+          }
+          else if (mouseY > rect.bottom) {
+            currentScrollSpeed = maxSpeed;
+          }
+          else {
+            currentScrollSpeed = 0;
+          }
+        };
+
+        scrollInterval = setInterval(() => {
+          if (currentScrollSpeed !== 0) {
+            groupListContainer.scrollTop += currentScrollSpeed;
+          }
+        }, 16);
+
+        document.addEventListener('dragover', handleDragOver, { capture: true });
+
+        (groupListContainer as any).__dragCleanup = () => {
+          document.removeEventListener('dragover', handleDragOver, { capture: true });
+          if (scrollInterval) clearInterval(scrollInterval);
+        };
+      },
       onEnd: () => {
+        if ((groupListContainer as any).__dragCleanup) {
+          (groupListContainer as any).__dragCleanup();
+          delete (groupListContainer as any).__dragCleanup;
+        }
+
         const groupItems = [...groupListContainer.querySelectorAll('.group-item')];
         const newGroupOrder = groupItems.map(item => item.querySelector('span')!.textContent!);
         settingsService.update({ videoGroups: newGroupOrder });

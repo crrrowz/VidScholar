@@ -23,7 +23,7 @@
 ```bash
 # Clone and install
 git clone <repository-url>
-cd VidScholar-share-wxt
+cd VidScholar
 npm install
 
 # Start development (hot reload)

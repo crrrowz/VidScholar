@@ -15,7 +15,7 @@ You can verify your versions by running `node --version` and `npm --version`.
 1.  **Clone the Repository**
     ```bash
     git clone <repository-url>
-    cd VidScholar-share-wxt
+    cd VidScholar
     ```
 
 2.  **Install Dependencies**

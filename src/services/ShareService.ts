@@ -15,7 +15,7 @@ export class ShareService {
   private static instance: ShareService;
   private closeVideoManagerCallback: (() => void) | null = null;
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): ShareService {
     if (!ShareService.instance) {
@@ -64,10 +64,10 @@ export class ShareService {
   }
 
   async copyAllNotes(notes: Note[]): Promise<void> {
-    const sortedNotes = [...notes].sort((a, b) => 
+    const sortedNotes = [...notes].sort((a, b) =>
       a.timestamp.localeCompare(b.timestamp)
     );
-    
+
     const formattedText = await Promise.all(
       sortedNotes.map(async note => await this.generateShareText(note))
     );
@@ -93,28 +93,50 @@ export class ShareService {
         return;
       }
       const currentVideoGroup = getStore().getState().currentVideoGroup;
+
+      // Try to get channel info from storage or current page
+      let channelName = '';
+      let channelId = '';
+      try {
+        // If we are on the video page, try to grab them
+        const { getChannelName, getChannelId } = await import('../utils/video');
+        if (videoId === getCurrentVideoId()) {
+          channelName = getChannelName() || '';
+          channelId = getChannelId() || '';
+        }
+      } catch (e) { console.warn('Failed to load video utils in ShareService', e); }
+
       dataToExport = {
         type: "video_notes",
         videoId: videoId,
         videoTitle: videoTitle,
         notes: notes,
-        group: currentVideoGroup
+        group: currentVideoGroup || '',
+        channelName: channelName || '',
+        channelId: channelId || ''
       };
       filename = `${videoTitle}_notes.json`;
     } else { // exportType === 'all_notes'
       try {
-        const allSavedVideos = await noteStorage.loadSavedVideos(); 
+        const allSavedVideos = await noteStorage.loadSavedVideos();
+        console.log('ShareService Export Debug - Raw Videos:', allSavedVideos); // Debug log
+
         const notesByVideo: StoredVideoData[] = allSavedVideos.map(video => ({
           videoId: video.id,
           videoTitle: video.title,
           notes: video.notes,
           lastModified: video.lastModified,
-          group: video.group
+          group: video.group || '',
+          channelName: video.channelName || '',
+          channelId: video.channelId || ''
         }));
+
         dataToExport = {
           type: "all_notes",
           notesByVideo: notesByVideo
         };
+        console.log('ShareService Export Debug - Final Data:', dataToExport); // Debug log
+
         filename = `all_oshimemo_notes.json`;
       } catch (error) {
         console.error('exportNotesAsJson: Error loading saved videos for all_notes export:', error);
@@ -186,7 +208,7 @@ export class ShareService {
               confirmText: languageService.translate("openVideo"),
             });
             if (confirmed) {
-              await noteStorage.saveNotes(data.notes, data.group, data.videoId, data.videoTitle);
+              await noteStorage.saveNotes(data.notes, data.group, data.videoId, data.videoTitle, data.channelName, data.channelId);
               await noteStorage.handleVideoOpen(data.videoId);
             }
             return;
@@ -205,7 +227,7 @@ export class ShareService {
 
           const decision = decisions[0];
           if (decision.action === 'replace') {
-            await noteStorage.saveNotes(data.notes, data.group, data.videoId, data.videoTitle);
+            await noteStorage.saveNotes(data.notes, data.group, data.videoId, data.videoTitle, data.channelName, data.channelId);
             actions.setNotes(data.notes);
             if (data.group) {
               actions.setVideoGroup(data.group);
@@ -214,7 +236,7 @@ export class ShareService {
           } else if (decision.action === 'merge') {
             const existingNotes = await noteStorage.loadNotes();
             const mergedNotes = this.mergeNotes(existingNotes, data.notes);
-            await noteStorage.saveNotes(mergedNotes, data.group, data.videoId, data.videoTitle);
+            await noteStorage.saveNotes(mergedNotes, data.group, data.videoId, data.videoTitle, data.channelName, data.channelId);
             actions.setNotes(mergedNotes);
             if (data.group) {
               actions.setVideoGroup(data.group);
@@ -241,20 +263,47 @@ export class ShareService {
             return;
           }
           const data = importedData as AllNotesExport;
-          if (!Array.isArray(data.notesByVideo) || !data.notesByVideo.every(videoData =>
-            videoData.videoId && Array.isArray(videoData.notes) && videoData.notes.every(note =>
-              typeof note.timestamp === 'string' && typeof note.timestampInSeconds === 'number' && typeof note.text === 'string'
-            )
-          )) {
+          if (!Array.isArray(data.notesByVideo)) {
             throw new Error(languageService.translate("invalidJsonFormat"));
           }
 
-          const existingAllNotes = await noteStorage.loadSavedVideos();
+          // Filter out invalid videos but keep valid ones
+          const validNotesByVideo = data.notesByVideo.filter(videoData =>
+            videoData.videoId && Array.isArray(videoData.notes) && videoData.notes.every(note =>
+              typeof note.timestamp === 'string' && typeof note.timestampInSeconds === 'number' && typeof note.text === 'string'
+            )
+          );
+
+          if (validNotesByVideo.length === 0 && data.notesByVideo.length > 0) {
+            throw new Error(languageService.translate("invalidJsonFormat"));
+          }
+
+          if (validNotesByVideo.length < data.notesByVideo.length) {
+            console.warn(`Skipped ${data.notesByVideo.length - validNotesByVideo.length} invalid video entries.`);
+          }
+
+          // Use the cleaned data
+          data.notesByVideo = validNotesByVideo;
+
+          const existingVideos = await noteStorage.loadSavedVideos();
+
+          // Convert Video[] to StoredVideoData[] AND filter out invalid entries
+          const existingAllNotes: StoredVideoData[] = existingVideos
+            .filter(v => v.id && typeof v.id === 'string') // Critical filter
+            .map(v => ({
+              videoId: v.id,
+              videoTitle: v.title,
+              notes: v.notes,
+              lastModified: v.lastModified,
+              group: v.group,
+              channelName: v.channelName,
+              channelId: v.channelId
+            }));
 
           decisions = await showImportDecisionManager({
             type: 'all_notes',
             importedData: data,
-            existingAllNotes: existingAllNotes
+            existingAllNotes: existingAllNotes // Pass original Video[] if component expects it, or use existingAllNotes if compatible
           });
 
           if (!decisions || decisions.length === 0) {
@@ -274,13 +323,15 @@ export class ShareService {
               existingNotesMap.delete(decision.videoId);
             } else if (decision.action === 'merge') {
               const existingVideoData = existingNotesMap.get(decision.videoId);
+
               if (existingVideoData) {
                 const mergedNotesForVideo = this.mergeNotes(existingVideoData.notes, importedVideoData.notes);
+
                 finalNotesCollection.push({
                   ...existingVideoData,
                   notes: mergedNotesForVideo,
-                  timestamp: importedVideoData.timestamp || existingVideoData.timestamp,
-                  channelIcon: importedVideoData.channelIcon || existingVideoData.channelIcon
+                  channelName: existingVideoData.channelName || importedVideoData.channelName,
+                  channelId: existingVideoData.channelId || importedVideoData.channelId
                 });
                 existingNotesMap.delete(decision.videoId);
               } else {
@@ -319,7 +370,7 @@ export class ShareService {
               actions.setVideoGroup(currentVideoData.group || null);
             }
           }
-          
+
           showToast(languageService.translate("allNotesMergeSuccess"), 'success');
           if (onAllNotesUpdateCallback) {
             const videos: Video[] = finalNotesCollection.map(videoData => {

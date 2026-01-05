@@ -276,10 +276,67 @@ function createVideoManagerUI(
 
       new Sortable(groupContentContainer, {
         animation: 150,
-        ghostClass: 'blue-background-class',
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        chosenClass: 'sortable-chosen',
         handle: '.drag-handle',
-        direction: languageService.getCurrentDirection(),
+        swapThreshold: 0.5,
+        invertSwap: true,
+        scroll: false,
+        onStart: () => {
+          let scrollInterval: ReturnType<typeof setInterval> | null = null;
+          let currentScrollSpeed = 0;
+
+          const handleDragOver = (e: DragEvent) => {
+            const rect = container.getBoundingClientRect();
+            const mouseY = e.clientY;
+            const containerHeight = rect.height;
+            const scrollZone = containerHeight * 0.45;
+            const maxSpeed = 30;
+            const minSpeed = 5;
+
+            const distanceFromTop = mouseY - rect.top;
+            const distanceFromBottom = rect.bottom - mouseY;
+
+            if (distanceFromTop < scrollZone && distanceFromTop >= 0) {
+              const proximity = 1 - (distanceFromTop / scrollZone);
+              currentScrollSpeed = -(minSpeed + (maxSpeed - minSpeed) * proximity);
+            }
+            else if (distanceFromBottom < scrollZone && distanceFromBottom >= 0) {
+              const proximity = 1 - (distanceFromBottom / scrollZone);
+              currentScrollSpeed = minSpeed + (maxSpeed - minSpeed) * proximity;
+            }
+            else if (mouseY < rect.top) {
+              currentScrollSpeed = -maxSpeed;
+            }
+            else if (mouseY > rect.bottom) {
+              currentScrollSpeed = maxSpeed;
+            }
+            else {
+              currentScrollSpeed = 0;
+            }
+          };
+
+          scrollInterval = setInterval(() => {
+            if (currentScrollSpeed !== 0) {
+              container.scrollTop += currentScrollSpeed;
+            }
+          }, 16);
+
+          // استخدام dragover لأن Sortable.js يستخدم drag events
+          document.addEventListener('dragover', handleDragOver, { capture: true });
+
+          (groupContentContainer as any).__dragCleanup = () => {
+            document.removeEventListener('dragover', handleDragOver, { capture: true });
+            if (scrollInterval) clearInterval(scrollInterval);
+          };
+        },
         onEnd: async () => {
+          if ((groupContentContainer as any).__dragCleanup) {
+            (groupContentContainer as any).__dragCleanup();
+            delete (groupContentContainer as any).__dragCleanup;
+          }
+
           const allVideoElements = [...contentList.querySelectorAll('.video-card')] as HTMLElement[];
           const allVideoIds = allVideoElements.map(card => card.dataset.videoId as string);
           await noteStorage.saveVideoOrder(allVideoIds);
@@ -309,9 +366,66 @@ function createVideoManagerUI(
 
   new Sortable(contentList, {
     animation: 150,
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    chosenClass: 'sortable-chosen',
     handle: '.group-drag-handle',
-    direction: languageService.getCurrentDirection(),
+    swapThreshold: 0.5,
+    invertSwap: true,
+    scroll: false,
+    onStart: () => {
+      let scrollInterval: ReturnType<typeof setInterval> | null = null;
+      let currentScrollSpeed = 0;
+
+      const handleDragOver = (e: DragEvent) => {
+        const rect = container.getBoundingClientRect();
+        const mouseY = e.clientY;
+        const containerHeight = rect.height;
+        const scrollZone = containerHeight * 0.45;
+        const maxSpeed = 30;
+        const minSpeed = 5;
+
+        const distanceFromTop = mouseY - rect.top;
+        const distanceFromBottom = rect.bottom - mouseY;
+
+        if (distanceFromTop < scrollZone && distanceFromTop >= 0) {
+          const proximity = 1 - (distanceFromTop / scrollZone);
+          currentScrollSpeed = -(minSpeed + (maxSpeed - minSpeed) * proximity);
+        }
+        else if (distanceFromBottom < scrollZone && distanceFromBottom >= 0) {
+          const proximity = 1 - (distanceFromBottom / scrollZone);
+          currentScrollSpeed = minSpeed + (maxSpeed - minSpeed) * proximity;
+        }
+        else if (mouseY < rect.top) {
+          currentScrollSpeed = -maxSpeed;
+        }
+        else if (mouseY > rect.bottom) {
+          currentScrollSpeed = maxSpeed;
+        }
+        else {
+          currentScrollSpeed = 0;
+        }
+      };
+
+      scrollInterval = setInterval(() => {
+        if (currentScrollSpeed !== 0) {
+          container.scrollTop += currentScrollSpeed;
+        }
+      }, 16);
+
+      document.addEventListener('dragover', handleDragOver, { capture: true });
+
+      (contentList as any).__dragCleanup = () => {
+        document.removeEventListener('dragover', handleDragOver, { capture: true });
+        if (scrollInterval) clearInterval(scrollInterval);
+      };
+    },
     onEnd: async () => {
+      if ((contentList as any).__dragCleanup) {
+        (contentList as any).__dragCleanup();
+        delete (contentList as any).__dragCleanup;
+      }
+
       const groupElements = [...contentList.querySelectorAll('.video-group-section')] as HTMLElement[];
       const newGroupOrder = groupElements.map(el => el.dataset.groupName!);
       settingsService.update({ videoGroups: newGroupOrder });

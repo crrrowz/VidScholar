@@ -225,7 +225,9 @@ class ImportService {
             await notesRepository.saveNotes(data.notes, {
                 videoId: data.videoId,
                 videoTitle: data.videoTitle,
-                group: data.group
+                group: data.group,
+                channelName: data.channelName,
+                channelId: data.channelId
             });
             actions.setNotes(data.notes);
             showToast(languageService.translate('notesImportedSuccess'), 'success');
@@ -236,7 +238,9 @@ class ImportService {
             await notesRepository.saveNotes(mergedNotes, {
                 videoId: data.videoId,
                 videoTitle: data.videoTitle,
-                group: data.group
+                group: data.group,
+                channelName: data.channelName,
+                channelId: data.channelId
             });
             actions.setNotes(mergedNotes);
             showToast(languageService.translate('notesMergeSuccess'), 'success');
@@ -371,7 +375,9 @@ class ImportService {
                 videoTitle: v.title,
                 notes: v.notes,
                 lastModified: v.lastModified,
-                group: v.group
+                group: v.group,
+                channelName: v.channelName,
+                channelId: v.channelId
             }])
         );
 
@@ -391,7 +397,9 @@ class ImportService {
                     finalVideos.push({
                         ...existing,
                         notes: merged,
-                        lastModified: Date.now()
+                        lastModified: Date.now(),
+                        channelName: existing.channelName || imported.channelName,
+                        channelId: existing.channelId || imported.channelId
                     });
                     existingMap.delete(decision.videoId);
                 } else {
