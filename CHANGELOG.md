@@ -5,7 +5,7 @@ All notable changes to VidScholar will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-01-05
+## [2.1.0] - 2026-01-05
 
 ### 🎉 Major Release - Production Ready
 
@@ -80,102 +80,4 @@ This release marks VidScholar as production-ready with comprehensive features, c
 
 ---
 
-## [1.5.0] - 2025-12-15
-
-### Added
-- Video library management with drag-and-drop reordering
-- Video group categorization
-- Channel name extraction and persistence
-- Screenshot download functionality
-
-### Changed
-- Improved sidebar responsiveness
-- Enhanced note list performance
-
-### Fixed
-- Notes not saving correctly on video change
-- Theme not persisting after browser restart
-
----
-
-## [1.4.0] - 2025-11-20
-
-### Added
-- Template system with 5 preset groups
-- Template editor modal
-- Keyboard shortcut for quick note addition
-
-### Changed
-- Redesigned toolbar layout
-- Improved template insertion UX
-
----
-
-## [1.3.0] - 2025-10-15
-
-### Added
-- Full Arabic (RTL) language support
-- Language switcher in settings
-- RTL-aware component layouts
-
-### Changed
-- Internationalized all user-facing strings
-- Updated LanguageService for dynamic locale switching
-
----
-
-## [1.2.0] - 2025-09-01
-
-### Added
-- Dark/Light theme toggle
-- Additional themes: Sepia, High Contrast, OLED
-- CSS custom properties for consistent theming
-
-### Changed
-- Migrated to CSS variables for theme colors
-- Improved contrast ratios for accessibility
-
----
-
-## [1.1.0] - 2025-07-15
-
-### Added
-- Note import/export (JSON format)
-- Full backup functionality
-- Import decision manager for duplicate handling
-
-### Changed
-- Enhanced ExportService with multiple format support
-- Improved ImportService error handling
-
----
-
-## [1.0.0] - 2025-06-01
-
-### 🎊 Initial Release
-
-#### Features
-- Timestamped note-taking synced with YouTube videos
-- Click-to-jump navigation
-- Auto-save with debouncing
-- Undo/Redo support (50 actions)
-- Chrome storage integration
-- Share on X (Twitter) functionality
-- Notes copy to clipboard
-
-#### Technical
-- TypeScript strict mode
-- Redux-like state management
-- WXT (Web Extension Tooling) framework
-- Manifest V3 compliant
-
----
-
 [2.1.0]: https://github.com/crrrowz/VidScholar/releases/tag/v2.1.0
-[2.0.0]: https://github.com/crrrowz/VidScholar/releases/tag/v2.0.0
-[1.5.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.5.0
-[1.4.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.4.0
-[1.3.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.3.0
-[1.2.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.2.0
-[1.1.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.1.0
-[1.0.0]: https://github.com/crrrowz/VidScholar/releases/tag/v1.0.0

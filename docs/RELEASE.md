@@ -288,7 +288,7 @@ None currently tracked for this release.
 
 ### Feedback Channels
 - GitHub Issues: [Repository Issues]
-- Email: support@vidscholar.com
+- Email: info@innovacode.org
 
 ### Quick Troubleshooting
 | Issue | Solution |
