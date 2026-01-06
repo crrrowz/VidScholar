@@ -31,7 +31,7 @@ export default defineConfig({
     },
 
     default_locale: 'en',
-    permissions: ['storage', 'identity'],
+    permissions: ['storage', 'identity', 'identity.email'],
 
     host_permissions: [
       'https://www.youtube.com/*',

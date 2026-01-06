@@ -118,14 +118,24 @@ class SupabaseService {
      */
     private async getOrCreateDeviceId(): Promise<string> {
         try {
-            const result = await chrome.storage.local.get('__device_id__');
+            // Use chrome.storage.sync to persist device ID across reinstalls
+            // This syncs with Chrome account and survives extension removal
+            const result = await chrome.storage.sync.get('__device_id__');
             if (result['__device_id__']) {
                 return result['__device_id__'];
             }
 
+            // Also check local storage for migration from old version
+            const localResult = await chrome.storage.local.get('__device_id__');
+            if (localResult['__device_id__']) {
+                // Migrate to sync storage
+                await chrome.storage.sync.set({ __device_id__: localResult['__device_id__'] });
+                return localResult['__device_id__'];
+            }
+
             // Generate new device ID
             const deviceId = 'device_' + crypto.randomUUID();
-            await chrome.storage.local.set({ __device_id__: deviceId });
+            await chrome.storage.sync.set({ __device_id__: deviceId });
             return deviceId;
         } catch (error) {
             return 'device_' + Date.now().toString(36);
