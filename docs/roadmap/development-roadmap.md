@@ -58,8 +58,8 @@ This roadmap addresses **7 critical issues** and provides a structured approach 
 
 ### 1.3 Identified Weaknesses ⚠️
 - **Merge logic bypass** in import flow
-- **Empty group cleanup** not implemented
-- **Retention policy** doesn't account for time-tracking consistency
+- **Empty groups displayed** in Video Library UI when they have no videos
+- **Retention setting not synced** to cloud storage (lost across devices)
 - **Search algorithm** returns full videos instead of matched notes only
 - **Cloud sync** lacks deterministic conflict resolution
 - **No note playback notifications** during video watching
@@ -89,50 +89,54 @@ The `ImportDecisionManager` provides merge/replace/skip options, but the process
 
 ---
 
-### Issue #2: Empty Video Groups Lifecycle
+### Issue #2: Empty Video Groups Display in UI
 **Severity:** MEDIUM  
 **Location:** `src/components/modals/VideoManager.ts` → `renderList()`
 
 **Root Cause Analysis:**
 ```typescript
 // Line 225-251: Group rendering logic
-// Groups are created from the current video list
-// But when videos are deleted, empty groups persist in settings
+// Groups are created from current video list
+// But the UI displays group containers even when empty
 ```
 
-The `videoGroups` array in `SettingsService` is never cleaned up when videos are deleted. The `VideoManager.renderList()` creates groups based on existing videos, but `SettingsService.videoGroups` may contain orphaned group names.
+The `VideoManager.renderList()` function iterates through groups and renders a container for each group. When all videos are deleted from a group, the group container still appears as an empty collapsible section in the UI. This is a UX problem - users see empty placeholder groups.
+
+**Note:** The group data in `SettingsService.videoGroups` should NOT be deleted. Groups may be reused later, and users may intentionally keep empty groups for organizational purposes.
 
 **Technical Fix:**
-- After video deletion, trigger group cleanup
-- Compare `videoGroups` in settings with actual groups from videos
-- Remove groups that have no associated videos
+- Filter out groups with zero videos in the UI rendering logic
+- Only render group containers that have at least one video
+- Keep the group data intact in settings storage
 
 ---
 
-### Issue #3: Automatic Video Deletion & Time Tracking
+### Issue #3: Retention Setting Not Synced to Cloud
 **Severity:** MEDIUM  
-**Location:** `src/storage/NotesRepository.ts` → `loadAllVideos()`
+**Location:** `src/services/SettingsService.ts` + `src/classes/NoteStorage.ts`
 
 **Root Cause Analysis:**
 ```typescript
-// Line 218-224: Retention policy application
-if (options?.applyRetention && retentionDays !== Infinity) {
-    if (currentTime - videoDate > retentionPeriod) {
-        await storageAdapter.remove(key);  // Deletion without cleanup
-        continue;
-    }
+// NoteStorage.ts: Retention days are stored locally only
+async setRetentionDays(days: number): Promise<boolean> {
+    this.retentionDays = days;
+    return storageAdapter.set('retentionDays', days); // Local only!
 }
 ```
 
-When videos are auto-deleted due to retention policy, the deletion happens silently without:
-1. Updating related time-tracking metadata
-2. Notifying the UI state
-3. Cleaning up associated data (groups, order list)
+The auto-deletion interval setting ("Delete notes automatically every X days") is currently:
+1. Stored in local storage only (`chrome.storage.local`)
+2. Not synced to Supabase cloud storage
+3. Lost when the user switches devices
+4. Not restored after reinstalling the extension
+
+This is a **user preference** that should be treated like other settings (theme, language, etc.) and persisted to the cloud.
 
 **Technical Fix:**
-- Create a dedicated `enforceRetentionPolicy()` method
-- Ensure it calls `deleteVideo()` (which handles cleanup) instead of raw `storageAdapter.remove()`
-- Emit events for deleted videos to update UI
+- Include `retentionDays` in the `UserSettings` interface if not already
+- Persist retention setting to Supabase via `SettingsService`
+- Sync retention setting deterministically across devices
+- Load from cloud on extension install/update
 
 ---
 
@@ -328,104 +332,159 @@ async processAllNotesDecisions(
 
 ---
 
-### 1.2 Empty Group Cleanup
-**Objective:** Automatically remove empty groups from settings
+### 1.2 Hide Empty Groups in Video Library UI
+**Objective:** Filter out empty groups from the Video Library display without deleting them from storage
 
 **Affected Files:**
-- `src/services/SettingsService.ts`
 - `src/components/modals/VideoManager.ts`
-- `src/storage/NotesRepository.ts`
+
+**Important:** This is a UI-only change. Group data in `SettingsService.videoGroups` must NOT be deleted.
 
 **Technical Approach:**
 
-**Step 1:** Add group cleanup utility in `SettingsService`:
+**Step 1:** Update the `renderList()` function to skip empty groups:
 ```typescript
-// SettingsService.ts - Add new method
-async cleanupEmptyGroups(): Promise<void> {
-    const videos = await notesRepository.loadAllVideos();
-    const usedGroups = new Set<string>();
-    
-    videos.forEach(video => {
-        if (video.group) usedGroups.add(video.group);
-    });
-    
-    const currentGroups = this.settings.videoGroups;
-    const validGroups = currentGroups.filter(g => usedGroups.has(g));
-    
-    if (validGroups.length !== currentGroups.length) {
-        await this.update({ videoGroups: validGroups });
+// VideoManager.ts - Line 253 onwards (renderList function)
+const renderList = (list: Video[]) => {
+    contentList.innerHTML = '';
+
+    if (!list || list.length === 0) {
+        contentList.innerHTML = `<div class="empty-list-message">${languageService.translate("noSavedVideos")}</div>`;
+        return;
     }
+
+    // Group videos by their group name
+    const groupedVideos: { [key: string]: Video[] } = {};
+    const noGroupKey = languageService.translate("noGroup", "No Group");
+
+    list.forEach(video => {
+        const groupName = video.group || noGroupKey;
+        if (!groupedVideos[groupName]) {
+            groupedVideos[groupName] = [];
+        }
+        groupedVideos[groupName].push(video);
+    });
+
+    // Get defined group order from settings
+    const groupOrder = settingsService.get('videoGroups');
+
+    // Sort groups, but FILTER OUT empty ones before rendering
+    const sortedGroupNames = Object.keys(groupedVideos)
+        .filter(groupName => groupedVideos[groupName].length > 0) // ✅ Skip empty groups
+        .sort((a, b) => {
+            const aIndex = groupOrder.indexOf(a);
+            const bIndex = groupOrder.indexOf(b);
+            
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            if (aIndex !== -1) return -1;
+            if (bIndex !== -1) return 1;
+            if (a === noGroupKey) return -1;
+            if (b === noGroupKey) return 1;
+            return a.localeCompare(b);
+        });
+
+    // Now render only non-empty groups
+    sortedGroupNames.forEach(groupName => {
+        // ... existing group rendering code ...
+    });
+};
+```
+
+**Key Change:** Added `.filter(groupName => groupedVideos[groupName].length > 0)` before sorting.
+
+**What This Achieves:**
+- Empty groups don't render in the UI (no empty placeholder boxes)
+- Group data remains intact in `SettingsService.videoGroups`
+- Groups reappear when videos are assigned to them
+- Group order and configuration preserved
+
+**Risks:**
+- None (UI-only change)
+
+**Effort:** Easy (0.5-1 day)
+
+---
+
+### 1.3 Sync Retention Setting to Cloud
+**Objective:** Persist the auto-delete interval (retention days) to cloud storage for cross-device sync
+
+**Affected Files:**
+- `src/services/SettingsService.ts`
+- `src/services/SupabaseService.ts`
+- `src/classes/NoteStorage.ts`
+
+**Current Flow (Broken):**
+```typescript
+// NoteStorage.ts - Line 398-402
+async setRetentionDays(days: number): Promise<boolean> {
+    this.retentionDays = days;
+    return storageAdapter.set('retentionDays', days); // ❌ Local only
 }
 ```
 
-**Step 2:** Trigger cleanup after video deletion in `NotesRepository`:
+**Technical Approach:**
+
+**Step 1:** Include `retentionDays` in cloud-synced settings:
 ```typescript
-// NotesRepository.ts - Update deleteVideo()
-async deleteVideo(videoId: string): Promise<boolean> {
-    // ... existing code ...
+// SettingsService.ts - Ensure retentionDays is part of UserSettings
+interface UserSettings {
+    // ... existing fields ...
+    retentionDays: number; // ✅ Already in interface
+}
+```
+
+**Step 2:** Update `setRetentionDays` to use `SettingsService`:
+```typescript
+// NoteStorage.ts - Updated method
+async setRetentionDays(days: number): Promise<boolean> {
+    this.retentionDays = days;
     
-    // Trigger group cleanup
-    await settingsService.cleanupEmptyGroups();
+    // Save via SettingsService (handles cloud sync)
+    await settingsService.update({ retentionDays: days });
     
     return true;
 }
 ```
 
-**Step 3:** Trigger cleanup after bulk operations in `VideoManager`.
-
-**Risks:**
-- Performance impact if cleanup runs too frequently
-- Consider debouncing or running only on VideoManager close
-
-**Effort:** Easy (1-2 days)
-
----
-
-### 1.3 Retention Policy Time-Tracking Fix
-**Objective:** Ensure auto-delete respects proper cleanup flow
-
-**Affected Files:**
-- `src/storage/NotesRepository.ts`
-
-**Technical Approach:**
+**Step 3:** Ensure `SettingsService.update()` syncs to cloud:
 ```typescript
-// NotesRepository.ts - New dedicated method
-async enforceRetentionPolicy(retentionDays: number): Promise<string[]> {
-    if (retentionDays === Infinity) return [];
+// SettingsService.ts - update() method (already implemented)
+async update(updates: Partial<UserSettings>): Promise<void> {
+    this.settings = { ...this.settings, ...updates };
+    await storageAdapter.set(this.STORAGE_KEY, this.settings);
     
-    const allData = await storageAdapter.getAll();
-    const currentTime = Date.now();
-    const retentionPeriod = retentionDays * 24 * 60 * 60 * 1000;
-    const deletedVideoIds: string[] = [];
-
-    for (const [key, value] of Object.entries(allData)) {
-        if (!key.startsWith(NOTES_PREFIX)) continue;
-
-        const videoId = extractVideoId(key);
-        if (!videoId) continue;
-
-        const data = value as StoredVideoData;
-        const videoDate = data.lastModified || 0;
-
-        if (currentTime - videoDate > retentionPeriod) {
-            // Use proper deletion flow
-            await this.deleteVideo(videoId);
-            deletedVideoIds.push(videoId);
-        }
-    }
-
-    // Group cleanup handled by deleteVideo()
-    return deletedVideoIds;
-}
-
-// Update loadAllVideos() to NOT handle deletion
-async loadAllVideos(options?: { retentionDays?: number }): Promise<Video[]> {
-    // Remove the applyRetention logic - it now lives in enforceRetentionPolicy()
-    // ... load and return all videos without deletion ...
+    // ✅ Sync to cloud (already implemented)
+    await this.saveToCloud();
+    
+    this.notifyListeners();
 }
 ```
 
-**Effort:** Medium (2-3 days)
+**Step 4:** Verify `SettingsService.initialize()` loads from cloud:
+```typescript
+// SettingsService.ts - initialize() should already handle this
+async initialize(): Promise<void> {
+    // Load from local first (fast)
+    const localSettings = await storageAdapter.get<UserSettings>(this.STORAGE_KEY);
+    
+    // Then merge with cloud (if available)
+    if (supabaseService.isAvailable()) {
+        const cloudSettings = await supabaseService.loadSettings();
+        // Merge logic with lastModified comparison
+    }
+}
+```
+
+**What This Achieves:**
+- Retention setting syncs to Supabase when changed
+- Setting is restored from cloud on new device / after reinstall
+- Deterministic sync (last modified wins)
+- User's preferred auto-delete interval preserved across devices
+
+**Risks:**
+- Need to verify `SettingsRecord` in Supabase includes `retention_days` column
+
+**Effort:** Easy (1-2 days)
 
 ---
 
@@ -892,8 +951,8 @@ bottomButtonsContainer.append(actionsGroup, settingsGroup);
 | Issue | Priority | Effort | Impact | Phase |
 |-------|----------|--------|--------|-------|
 | Video Merge Behavior | P0 | Medium | High | 1 |
-| Empty Group Cleanup | P1 | Easy | Medium | 1 |
-| Retention Time-Tracking | P1 | Medium | Medium | 1 |
+| Hide Empty Groups (UI) | P1 | Easy | Medium | 1 |
+| Sync Retention Setting | P1 | Easy | Medium | 1 |
 | Precise Note Search | P1 | Medium | High | 2 |
 | Cloud Sync Conflict | P1 | High | High | 2 |
 | Note Notifications | P2 | Medium | Medium | 3 |
@@ -940,8 +999,8 @@ bottomButtonsContainer.append(actionsGroup, settingsGroup);
 ```
 Week 1-2: Phase 1 (Critical Bug Fixes)
 ├── Fix merge behavior
-├── Empty group cleanup
-└── Retention time-tracking
+├── Hide empty groups in UI
+└── Sync retention setting to cloud
 
 Week 3-4: Phase 2 (Search & Sync)
 ├── Precise note search

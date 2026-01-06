@@ -205,16 +205,18 @@ npm run e2e:debug         # Debug mode
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [**VISUAL_ASSETS.md**](./docs/VISUAL_ASSETS.md) | Diagrams, screenshots, and other visual assets |
-| [**COMPLETE_ARCHITECTURE.md**](./docs/COMPLETE_ARCHITECTURE.md) | Full architectural design with diagrams |
-| [**IMPLEMENTATION_GUIDE.md**](./docs/IMPLEMENTATION_GUIDE.md) | Practical examples and patterns |
-| [**ARCHITECTURE.md**](./docs/ARCHITECTURE.md) | Core architecture overview |
-| [**INSTALLATION.md**](./docs/INSTALLATION.md) | Detailed setup instructions |
-| [**CONTRIBUTING.md**](./CONTRIBUTING.md) | Contribution guidelines |
-| [**CHANGELOG.md**](./CHANGELOG.md) | Version history |
-| [**ADRs/**](./docs/ADRs/) | Architectural Decision Records |
+> 📚 All technical documentation is organized in the [`/docs`](./docs) folder.
+> Start with the [**Documentation Index**](./docs/README.md) for a complete overview.
+
+### Quick Links
+
+| Category | Key Documents |
+|----------|---------------|
+| **Architecture** | [Overview](./docs/architecture/overview.md) · [Complete Design](./docs/architecture/complete-design.md) · [Cloud Sync](./docs/architecture/cloud-sync.md) |
+| **Roadmaps** | [Development Roadmap](./docs/roadmap/development-roadmap.md) · [Remote Config](./docs/roadmap/remote-config-roadmap.md) |
+| **Guides** | [Installation](./docs/guides/installation.md) · [Implementation](./docs/guides/implementation-guide.md) · [Release](./docs/guides/release.md) |
+| **Decisions** | [ADRs](./docs/decisions/) - Architectural Decision Records |
+| **Contributing** | [CONTRIBUTING.md](./CONTRIBUTING.md) · [CHANGELOG.md](./CHANGELOG.md) |
 
 ---
 
