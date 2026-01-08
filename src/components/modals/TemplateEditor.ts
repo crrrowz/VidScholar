@@ -183,7 +183,59 @@ export async function showTemplateEditor(): Promise<void> {
         animation: 150,
         handle: '.drag-handle',
         ghostClass: 'sortable-ghost',
+        scroll: false,
+        onStart: () => {
+          let scrollInterval: ReturnType<typeof setInterval> | null = null;
+          let currentScrollSpeed = 0;
+
+          const handleDragOver = (e: DragEvent) => {
+            const container = groupListContainer;
+            const rect = container.getBoundingClientRect();
+            const mouseY = e.clientY;
+            const containerHeight = rect.height;
+            const scrollZone = containerHeight * 0.25;
+            const maxSpeed = 20;
+            const minSpeed = 5;
+
+            // Scroll Up
+            if (mouseY < rect.top + scrollZone) {
+              // Calculate proximity (starts at 0 at edge of zone, 1 at top edge, >1 outside)
+              const distanceIntoZone = (rect.top + scrollZone) - mouseY;
+              // Cap proximity at 1.5 for speed calc to avoid excessive speed
+              const proximity = Math.min(distanceIntoZone / scrollZone, 1.5);
+              currentScrollSpeed = -(minSpeed + (maxSpeed - minSpeed) * proximity);
+            }
+            // Scroll Down
+            else if (mouseY > rect.bottom - scrollZone) {
+              // Calculate proximity (starts at 0 at edge of zone, 1 at bottom edge, >1 outside)
+              const distanceIntoZone = mouseY - (rect.bottom - scrollZone);
+              const proximity = Math.min(distanceIntoZone / scrollZone, 1.5);
+              currentScrollSpeed = minSpeed + (maxSpeed - minSpeed) * proximity;
+            }
+            else {
+              currentScrollSpeed = 0;
+            }
+          };
+
+          scrollInterval = setInterval(() => {
+            if (currentScrollSpeed !== 0) {
+              groupListContainer.scrollTop += currentScrollSpeed;
+            }
+          }, 16);
+
+          document.addEventListener('dragover', handleDragOver, { capture: true });
+
+          (groupListContainer as any).__dragCleanup = () => {
+            document.removeEventListener('dragover', handleDragOver, { capture: true });
+            if (scrollInterval) clearInterval(scrollInterval);
+          };
+        },
         onEnd: () => {
+          if ((groupListContainer as any).__dragCleanup) {
+            (groupListContainer as any).__dragCleanup();
+            delete (groupListContainer as any).__dragCleanup;
+          }
+
           const groupItems = [...groupListContainer.querySelectorAll('.group-item')];
           const newGroupOrder = groupItems.map(item => item.querySelector('span')!.textContent!);
           settingsService.update({ videoGroups: newGroupOrder });
@@ -252,7 +304,7 @@ export async function showTemplateEditor(): Promise<void> {
       Object.entries(presets).forEach(([id, preset]) => {
         const option = document.createElement('option');
         option.value = id;
-        option.textContent = `${id} - ${preset.name}`;
+        option.textContent = preset.name;
         copyFromSelect.appendChild(option);
       });
 
@@ -341,7 +393,56 @@ export async function showTemplateEditor(): Promise<void> {
         animation: 150,
         handle: '.drag-handle',
         ghostClass: 'sortable-ghost',
+        scroll: false,
+        onStart: () => {
+          let scrollInterval: ReturnType<typeof setInterval> | null = null;
+          let currentScrollSpeed = 0;
+
+          const handleDragOver = (e: DragEvent) => {
+            const container = presetListContainer;
+            const rect = container.getBoundingClientRect();
+            const mouseY = e.clientY;
+            const containerHeight = rect.height;
+            const scrollZone = containerHeight * 0.25;
+            const maxSpeed = 20;
+            const minSpeed = 5;
+
+            // Scroll Up
+            if (mouseY < rect.top + scrollZone) {
+              const distanceIntoZone = (rect.top + scrollZone) - mouseY;
+              const proximity = Math.min(distanceIntoZone / scrollZone, 1.5);
+              currentScrollSpeed = -(minSpeed + (maxSpeed - minSpeed) * proximity);
+            }
+            // Scroll Down
+            else if (mouseY > rect.bottom - scrollZone) {
+              const distanceIntoZone = mouseY - (rect.bottom - scrollZone);
+              const proximity = Math.min(distanceIntoZone / scrollZone, 1.5);
+              currentScrollSpeed = minSpeed + (maxSpeed - minSpeed) * proximity;
+            }
+            else {
+              currentScrollSpeed = 0;
+            }
+          };
+
+          scrollInterval = setInterval(() => {
+            if (currentScrollSpeed !== 0) {
+              presetListContainer.scrollTop += currentScrollSpeed;
+            }
+          }, 16);
+
+          document.addEventListener('dragover', handleDragOver, { capture: true });
+
+          (presetListContainer as any).__dragCleanup = () => {
+            document.removeEventListener('dragover', handleDragOver, { capture: true });
+            if (scrollInterval) clearInterval(scrollInterval);
+          };
+        },
         onEnd: async () => {
+          if ((presetListContainer as any).__dragCleanup) {
+            (presetListContainer as any).__dragCleanup();
+            delete (presetListContainer as any).__dragCleanup;
+          }
+
           const presetItems = [...presetListContainer.querySelectorAll('.group-item')];
           const orderedIds = presetItems.map(item => (item as HTMLElement).dataset['presetId']!);
           await noteStorage.reorderPresets(orderedIds);
