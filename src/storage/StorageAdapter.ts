@@ -6,9 +6,14 @@
  * - If user is online and has Chrome ID: uses Supabase
  * - If offline or no Chrome ID: uses local storage
  * - Syncs local changes to cloud when connection is restored
+ * 
+ * ROBUSTNESS:
+ * Includes "executeSafe" wrapper to handle "Extension context invalidated" errors gracefully.
+ * Provides emergency backup to window.localStorage if extension context is lost during a write.
  */
 
 import { supabaseService } from '../services/SupabaseService';
+import { showToast } from '../utils/toast';
 import type { Note, StoredVideoData } from '../types';
 
 export type StorageArea = 'cloud' | 'local' | 'auto';
@@ -44,10 +49,99 @@ class StorageAdapter {
     }
 
     /**
+     * Check if extension context is valid.
+     * Accessing chrome.runtime.id throws or returns undefined if context is invalidated.
+     */
+    private isContextValid(): boolean {
+        try {
+            return !!chrome.runtime && !!chrome.runtime.id;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * Handle critical invalidation state.
+     * Shows a user warning and ensures we don't spam the console/UI.
+     */
+    private handleInvalidation(action?: string) {
+        // Prevent repeated notifications for the same session
+        if ((window as any).__vidscholar_invalidation_shown) return;
+        (window as any).__vidscholar_invalidation_shown = true;
+
+        const msg = `Extension updated/reloaded. Please refresh the page to continue.`;
+        console.error(`CRITICAL: Extension context invalidated during ${action || 'operation'}. ${msg}`);
+
+        // Show visible error to user
+        showToast(msg, 'error');
+    }
+
+    /**
+     * Perform emergency backup to window.localStorage (web page storage).
+     * This saves data even if the extension mechanism is dead.
+     */
+    private performEmergencyBackup(key: string, value: any) {
+        try {
+            const backupKey = `vidscholar_emergency_${key}_${Date.now()}`;
+            console.warn(`Performing emergency backup to localStorage: ${backupKey}`);
+            window.localStorage.setItem(backupKey, JSON.stringify(value));
+            showToast("Extension updated. Your changes were saved to a local backup.", 'warning');
+        } catch (e) {
+            console.error("Failed emergency backup:", e);
+        }
+    }
+
+    /**
+     * Execute a storage operation safely.
+     * Catches "Extension context invalidated" errors and handles fallback/backup.
+     */
+    private async executeSafe<T>(
+        operation: () => Promise<T>,
+        fallbackValue: T | null = null,
+        context: { isWrite?: boolean, key?: string, value?: any } = {}
+    ): Promise<T | null> {
+        // 1. Pre-check validity
+        if (!this.isContextValid()) {
+            this.handleInvalidation(context.isWrite ? 'write' : 'read');
+            if (context.isWrite && context.key && context.value) {
+                this.performEmergencyBackup(context.key, context.value);
+            }
+            return fallbackValue;
+        }
+
+        try {
+            return await operation();
+        } catch (error: any) {
+            // 2. Catch invalidation during execution
+            const isInvalidated = error.message && (
+                error.message.includes('Extension context invalidated') ||
+                error.message.includes('context') // broader catch for context errors
+            );
+
+            if (isInvalidated) {
+                this.handleInvalidation(context.isWrite ? 'write' : 'read');
+                if (context.isWrite && context.key && context.value) {
+                    this.performEmergencyBackup(context.key, context.value);
+                }
+                return fallbackValue;
+            }
+
+            console.error('StorageAdapter operation failed:', error);
+            return fallbackValue;
+        }
+    }
+
+    /**
      * Initialize storage adapter
      */
     async initialize(): Promise<boolean> {
         if (this.initialized) return true;
+
+        // Skip initialization if context is already dead
+        if (!this.isContextValid()) {
+            console.warn('StorageAdapter: Context invalid at init. Skipping.');
+            return false;
+        }
 
         try {
             // Try to initialize Supabase
@@ -113,20 +207,23 @@ class StorageAdapter {
             channelName: data.channelName,
             channelId: data.channelId,
         };
-        await this.setLocal(`notes_${data.videoId}`, localData);
+        const localSaved = await this.setLocal(`notes_${data.videoId}`, localData);
 
         // Then try to save to cloud
         if (this.useCloud && supabaseService.isAvailable()) {
             const cloudSaved = await supabaseService.saveVideoNotes(data);
-            if (!cloudSaved) {
+            if (!cloudSaved && localSaved) {
                 // Add to pending sync
                 await this.addToPendingSync(localData);
             }
             return cloudSaved;
         } else {
-            // Add to pending sync for later
-            await this.addToPendingSync(localData);
-            return true;
+            // Add to pending sync for later, rely on local save success
+            if (localSaved) {
+                await this.addToPendingSync(localData);
+                return true;
+            }
+            return false;
         }
     }
 
@@ -200,9 +297,20 @@ class StorageAdapter {
         await this.ensureInitialized();
 
         // Clear local
-        const allData = await chrome.storage.local.get(null);
+        // Using executeSafe internal logic here since chrome.storage.local.get(null) is a direct call
+        const allData = await this.executeSafe(async () => {
+            return await chrome.storage.local.get(null);
+        }, {}) || {};
+
         const noteKeys = Object.keys(allData).filter(k => k.startsWith('notes_'));
-        await chrome.storage.local.remove(noteKeys);
+
+        // Remove keys individually or in batch via executeSafe via removeLocal loop or batch
+        if (noteKeys.length > 0) {
+            await this.executeSafe(async () => {
+                await chrome.storage.local.remove(noteKeys);
+                return true;
+            });
+        }
 
         // Clear cloud
         if (this.useCloud && supabaseService.isAvailable()) {
@@ -217,37 +325,34 @@ class StorageAdapter {
     // ==========================================
 
     private async getLocal<T>(key: string): Promise<T | null> {
-        try {
+        return this.executeSafe(async () => {
             const result = await chrome.storage.local.get(key);
             return (result[key] as T) ?? null;
-        } catch (error) {
-            console.error(`getLocal failed for "${key}":`, error);
-            return null;
-        }
+        });
     }
 
     private async setLocal<T>(key: string, value: T): Promise<boolean> {
-        try {
-            await chrome.storage.local.set({ [key]: value });
-            return true;
-        } catch (error) {
-            console.error(`setLocal failed for "${key}":`, error);
-            return false;
-        }
+        const result = await this.executeSafe(
+            async () => {
+                await chrome.storage.local.set({ [key]: value });
+                return true;
+            },
+            false,
+            { isWrite: true, key, value }
+        );
+        return result === true;
     }
 
     private async removeLocal(key: string): Promise<boolean> {
-        try {
+        const result = await this.executeSafe(async () => {
             await chrome.storage.local.remove(key);
             return true;
-        } catch (error) {
-            console.error(`removeLocal failed for "${key}":`, error);
-            return false;
-        }
+        }, false);
+        return result === true;
     }
 
     private async loadAllLocalVideos(): Promise<StoredVideoData[]> {
-        try {
+        return this.executeSafe(async () => {
             const allData = await chrome.storage.local.get(null);
             const videos: StoredVideoData[] = [];
 
@@ -258,10 +363,7 @@ class StorageAdapter {
             }
 
             return videos.sort((a, b) => (b.lastModified || 0) - (a.lastModified || 0));
-        } catch (error) {
-            console.error('loadAllLocalVideos failed:', error);
-            return [];
-        }
+        }, []) || [];
     }
 
     private async addToPendingSync(video: StoredVideoData): Promise<void> {
@@ -330,12 +432,15 @@ class StorageAdapter {
     }
 
     /**
-     * Get all items
+     * Get all items.
+     * Note: This reads "null" (all) from storage.local. 
      */
     async getAll<T extends Record<string, any>>(): Promise<T> {
         await this.ensureInitialized();
-        const result = await chrome.storage.local.get(null);
-        return result as T;
+        return this.executeSafe(async () => {
+            const result = await chrome.storage.local.get(null);
+            return result as T;
+        }, {} as T) as T;
     }
 
     /**
@@ -343,26 +448,32 @@ class StorageAdapter {
      */
     async clear(): Promise<boolean> {
         await this.ensureInitialized();
-        await chrome.storage.local.clear();
+        const result = await this.executeSafe(async () => {
+            await chrome.storage.local.clear();
+            return true;
+        }, false);
+
         if (this.useCloud) {
             await supabaseService.deleteAllNotes();
         }
-        return true;
+        return result === true;
     }
 
     /**
      * Get storage quota info
      */
     async getQuota(): Promise<StorageQuota> {
-        const bytesInUse = await chrome.storage.local.getBytesInUse(null);
-        const quotaBytes = 5 * 1024 * 1024; // 5MB reference
+        return this.executeSafe(async () => {
+            const bytesInUse = await chrome.storage.local.getBytesInUse(null);
+            const quotaBytes = 5 * 1024 * 1024; // 5MB reference
 
-        return {
-            bytesInUse,
-            quotaBytes,
-            percentUsed: (bytesInUse / quotaBytes) * 100,
-            area: this.useCloud ? 'cloud' : 'local'
-        };
+            return {
+                bytesInUse,
+                quotaBytes,
+                percentUsed: (bytesInUse / quotaBytes) * 100,
+                area: this.useCloud ? 'cloud' : 'local'
+            };
+        }, { bytesInUse: 0, quotaBytes: 0, percentUsed: 0, area: 'local' })!;
     }
 
     /**
@@ -386,8 +497,19 @@ class StorageAdapter {
     onChanged(
         callback: (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => void
     ): () => void {
-        chrome.storage.onChanged.addListener(callback);
-        return () => chrome.storage.onChanged.removeListener(callback);
+        if (!this.isContextValid()) return () => { };
+
+        try {
+            chrome.storage.onChanged.addListener(callback);
+            return () => {
+                if (this.isContextValid()) {
+                    chrome.storage.onChanged.removeListener(callback);
+                }
+            };
+        } catch (e) {
+            console.error("Failed to add storage listener:", e);
+            return () => { };
+        }
     }
 
     private async ensureInitialized(): Promise<void> {

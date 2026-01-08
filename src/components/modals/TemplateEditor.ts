@@ -1,13 +1,21 @@
-import { getStore } from '../../state/Store';
 import { actions } from '../../state/actions';
 import { noteStorage } from '../../classes/NoteStorage';
-import { themeService } from '../../services/ThemeService';
 import { showToast } from '../../utils/toast';
 import { languageService } from '../../services/LanguageService';
 import { createButton } from '../ui/Button';
 import { settingsService } from '../../services/SettingsService';
-import config from '../../utils/config'; // Import config
+import config from '../../utils/config';
 import Sortable from 'sortablejs';
+
+// Helper for translation with fallback
+// Helper for translation with fallback
+const t = (key: string, fallback?: string): string => {
+  const translated = languageService.translate(key);
+  return translated === key && fallback ? fallback : translated;
+};
+
+// State for editing preset
+let editingPresetId: string | null = null;
 
 export async function showTemplateEditor(): Promise<void> {
   if (document.querySelector("#editContainer")) return;
@@ -24,134 +32,56 @@ export async function showTemplateEditor(): Promise<void> {
     editContainer.id = "editContainer";
     editContainer.className = "template-editor-container";
     editContainer.setAttribute('dir', languageService.getCurrentDirection());
-    // Removed editContainer.style.position = 'relative'
 
-    const icons = config.getIcons(); // Get icons for close button
+    const icons = config.getIcons();
 
+    // ==========================================
+    // TAB CONTAINER
+    // ==========================================
     const tabContainer = document.createElement('div');
     tabContainer.className = 'template-editor-tabs';
-    Object.assign(tabContainer.style, {
-      marginBottom: '1rem' // Added margin
-    });
+    Object.assign(tabContainer.style, { marginBottom: '1rem' });
 
-    // Container for the two tab buttons
     const tabButtonsContainer = document.createElement('div');
     tabButtonsContainer.className = 'template-editor-tab-buttons-container';
-    // Removed Object.assign(tabButtonsContainer.style, {...}) and replaced with class
 
-    const templateTabButton = createButton(
-      null,
-      languageService.translate("editTemplatesTitle", "Edit Templates"),
-      () => {
-        templateContent.style.display = 'flex';
-        groupContent.style.display = 'none';
-        templateTabButton.classList.add('active-tab'); // Use class for active state
-        groupTabButton.classList.remove('active-tab'); // Use class for active state
-      },
-      'templateTabButton',
-      'ghost'
-    );
-    templateTabButton.classList.add('template-editor-tab-button', 'active-tab'); // Apply common class and initial active state
-    templateTabButton.addEventListener('click', () => {
-      templateTabButton.classList.add('active-tab');
-      groupTabButton.classList.remove('active-tab');
-    });
-
-
+    // --- Groups Tab Button ---
     const groupTabButton = createButton(
       null,
-      languageService.translate("videoGroupsTitle", "Video Groups"),
-      () => {
-        templateContent.style.display = 'none';
-        groupContent.style.display = 'flex';
-        groupTabButton.classList.add('active-tab'); // Use class for active state
-        templateTabButton.classList.remove('active-tab'); // Use class for active state
-      },
+      t("videoGroupsTitle", "Groups"),
+      () => switchToGroupsTab(),
       'groupTabButton',
       'ghost'
     );
-    groupTabButton.classList.add('template-editor-tab-button'); // Apply common class
-    groupTabButton.addEventListener('click', () => {
-      groupTabButton.classList.add('active-tab');
-      templateTabButton.classList.remove('active-tab');
-    });
+    groupTabButton.classList.add('template-editor-tab-button');
 
-    tabButtonsContainer.appendChild(templateTabButton);
+    // --- Presets Tab Button (NEW - default active) ---
+    const presetTabButton = createButton(
+      null,
+      t("presetsTitle", "Presets"),
+      () => switchToPresetsTab(),
+      'presetTabButton',
+      'ghost'
+    );
+    presetTabButton.classList.add('template-editor-tab-button', 'active-tab');
+
     tabButtonsContainer.appendChild(groupTabButton);
-    tabContainer.appendChild(tabButtonsContainer); // Append tab buttons group
+    tabButtonsContainer.appendChild(presetTabButton);
+    tabContainer.appendChild(tabButtonsContainer);
 
-    // Create a new close button (not absolutely positioned)
-    const closeButton = createButton(icons.CLOSE, null, () => overlay.remove(), undefined, 'default');
+    // Close button
+    const closeButton = createButton(icons['CLOSE'] ?? 'close', null, () => overlay.remove(), undefined, 'default');
     closeButton.classList.add('btn--icon');
-    // The closeButton now has default flex behavior within tabContainer
     tabContainer.appendChild(closeButton);
 
     editContainer.appendChild(tabContainer);
 
-    // Template Content Section
-    const templateContent = document.createElement('div');
-    templateContent.className = 'template-editor-content template-editor-content-section';
-    // Removed Object.assign(templateContent.style, {...}) and replaced with class
-
-    // Preset Name Input
-    let presetName = await noteStorage.loadPresetName(currentPreset);
-    if (!presetName) {
-      presetName = noteStorage.getPresetDefaultName(currentPreset);
-    }
-    const presetNameInput = document.createElement('input');
-    presetNameInput.type = 'text';
-    presetNameInput.className = 'preset-name-input template-editor-input-preset-name';
-    presetNameInput.value = presetName;
-    presetNameInput.placeholder = languageService.translate("presetNamePlaceholder");
-    Object.assign(presetNameInput.style, {
-      marginBottom: '1rem' // Added margin
-    });
-    templateContent.appendChild(presetNameInput);
-
-    const editTextArea = document.createElement("textarea");
-    editTextArea.className = "template-editor-textarea";
-    editTextArea.value = getStore().getState().templates.join("\n");
-    editTextArea.placeholder = languageService.translate("templatePlaceholder");
-    Object.assign(editTextArea.style, {
-      marginBottom: '1rem' // Added margin
-    });
-    templateContent.appendChild(editTextArea);
-
-    const templateSaveButton = createButton(null, languageService.translate("saveChangesButton"), async () => {
-      try {
-        const newTemplates = editTextArea.value
-          .split("\n")
-          .map(template => template.trim())
-          .filter(template => template);
-
-        await noteStorage.savePresetTemplates(currentPreset, newTemplates);
-
-        const newPresetName = presetNameInput.value.trim();
-        if (newPresetName) {
-          await noteStorage.savePresetName(currentPreset, newPresetName);
-        } else {
-          // Revert to default name
-          const defaultName = noteStorage.getPresetDefaultName(currentPreset);
-          await noteStorage.savePresetName(currentPreset, defaultName);
-        }
-
-        actions.setTemplates(newTemplates);
-        overlay.remove();
-        showToast(languageService.translate("templatesSavedSuccessfully"), "success");
-      } catch (error) {
-        console.error('Failed to save templates:', error);
-        showToast(languageService.translate("failedToSaveTemplates"), "error");
-      }
-    }, undefined, 'primary');
-    Object.assign(templateSaveButton.style, {
-      marginBottom: '1rem' // Added margin
-    });
-    templateContent.appendChild(templateSaveButton);
-
-
-    // Group Content Section
+    // ==========================================
+    // GROUPS CONTENT (existing)
+    // ==========================================
     const groupContent = document.createElement('div');
-    groupContent.className = 'group-management-content'; // Apply class for flexbox layout
+    groupContent.className = 'group-management-content';
+    groupContent.style.display = 'none';
 
     const groupListContainer = document.createElement('div');
     groupListContainer.className = 'group-list-container template-editor-group-list-container';
@@ -163,8 +93,7 @@ export async function showTemplateEditor(): Promise<void> {
     const addGroupInput = document.createElement('input');
     addGroupInput.type = 'text';
     addGroupInput.className = 'add-group-input template-editor-input-add-group';
-    addGroupInput.placeholder = languageService.translate("addNewGroupPlaceholder", "Add new group");
-    // Removed Object.assign(addGroupInput.style, {...}) and replaced with class
+    addGroupInput.placeholder = t("addNewGroupPlaceholder", "Add new group");
 
     const addGroupButton = createButton('add', null, () => {
       const newGroup = addGroupInput.value.trim();
@@ -176,7 +105,7 @@ export async function showTemplateEditor(): Promise<void> {
           renderGroups(updatedGroups);
           addGroupInput.value = '';
         } else {
-          showToast(languageService.translate("groupExistsError", "Group already exists"), 'error');
+          showToast(t("groupExistsError", "Group already exists"), 'error');
         }
       }
     }, undefined, 'primary');
@@ -191,9 +120,7 @@ export async function showTemplateEditor(): Promise<void> {
       groups.forEach(group => {
         const groupItem = document.createElement('div');
         groupItem.className = 'group-item template-editor-group-item group-item-board';
-        Object.assign(groupItem.style, {
-          marginBottom: '0.5rem' // Added margin
-        });
+        Object.assign(groupItem.style, { marginBottom: '0.5rem' });
 
         const groupName = document.createElement('span');
         groupName.textContent = group;
@@ -211,17 +138,15 @@ export async function showTemplateEditor(): Promise<void> {
           groupNameInput.type = 'text';
           groupNameInput.value = group;
           groupNameInput.className = 'edit-group-input';
-
           groupItem.replaceChild(groupNameInput, groupName);
           groupNameInput.focus();
 
           const saveButton = createButton('save', null, () => {
             const newGroupName = groupNameInput.value.trim();
             const currentGroups = settingsService.get('videoGroups');
-
             if (newGroupName && newGroupName !== group) {
               if (currentGroups.includes(newGroupName)) {
-                showToast(languageService.translate("groupExistsError", "Group already exists"), 'error');
+                showToast(t("groupExistsError", "Group already exists"), 'error');
                 groupItem.replaceChild(groupName, groupNameInput);
                 buttonContainer.replaceChild(editButton, saveButton);
               } else {
@@ -235,7 +160,6 @@ export async function showTemplateEditor(): Promise<void> {
             }
           }, undefined, 'ghost');
           saveButton.classList.add('save-group-btn');
-
           buttonContainer.replaceChild(saveButton, editButton);
         }, undefined, 'ghost');
         editButton.classList.add('edit-group-btn');
@@ -251,95 +175,334 @@ export async function showTemplateEditor(): Promise<void> {
         buttonContainer.appendChild(deleteButton);
         buttonContainer.appendChild(moveButton);
         groupItem.appendChild(buttonContainer);
-
         groupListContainer.appendChild(groupItem);
+      });
+
+      // Sortable for groups
+      new Sortable(groupListContainer, {
+        animation: 150,
+        handle: '.drag-handle',
+        ghostClass: 'sortable-ghost',
+        onEnd: () => {
+          const groupItems = [...groupListContainer.querySelectorAll('.group-item')];
+          const newGroupOrder = groupItems.map(item => item.querySelector('span')!.textContent!);
+          settingsService.update({ videoGroups: newGroupOrder });
+        }
       });
     }
 
-    renderGroups(settingsService.get('videoGroups'));
+    // ==========================================
+    // PRESETS CONTENT (using same classes as Groups)
+    // ==========================================
+    const presetContent = document.createElement('div');
+    presetContent.className = 'group-management-content';
+    presetContent.style.display = 'flex';
 
-    new Sortable(groupListContainer, {
-      animation: 150,
-      handle: '.drag-handle',
-      ghostClass: 'sortable-ghost',
-      dragClass: 'sortable-drag',
-      chosenClass: 'sortable-chosen',
-      scroll: false,
-      onStart: () => {
-        let scrollInterval: ReturnType<typeof setInterval> | null = null;
-        let currentScrollSpeed = 0;
+    const presetListContainer = document.createElement('div');
+    presetListContainer.className = 'group-list-container template-editor-group-list-container';
+    presetContent.appendChild(presetListContainer);
 
-        const handleDragOver = (e: DragEvent) => {
-          const rect = groupListContainer.getBoundingClientRect();
-          const mouseY = e.clientY;
-          const containerHeight = rect.height;
-          const scrollZone = containerHeight * 0.45;
-          const maxSpeed = 30;
-          const minSpeed = 5;
+    // Add New Preset Section
+    const addPresetContainer = document.createElement('div');
+    addPresetContainer.className = 'add-group-container template-editor-add-group-container';
 
-          const distanceFromTop = mouseY - rect.top;
-          const distanceFromBottom = rect.bottom - mouseY;
+    const addPresetInput = document.createElement('input');
+    addPresetInput.type = 'text';
+    addPresetInput.className = 'add-group-input template-editor-input-add-group';
+    addPresetInput.placeholder = t("addNewPresetPlaceholder", "New preset name...");
+    addPresetInput.style.flex = '1';
 
-          if (distanceFromTop < scrollZone && distanceFromTop >= 0) {
-            const proximity = 1 - (distanceFromTop / scrollZone);
-            currentScrollSpeed = -(minSpeed + (maxSpeed - minSpeed) * proximity);
-          }
-          else if (distanceFromBottom < scrollZone && distanceFromBottom >= 0) {
-            const proximity = 1 - (distanceFromBottom / scrollZone);
-            currentScrollSpeed = minSpeed + (maxSpeed - minSpeed) * proximity;
-          }
-          else if (mouseY < rect.top) {
-            currentScrollSpeed = -maxSpeed;
-          }
-          else if (mouseY > rect.bottom) {
-            currentScrollSpeed = maxSpeed;
-          }
-          else {
-            currentScrollSpeed = 0;
-          }
-        };
+    const copyFromSelect = document.createElement('select');
+    copyFromSelect.className = 'template-editor-select';
+    copyFromSelect.style.cssText = 'padding: 8px; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary); min-width: 120px;';
 
-        scrollInterval = setInterval(() => {
-          if (currentScrollSpeed !== 0) {
-            groupListContainer.scrollTop += currentScrollSpeed;
-          }
-        }, 16);
+    const addPresetButton = createButton('add', null, async () => {
+      const name = addPresetInput.value.trim();
+      if (!name) {
+        showToast(t("enterPresetName", "Please enter a preset name"), 'error');
+        return;
+      }
+      const copyFromId = copyFromSelect.value || undefined;
+      await noteStorage.addPreset(name, '', copyFromId);
+      addPresetInput.value = '';
+      copyFromSelect.value = '';
+      showToast(t("presetAdded", "Preset added"), 'success');
+      renderPresets();
+    }, undefined, 'primary');
+    addPresetButton.classList.add('btn--icon');
 
-        document.addEventListener('dragover', handleDragOver, { capture: true });
+    addPresetContainer.appendChild(addPresetInput);
+    addPresetContainer.appendChild(copyFromSelect);
+    addPresetContainer.appendChild(addPresetButton);
+    presetContent.appendChild(addPresetContainer);
 
-        (groupListContainer as any).__dragCleanup = () => {
-          document.removeEventListener('dragover', handleDragOver, { capture: true });
-          if (scrollInterval) clearInterval(scrollInterval);
-        };
-      },
-      onEnd: () => {
-        if ((groupListContainer as any).__dragCleanup) {
-          (groupListContainer as any).__dragCleanup();
-          delete (groupListContainer as any).__dragCleanup;
+    async function renderPresets() {
+      presetListContainer.innerHTML = '';
+
+      const presets = noteStorage.getAllPresets();
+      const currentPresetId = await noteStorage.getCurrentPreset();
+
+      // Debug logging
+      console.log('[TemplateEditor] Presets:', presets);
+      console.log('[TemplateEditor] Presets count:', Object.keys(presets).length);
+      console.log('[TemplateEditor] Current preset:', currentPresetId);
+
+      // Update copy-from dropdown
+      copyFromSelect.innerHTML = `<option value="">${t("noCopy", "Empty (no copy)")}</option>`;
+      Object.entries(presets).forEach(([id, preset]) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = `${id} - ${preset.name}`;
+        copyFromSelect.appendChild(option);
+      });
+
+      // Sort presets by order or key
+      const sortedPresets = Object.entries(presets)
+        .sort(([aId, a], [bId, b]) => {
+          const orderA = (a as any).order ?? parseInt(aId);
+          const orderB = (b as any).order ?? parseInt(bId);
+          return orderA - orderB;
+        });
+
+      sortedPresets.forEach(([id, preset]) => {
+        const presetItem = document.createElement('div');
+        presetItem.className = 'group-item template-editor-group-item group-item-board';
+        presetItem.dataset['presetId'] = id;
+        Object.assign(presetItem.style, { marginBottom: '0.5rem', cursor: 'pointer' });
+
+        // Active indicator
+        if (String(currentPresetId) === id) {
+          presetItem.classList.add('preset-item--active');
         }
 
-        const groupItems = [...groupListContainer.querySelectorAll('.group-item')];
-        const newGroupOrder = groupItems.map(item => item.querySelector('span')!.textContent!);
-        settingsService.update({ videoGroups: newGroupOrder });
-      }
+        // Click on preset item to select it
+        presetItem.addEventListener('click', async (e) => {
+          // Don't trigger if clicking on buttons
+          if ((e.target as HTMLElement).closest('.group-item-actions')) return;
+
+          await noteStorage.savePresetNumber(parseInt(id));
+          const templates = await noteStorage.loadPresetTemplates(parseInt(id));
+          actions.setTemplates(templates);
+          showToast(t("presetSelected", `Preset ${id} selected`), 'success');
+          renderPresets();
+        });
+
+        // Name span
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = `${id} - ${(preset as any).name || 'Preset ' + id}`;
+        presetItem.appendChild(nameSpan);
+
+        // Buttons container (same as Groups: edit, delete, drag)
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'group-item-actions';
+
+        // Edit button → Shows Templates tab
+        const editBtn = createButton('edit', null, () => {
+          showEditPresetTab(id, preset as any);
+        }, undefined, 'ghost');
+        editBtn.classList.add('edit-group-btn');
+        editBtn.title = t("editPreset", "Edit preset");
+
+        // Delete button (disabled for 1-3)
+        const deleteBtn = createButton('delete', null, async () => {
+          if (parseInt(id) <= 3) {
+            showToast(t("cannotDeleteDefault", "Cannot delete default presets (1-3)"), 'error');
+            return;
+          }
+          const deleted = await noteStorage.deletePreset(id);
+          if (deleted) {
+            showToast(t("presetDeleted", "Preset deleted"), 'success');
+            renderPresets();
+          }
+        }, undefined, 'ghost');
+        deleteBtn.classList.add('delete-group-btn');
+        if (parseInt(id) <= 3) {
+          deleteBtn.style.opacity = '0.3';
+          deleteBtn.style.cursor = 'not-allowed';
+        }
+
+        // Drag handle
+        const dragHandle = createButton('drag_indicator', null, () => { }, undefined, 'ghost');
+        dragHandle.classList.add('drag-handle');
+        dragHandle.style.cursor = 'grab';
+
+        buttonContainer.appendChild(editBtn);
+        buttonContainer.appendChild(deleteBtn);
+        buttonContainer.appendChild(dragHandle);
+        presetItem.appendChild(buttonContainer);
+        presetListContainer.appendChild(presetItem);
+      });
+
+      // Debug: Verify items were added
+      console.log('[TemplateEditor] Items added to list:', presetListContainer.children.length);
+
+      // Sortable for presets
+      new Sortable(presetListContainer, {
+        animation: 150,
+        handle: '.drag-handle',
+        ghostClass: 'sortable-ghost',
+        onEnd: async () => {
+          const presetItems = [...presetListContainer.querySelectorAll('.group-item')];
+          const orderedIds = presetItems.map(item => (item as HTMLElement).dataset['presetId']!);
+          await noteStorage.reorderPresets(orderedIds);
+        }
+      });
+    }
+
+    // ==========================================
+    // EDIT PRESET CONTENT (Hidden by default)
+    // ==========================================
+    const editPresetContent = document.createElement('div');
+    editPresetContent.className = 'template-editor-content template-editor-content-section';
+    editPresetContent.style.display = 'none';
+
+    // Preset Name Input
+    const presetNameInput = document.createElement('input');
+    presetNameInput.type = 'text';
+    presetNameInput.className = 'preset-name-input template-editor-input-preset-name';
+    presetNameInput.placeholder = t("presetNamePlaceholder", "Preset name");
+    Object.assign(presetNameInput.style, { marginBottom: '0.5rem' });
+    editPresetContent.appendChild(presetNameInput);
+
+    // Preset Description Input
+    const presetDescInput = document.createElement('input');
+    presetDescInput.type = 'text';
+    presetDescInput.className = 'preset-desc-input';
+    presetDescInput.placeholder = t("presetDescPlaceholder", "Description (optional)");
+    Object.assign(presetDescInput.style, {
+      marginBottom: '1rem',
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '6px',
+      border: '1px solid var(--color-border)',
+      background: 'var(--color-surface)',
+      color: 'var(--color-text-primary)'
     });
+    editPresetContent.appendChild(presetDescInput);
 
-    editContainer.appendChild(templateContent);
+    // Templates Textarea
+    const editTextArea = document.createElement("textarea");
+    editTextArea.className = "template-editor-textarea";
+    editTextArea.placeholder = t("templatePlaceholder", "Enter templates, one per line");
+    Object.assign(editTextArea.style, { marginBottom: '1rem', flex: '1' });
+    editPresetContent.appendChild(editTextArea);
+
+    // Button Row
+    const editButtonRow = document.createElement('div');
+    editButtonRow.style.cssText = 'display: flex; gap: 8px; justify-content: flex-end;';
+
+    const cancelButton = createButton(null, t("goBackButton", "Back"), () => {
+      hideEditTabAndReturnToPresets();
+    }, undefined, 'default');
+
+    const savePresetButton = createButton(null, t("saveChangesButton", "Save"), async () => {
+      await savePresetChanges();
+    }, undefined, 'primary');
+
+    editButtonRow.appendChild(cancelButton);
+    editButtonRow.appendChild(savePresetButton);
+    editPresetContent.appendChild(editButtonRow);
+
+    // ==========================================
+    // TAB SWITCHING FUNCTIONS
+    // ==========================================
+    function switchToGroupsTab() {
+      groupContent.style.display = 'flex';
+      presetContent.style.display = 'none';
+      editPresetContent.style.display = 'none';
+
+      groupTabButton.classList.add('active-tab');
+      presetTabButton.classList.remove('active-tab');
+
+      renderGroups(settingsService.get('videoGroups'));
+    }
+
+    function switchToPresetsTab() {
+      groupContent.style.display = 'none';
+      presetContent.style.display = 'flex';
+      editPresetContent.style.display = 'none';
+
+      groupTabButton.classList.remove('active-tab');
+      presetTabButton.classList.add('active-tab');
+
+      renderPresets();
+    }
+
+    function showEditPresetTab(presetId: string, preset: { name: string; description?: string; templates: string[] }) {
+      editingPresetId = presetId;
+
+      // Populate form
+      presetNameInput.value = preset.name || '';
+      presetDescInput.value = preset.description || '';
+      editTextArea.value = (preset.templates || []).join('\n');
+
+      // Switch to edit content (keep Presets tab active)
+      groupContent.style.display = 'none';
+      presetContent.style.display = 'none';
+      editPresetContent.style.display = 'flex';
+
+      // Keep Presets tab active
+      groupTabButton.classList.remove('active-tab');
+      presetTabButton.classList.add('active-tab');
+
+      editTextArea.focus();
+    }
+
+    async function savePresetChanges() {
+      if (!editingPresetId) return;
+
+      const presetNumber = parseInt(editingPresetId);
+      const newName = presetNameInput.value.trim();
+      const newDesc = presetDescInput.value.trim();
+      const newTemplates = editTextArea.value
+        .split('\n')
+        .map(t => t.trim())
+        .filter(t => t);
+
+      // Save name
+      if (newName) {
+        await noteStorage.savePresetName(presetNumber, newName);
+      }
+
+      // Save description
+      await noteStorage.savePresetDescription(presetNumber, newDesc);
+
+      // Save templates
+      await noteStorage.savePresetTemplates(presetNumber, newTemplates);
+
+      // If this is the current preset, update the store
+      const currentPreset = await noteStorage.getCurrentPreset();
+      if (currentPreset === presetNumber) {
+        actions.setTemplates(newTemplates);
+      }
+
+      showToast(t("presetSaved", "Preset saved successfully"), 'success');
+      hideEditTabAndReturnToPresets();
+    }
+
+    function hideEditTabAndReturnToPresets() {
+      editingPresetId = null;
+      switchToPresetsTab();
+    }
+
+    // ==========================================
+    // ASSEMBLE & RENDER
+    // ==========================================
     editContainer.appendChild(groupContent);
-
+    editContainer.appendChild(presetContent);
+    editContainer.appendChild(editPresetContent);
 
     overlay.appendChild(editContainer);
     document.querySelector("#vidscholar-root")?.appendChild(overlay);
 
-    // Initial focus on template editor textarea if templates tab is active
-    editTextArea.focus();
-    editTextArea.setSelectionRange(editTextArea.value.length, editTextArea.value.length);
+    // Initial render - Presets tab is default
+    await renderPresets();
 
     overlay.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') overlay.remove();
     });
 
   } catch (error) {
-    showToast(languageService.translate("failedToLoadTemplates"), "error");
+    showToast(t("failedToLoadTemplates", "Failed to load templates"), "error");
   }
 }

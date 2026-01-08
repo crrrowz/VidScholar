@@ -117,6 +117,7 @@ export class NoteStorage {
         currentPresets[presetNumber].name = name;
       }
 
+      currentPresets[presetNumber].updatedAt = Date.now();
       await settingsService.update({ presets: currentPresets });
       this.notifyTemplateListeners();
     } catch (error) {
@@ -129,6 +130,147 @@ export class NoteStorage {
     const presets = currentSettings.presets || {};
 
     return presets[presetNumber]?.name;
+  }
+
+  async savePresetDescription(presetNumber: number, description: string): Promise<void> {
+    try {
+      const currentSettings = settingsService.getSettings();
+      const currentPresets = currentSettings.presets || {};
+
+      if (!currentPresets[presetNumber]) {
+        currentPresets[presetNumber] = {
+          name: this.getPresetDefaultName(presetNumber),
+          description: description,
+          templates: this.defaultPresets[presetNumber] || []
+        };
+      } else {
+        currentPresets[presetNumber].description = description;
+      }
+
+      currentPresets[presetNumber].updatedAt = Date.now();
+      await settingsService.update({ presets: currentPresets });
+      this.notifyTemplateListeners();
+    } catch (error) {
+      console.error('Failed to save preset description:', error);
+    }
+  }
+
+  async loadPresetDescription(presetNumber: number): Promise<string | undefined> {
+    const currentSettings = settingsService.getSettings();
+    const presets = currentSettings.presets || {};
+    return presets[presetNumber]?.description;
+  }
+
+  /**
+   * Get all presets sorted by order
+   * Falls back to config presets if settings presets are empty
+   */
+  getAllPresets(): Record<string, any> {
+    const currentSettings = settingsService.getSettings();
+    const presets = currentSettings.presets;
+
+    // If presets exist and have entries, return them
+    if (presets && Object.keys(presets).length > 0) {
+      return presets;
+    }
+
+    // Fallback to config presets
+    return config.getPresets();
+  }
+
+  /**
+   * Add a new preset dynamically
+   */
+  async addPreset(name: string, description: string = '', copyFromId?: string): Promise<string> {
+    const currentSettings = settingsService.getSettings();
+    const currentPresets = currentSettings.presets || {};
+
+    // Generate new ID (next available number)
+    const existingIds = Object.keys(currentPresets).map(Number).filter(n => !isNaN(n));
+    const newId = String(Math.max(...existingIds, 0) + 1);
+
+    // Get templates to copy (if specified)
+    let templates: string[] = [];
+    if (copyFromId && currentPresets[copyFromId]) {
+      templates = [...(currentPresets[copyFromId].templates || [])];
+    }
+
+    // Create new preset
+    currentPresets[newId] = {
+      name,
+      description,
+      templates,
+      order: Object.keys(currentPresets).length,
+      isDefault: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    await settingsService.update({ presets: currentPresets });
+    this.notifyTemplateListeners();
+    return newId;
+  }
+
+  /**
+   * Delete a preset (only non-default presets 4+)
+   */
+  async deletePreset(presetId: string): Promise<boolean> {
+    const presetNumber = parseInt(presetId);
+
+    // Protect default presets (1-3)
+    if (presetNumber <= 3) {
+      console.warn('Cannot delete default presets (1-3)');
+      return false;
+    }
+
+    const currentSettings = settingsService.getSettings();
+    const currentPresets = currentSettings.presets || {};
+
+    if (!currentPresets[presetId]) {
+      return false;
+    }
+
+    // Check if it's marked as default
+    if (currentPresets[presetId].isDefault) {
+      console.warn('Cannot delete preset marked as default');
+      return false;
+    }
+
+    delete currentPresets[presetId];
+
+    // If deleted preset was current, switch to preset 1
+    const currentPreset = await this.getCurrentPreset();
+    if (currentPreset === presetNumber) {
+      await this.savePresetNumber(1);
+    }
+
+    await settingsService.update({ presets: currentPresets });
+    this.notifyTemplateListeners();
+    return true;
+  }
+
+  /**
+   * Reorder presets by updating the order field
+   */
+  async reorderPresets(orderedIds: string[]): Promise<boolean> {
+    try {
+      const currentSettings = settingsService.getSettings();
+      const currentPresets = currentSettings.presets || {};
+
+      orderedIds.forEach((id, index) => {
+        if (currentPresets[id]) {
+          currentPresets[id].order = index;
+          currentPresets[id].updatedAt = Date.now();
+        }
+      });
+
+      await settingsService.update({ presets: currentPresets });
+      this.notifyTemplateListeners();
+      return true;
+    } catch (error) {
+      console.error('Failed to reorder presets:', error);
+      return false;
+    }
   }
 
   // ==========================================

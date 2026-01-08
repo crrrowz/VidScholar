@@ -208,18 +208,19 @@ function createVideoManagerUI(
     null,
     async () => {
       await shareService.importNotesFromJson(true, (storedVideos: StoredVideoData[]) => {
-        // Convert StoredVideoData[] to Video[] for display
+        // Convert StoredVideoData[] to Video[] for display with robust fallbacks
         const videos: Video[] = storedVideos.map(sv => ({
-          id: sv.videoId,
-          title: sv.videoTitle,
-          thumbnail: sv.thumbnail,
-          notes: sv.notes,
-          lastModified: sv.lastModified,
-          firstNoteTimestamp: sv.firstNoteTimestamp,
+          id: sv.videoId || (sv as any).id || '',
+          title: sv.videoTitle || (sv as any).title || 'Untitled',
+          thumbnail: sv.thumbnail || (sv as any).thumbnailUrl || '',
+          notes: sv.notes || [],
+          lastModified: sv.lastModified || Date.now(),
+          firstNoteTimestamp: sv.firstNoteTimestamp || 0,
           group: sv.group,
           channelName: sv.channelName,
           channelId: sv.channelId
-        }));
+        })).filter(v => !!v.id); // Filter out invalid items immediately
+
         renderList(videos, '');
       });
     },

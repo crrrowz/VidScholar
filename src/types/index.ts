@@ -97,6 +97,17 @@ export interface ImportDecision {
   notes?: Note[];
 }
 
+// Preset Types
+export interface Preset {
+  name: string;
+  description: string;
+  templates: string[];
+  order?: number;        // Display order
+  isDefault?: boolean;   // Protected from deletion (presets 1-3)
+  createdAt?: number;    // Unix timestamp
+  updatedAt?: number;    // Unix timestamp
+}
+
 // Settings Types
 export interface UserSettings {
   theme: Theme;
@@ -138,11 +149,7 @@ export interface Config {
     maxRetentionDays: number;
     minRetentionDays: number;
   };
-  presets: Record<string, {
-    name: string;
-    description: string;
-    templates: string[];
-  }>;
+  presets: Record<string, Preset>;
   ui: {
     sidebarWidth: string;
     maxSidebarHeight: string;

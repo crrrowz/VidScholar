@@ -43,19 +43,18 @@
     "message": "Failed to copy notes to clipboard",
     "description": "Toast message shown when copying all notes fails."
   },
-    "templatesSavedSuccessfully": {
-      "message": "Templates saved successfully!",
-      "description": "Message displayed when templates are successfully saved."
-    },
-    "presetNamePlaceholder": {
-      "message": "Preset Name",
-      "description": "Placeholder for the preset name input field."
-    },
-    "failedToSaveTemplates": {
-      "message": "Failed to save templates.",
-      "description": "Toast message shown when saving templates fails."
-    },
-
+  "templatesSavedSuccessfully": {
+    "message": "Templates saved successfully!",
+    "description": "Message displayed when templates are successfully saved."
+  },
+  "presetNamePlaceholder": {
+    "message": "Preset Name",
+    "description": "Placeholder for the preset name input field."
+  },
+  "failedToSaveTemplates": {
+    "message": "Failed to save templates.",
+    "description": "Toast message shown when saving templates fails."
+  },
   "addNote": {
     "message": "Add note",
     "description": "Tooltip for the 'add note' button."
@@ -126,19 +125,20 @@
     "message": "Are you sure you want to delete all notes? This action cannot be undone.",
     "description": "Message for the 'Delete All' confirmation dialog."
   },
-      "confirm": {
-        "message": "Confirm",
-        "description": "Generic text for a confirm button."
-      },
-      "presetGroup": {
-        "message": "Group $PRESET_NUMBER$",
-        "description": "Preset group name with a number.",
-        "placeholders": {
-          "PRESET_NUMBER": {
-            "content": "$1"
-          }
-        }
-      },  "switchedToPreset": {
+  "confirm": {
+    "message": "Confirm",
+    "description": "Generic text for a confirm button."
+  },
+  "presetGroup": {
+    "message": "Group $PRESET_NUMBER$",
+    "description": "Preset group name with a number.",
+    "placeholders": {
+      "PRESET_NUMBER": {
+        "content": "$1"
+      }
+    }
+  },
+  "switchedToPreset": {
     "message": "Switched to Preset $PRESET_NUMBER$",
     "description": "Toast message shown when switching presets.",
     "placeholders": {
@@ -155,10 +155,11 @@
     "message": "Delete note",
     "description": "Tooltip for the delete note button."
   },
-      "editTemplatesTitle": {
-        "message": "Edit Templates",
-        "description": "Title for the template editor modal."
-      },  "templatePlaceholder": {
+  "editTemplatesTitle": {
+    "message": "Edit Templates",
+    "description": "Title for the template editor modal."
+  },
+  "templatePlaceholder": {
     "message": "Enter one template per line...",
     "description": "Placeholder text for the template textarea."
   },
@@ -272,27 +273,28 @@
     "message": "Enter the number of days to retain notes (e.g., 30):",
     "description": "Prompt for setting auto-delete retention days."
   },
-      "savedDays": {
-        "message": "Saved! $DAYS$ days",
-        "description": "Toast message for successful retention days update.",
-        "placeholders": {
-          "DAYS": {
-            "content": "$1"
-          }
-        }
-      },
-      "daysUnit": {
-        "message": "days",
-        "description": "Unit for number of days."
-      },
-      "dayUnit": {
-        "message": "day",
-        "description": "Unit for a single day."
-      },
-      "couldNotLoadData": {
-        "message": "Could not load data",
-        "description": "Error toast message when video manager data fails to load."
-      },  "downloadAllNotesJson": {
+  "savedDays": {
+    "message": "Saved! $DAYS$ days",
+    "description": "Toast message for successful retention days update.",
+    "placeholders": {
+      "DAYS": {
+        "content": "$1"
+      }
+    }
+  },
+  "daysUnit": {
+    "message": "days",
+    "description": "Unit for number of days."
+  },
+  "dayUnit": {
+    "message": "day",
+    "description": "Unit for a single day."
+  },
+  "couldNotLoadData": {
+    "message": "Could not load data",
+    "description": "Error toast message when video manager data fails to load."
+  },
+  "downloadAllNotesJson": {
     "message": "Download All Notes",
     "description": "Button to download all notes across all videos as a single JSON file."
   },
@@ -336,16 +338,24 @@
     "message": "Cannot merge notes for different videos. Imported notes are for video $IMPORTED_VIDEO_ID$ but current video is $CURRENT_VIDEO_ID$.",
     "description": "Error message when attempting to merge video-specific notes for a different video ID.",
     "placeholders": {
-      "IMPORTED_VIDEO_ID": { "content": "$1" },
-      "CURRENT_VIDEO_ID": { "content": "$2" }
+      "IMPORTED_VIDEO_ID": {
+        "content": "$1"
+      },
+      "CURRENT_VIDEO_ID": {
+        "content": "$2"
+      }
     }
   },
   "invalidVideoIdForReplace": {
     "message": "Cannot replace notes for different videos. Imported notes are for video $IMPORTED_VIDEO_ID$ but current video is $CURRENT_VIDEO_ID$.",
     "description": "Error message when attempting to replace video-specific notes for a different video ID.",
     "placeholders": {
-      "IMPORTED_VIDEO_ID": { "content": "$1" },
-      "CURRENT_VIDEO_ID": { "content": "$2" }
+      "IMPORTED_VIDEO_ID": {
+        "content": "$1"
+      },
+      "CURRENT_VIDEO_ID": {
+        "content": "$2"
+      }
     }
   },
   "notesMergeSuccess": {
@@ -356,14 +366,18 @@
     "message": "Error merging notes: $ERROR_MESSAGE$",
     "description": "Error message for notes merging failures.",
     "placeholders": {
-      "ERROR_MESSAGE": { "content": "$1" }
+      "ERROR_MESSAGE": {
+        "content": "$1"
+      }
     }
   },
   "notesImportError": {
     "message": "Error importing notes: $ERROR_MESSAGE$",
     "description": "General error message for notes import failures.",
     "placeholders": {
-      "ERROR_MESSAGE": { "content": "$1" }
+      "ERROR_MESSAGE": {
+        "content": "$1"
+      }
     }
   },
   "importVideoIdMismatchTitle": {
@@ -374,16 +388,24 @@
     "message": "Imported notes are for video <b>`$IMPORTED_VIDEO_ID$`</b> but current video is <b>`$CURRENT_VIDEO_ID$`</b>. Do you want to open the video?",
     "description": "Message for the video ID mismatch dialog.",
     "placeholders": {
-      "IMPORTED_VIDEO_ID": { "content": "$1" },
-      "CURRENT_VIDEO_ID": { "content": "$2" }
+      "IMPORTED_VIDEO_ID": {
+        "content": "$1"
+      },
+      "CURRENT_VIDEO_ID": {
+        "content": "$2"
+      }
     }
   },
   "importVideoIdMismatch": {
     "message": "Imported notes are for video $IMPORTED_VIDEO_ID$ but current video is $CURRENT_VIDEO_ID$. Import cancelled.",
     "description": "Error message when imported notes video ID does not match current video ID.",
     "placeholders": {
-      "IMPORTED_VIDEO_ID": { "content": "$1" },
-      "CURRENT_VIDEO_ID": { "content": "$2" }
+      "IMPORTED_VIDEO_ID": {
+        "content": "$1"
+      },
+      "CURRENT_VIDEO_ID": {
+        "content": "$2"
+      }
     }
   },
   "importCancelled": {
@@ -450,109 +472,166 @@
     "message": "Video \"$VIDEO_TITLE$\" already exists. Do you want to merge its notes with the imported notes? (Cancel to replace)",
     "description": "Confirmation message for merging notes of a specific video during an all-notes import.",
     "placeholders": {
-        "VIDEO_TITLE": { "content": "$1" }
+      "VIDEO_TITLE": {
+        "content": "$1"
+      }
     }
   },
   "importDecisionTitle": {
-      "message": "Import Decision Manager",
-      "description": "Title for the import decision modal."
+    "message": "Import Decision Manager",
+    "description": "Title for the import decision modal."
   },
   "loadingDecisions": {
-      "message": "Preparing import decisions...",
-      "description": "Loading message in the import decision modal."
+    "message": "Preparing import decisions...",
+    "description": "Loading message in the import decision modal."
   },
-      "singleVideoImportTitle": {
-          "message": "Import Notes for \"$VIDEO_TITLE$\"",
-          "description": "Title for single video import decision, showing video title.",
-          "placeholders": {
-              "VIDEO_TITLE": { "content": "$1" }
-          }
-      },
-      "singleVideoImportDescription": {
-          "message": "Choose whether to merge new notes with existing ones, or replace all existing notes with the imported ones.",
-          "description": "Description text for single video import decision modal."
-      },  "globalMergeAll": {
-      "message": "Merge All",
-      "description": "Button to merge all imported videos globally."
+  "singleVideoImportTitle": {
+    "message": "Import Notes for \"$VIDEO_TITLE$\"",
+    "description": "Title for single video import decision, showing video title.",
+    "placeholders": {
+      "VIDEO_TITLE": {
+        "content": "$1"
+      }
+    }
+  },
+  "singleVideoImportDescription": {
+    "message": "Choose whether to merge new notes with existing ones, or replace all existing notes with the imported ones.",
+    "description": "Description text for single video import decision modal."
+  },
+  "globalMergeAll": {
+    "message": "Merge All",
+    "description": "Button to merge all imported videos globally."
   },
   "globalReplaceAll": {
-      "message": "Replace All",
-      "description": "Button to replace all existing videos globally."
+    "message": "Replace All",
+    "description": "Button to replace all existing videos globally."
   },
   "globalSkipAll": {
-      "message": "Skip All",
-      "description": "Button to skip all imported videos globally."
+    "message": "Skip All",
+    "description": "Button to skip all imported videos globally."
   },
   "newVideo": {
-      "message": "New Video",
-      "description": "Status indicator for a new video in the import decision list."
+    "message": "New Video",
+    "description": "Status indicator for a new video in the import decision list."
   },
   "existingVideo": {
-      "message": "Existing Video",
-      "description": "Status indicator for an existing video in the import decision list."
+    "message": "Existing Video",
+    "description": "Status indicator for an existing video in the import decision list."
   },
   "skipOption": {
-      "message": "Skip",
-      "description": "Option to skip importing notes for a specific video."
+    "message": "Skip",
+    "description": "Option to skip importing notes for a specific video."
   },
   "applyChanges": {
-      "message": "Apply Changes",
-      "description": "Button to confirm and apply import decisions."
+    "message": "Apply Changes",
+    "description": "Button to confirm and apply import decisions."
   },
   "replaceOption": {
-      "message": "Replace",
-      "description": "Option to replace notes."
+    "message": "Replace",
+    "description": "Option to replace notes."
   },
   "mergeOption": {
-      "message": "Merge",
-      "description": "Option to merge notes."
+    "message": "Merge",
+    "description": "Option to merge notes."
   },
   "mergeWithExistingNotes": {
-          "message": "Merge with existing notes",
-          "description": "Label for the checkbox to merge imported notes with existing ones."
-        },
-        "enableAutoAddTranscript": {
-          "message": "Enable automatic transcript text",
-          "description": "Tooltip for enabling auto transcript text."
-        },
-        "disableAutoAddTranscript": {
-          "message": "Disable automatic transcript text",
-          "description": "Tooltip for disabling auto transcript text."
-        },
-        "showTranscript": {
-          "message": "Show transcript",
-          "description": "Aria label for the button to show the video transcript."
-        },
-        "noteDeleted": {
-          "message": "Note deleted",
-          "description": "Toast message shown when a note is deleted successfully."
-        },
-        "videoGroupsTitle": {
-          "message": "Video Groups",
-          "description": "Title for the video groups section in the template editor."
-        },
-        "addNewGroupPlaceholder": {
-          "message": "Add new group",
-          "description": "Placeholder for the input field to add new video groups."
-        },
-        "addButton": {
-          "message": "Add",
-          "description": "Text for the button to add a new video group."
-        },
-        "groupExistsError": {
-          "message": "Group already exists",
-          "description": "Error message shown when trying to add a group that already exists."
-        },
-        "deleteButton": {
-          "message": "Delete",
-          "description": "Text for the button to delete a video group or a note."
-        },
-        "noGroup": {
-                  "message": "No Group",
-                  "description": "Label for videos that do not belong to any group."
-                },
-                "transcriptNotAvailable": {
-                  "message": "Transcript not available for this video.",
-                  "description": "Error message when transcript is not available."
-                }
-              }
+    "message": "Merge with existing notes",
+    "description": "Label for the checkbox to merge imported notes with existing ones."
+  },
+  "enableAutoAddTranscript": {
+    "message": "Enable automatic transcript text",
+    "description": "Tooltip for enabling auto transcript text."
+  },
+  "disableAutoAddTranscript": {
+    "message": "Disable automatic transcript text",
+    "description": "Tooltip for disabling auto transcript text."
+  },
+  "showTranscript": {
+    "message": "Show transcript",
+    "description": "Aria label for the button to show the video transcript."
+  },
+  "noteDeleted": {
+    "message": "Note deleted",
+    "description": "Toast message shown when a note is deleted successfully."
+  },
+  "videoGroupsTitle": {
+    "message": "Video Groups",
+    "description": "Title for the video groups section in the template editor."
+  },
+  "addNewGroupPlaceholder": {
+    "message": "Add new group",
+    "description": "Placeholder for the input field to add new video groups."
+  },
+  "addButton": {
+    "message": "Add",
+    "description": "Text for the button to add a new video group."
+  },
+  "groupExistsError": {
+    "message": "Group already exists",
+    "description": "Error message shown when trying to add a group that already exists."
+  },
+  "deleteButton": {
+    "message": "Delete",
+    "description": "Text for the button to delete a video group or a note."
+  },
+  "noGroup": {
+    "message": "No Group",
+    "description": "Label for videos that do not belong to any group."
+  },
+  "transcriptNotAvailable": {
+    "message": "Transcript not available for this video.",
+    "description": "Error message when transcript is not available."
+  },
+  "presetsTitle": {
+    "message": "Presets",
+    "description": "Title for the presets tab in template editor."
+  },
+  "addNewPresetPlaceholder": {
+    "message": "New preset name...",
+    "description": "Placeholder for adding a new preset."
+  },
+  "noCopy": {
+    "message": "Empty (no copy)",
+    "description": "Option to create empty preset without copying templates."
+  },
+  "enterPresetName": {
+    "message": "Please enter a preset name",
+    "description": "Error when preset name is empty."
+  },
+  "presetAdded": {
+    "message": "Preset added",
+    "description": "Success message when preset is added."
+  },
+  "selectPreset": {
+    "message": "Select this preset",
+    "description": "Tooltip for selecting a preset."
+  },
+  "editPreset": {
+    "message": "Edit preset",
+    "description": "Tooltip for editing a preset."
+  },
+  "cannotDeleteDefault": {
+    "message": "Cannot delete default presets (1-3)",
+    "description": "Error when trying to delete default presets."
+  },
+  "presetDeleted": {
+    "message": "Preset deleted",
+    "description": "Success message when preset is deleted."
+  },
+  "presetSelected": {
+    "message": "Preset selected",
+    "description": "Success message when preset is selected."
+  },
+  "presetDescPlaceholder": {
+    "message": "Description (optional)",
+    "description": "Placeholder for preset description."
+  },
+  "presetSaved": {
+    "message": "Preset saved successfully",
+    "description": "Success message when preset is saved."
+  },
+  "goBackButton": {
+    "message": "Back",
+    "description": "Text for the back/return button."
+  }
+}

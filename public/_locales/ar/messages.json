@@ -593,5 +593,69 @@
   "transcriptNotAvailable": {
     "message": "النص غير متوفر لهذا الفيديو.",
     "description": "Error message when transcript is not available."
+  },
+  "presetsTitle": {
+    "message": "الإعدادات المسبقة",
+    "description": "Title for the presets tab in template editor."
+  },
+  "addNewPresetPlaceholder": {
+    "message": "اسم الإعداد المسبق الجديد...",
+    "description": "Placeholder for adding a new preset."
+  },
+  "noCopy": {
+    "message": "فارغ (بدون نسخ)",
+    "description": "Option to create empty preset without copying templates."
+  },
+  "enterPresetName": {
+    "message": "الرجاء إدخال اسم الإعداد المسبق",
+    "description": "Error when preset name is empty."
+  },
+  "presetAdded": {
+    "message": "تمت إضافة الإعداد المسبق",
+    "description": "Success message when preset is added."
+  },
+  "selectPreset": {
+    "message": "تحديد هذا الإعداد",
+    "description": "Tooltip for selecting a preset."
+  },
+  "editPreset": {
+    "message": "تعديل الإعداد",
+    "description": "Tooltip for editing a preset."
+  },
+  "cannotDeleteDefault": {
+    "message": "لا يمكن حذف الإعدادات المسبقة الافتراضية (1-3)",
+    "description": "Error when trying to delete default presets."
+  },
+  "presetDeleted": {
+    "message": "تم حذف الإعداد المسبق",
+    "description": "Success message when preset is deleted."
+  },
+  "presetSelected": {
+    "message": "تم تحديد الإعداد المسبق",
+    "description": "Success message when preset is selected."
+  },
+  "presetDescPlaceholder": {
+    "message": "الوصف (اختياري)",
+    "description": "Placeholder for preset description."
+  },
+  "presetSaved": {
+    "message": "تم حفظ الإعداد المسبق بنجاح",
+    "description": "Success message when preset is saved."
+  },
+  "edit": {
+    "message": "تعديل",
+    "description": "Text for edit button or action."
+  },
+  "matchingNotes": {
+    "message": "ملاحظات مطابقة",
+    "description": "Text showing count of matching notes in search results."
+  },
+  "noSearchResults": {
+    "message": "لم يتم العثور على نتائج",
+    "description": "Message shown when search returns no results."
+  },
+  "goBackButton": {
+    "message": "العودة",
+    "description": "Text for the back/return button."
   }
 }
