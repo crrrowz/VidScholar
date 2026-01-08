@@ -12,7 +12,8 @@ export const actions = {
   addNote(note: Note): void {
     const store = getStore();
     const state = store.getState();
-    const newNotes = [...state.notes, note];
+    // Add new note at the BEGINNING of the array (top of the list)
+    const newNotes = [note, ...state.notes];
 
     store.setState({
       notes: newNotes,

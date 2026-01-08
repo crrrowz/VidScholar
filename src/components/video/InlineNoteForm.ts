@@ -7,6 +7,7 @@ import { formatTimestamp } from '../../utils/time';
 import { languageService } from '../../services/LanguageService';
 import { updateTemplateSelect } from '../toolbar/MainToolbar';
 import { createButton } from '../ui/Button';
+import { noteActionsService } from '../../services/NoteActionsService';
 
 
 // Inline note form variables
@@ -18,7 +19,8 @@ export async function showInlineNoteForm(
     timestamp: number,
     onClose: () => void,
     existingText?: string,
-    existingTimestamp?: string
+    existingTimestamp?: string,
+    autoCloseDuration?: number // Optional auto-close duration in ms
 ) {
     // Clean up existing form if any
     if (currentForm) {
@@ -128,6 +130,51 @@ export async function showInlineNoteForm(
     });
     // Set form direction based on UI language
     form.setAttribute('dir', languageService.getCurrentDirection());
+
+    // Auto-Close Logic
+    if (autoCloseDuration && autoCloseDuration > 0) {
+        console.log(`[InlineNoteForm] Auto-close set for ${autoCloseDuration}ms`);
+
+        // Progress bar for auto-close
+        const progressBar = document.createElement('div');
+        Object.assign(progressBar.style, {
+            position: 'absolute',
+            bottom: '0',
+            left: '0',
+            height: '2px',
+            backgroundColor: themeColors.primary,
+            width: '100%',
+            transition: `width ${autoCloseDuration}ms linear`,
+            zIndex: '10002',
+            borderRadius: '0 0 12px 12px'
+        });
+        form.appendChild(progressBar);
+
+        // Start animation immediately
+        requestAnimationFrame(() => {
+            progressBar.style.width = '0%';
+        });
+
+        // Set timeout
+        autoCloseTimeout = setTimeout(() => {
+            console.log('[InlineNoteForm] Auto-closing...');
+            closeForm(form, button, onClose);
+        }, autoCloseDuration);
+
+        // Cancel on interaction
+        const cancelAutoClose = () => {
+            if (autoCloseTimeout) {
+                console.log('[InlineNoteForm] Auto-close cancelled by user interaction');
+                clearTimeout(autoCloseTimeout);
+                autoCloseTimeout = null;
+                progressBar.style.display = 'none'; // Hide progress bar
+            }
+        };
+
+        form.addEventListener('mouseenter', cancelAutoClose);
+        form.addEventListener('click', cancelAutoClose);
+        form.addEventListener('input', cancelAutoClose);
+    }
 
     // --- 1. Top Section: Template Toolbar ---
     const toolbarContainer = document.createElement('div');
@@ -365,17 +412,11 @@ export async function showInlineNoteForm(
         textarea.focus();
     });
 
-    // Reset auto-close on input, but buttons remain visible
+    // Reset auto-close on input
     textarea.addEventListener('input', () => {
-        if (textarea.value.trim().length > 0) {
-            if (autoCloseTimeout) {
-                clearTimeout(autoCloseTimeout);
-                autoCloseTimeout = null;
-            }
-        } else {
-            // Optional: Restart timer if empty? Or just ensure it's cleared if they start typing.
-            // If we want it to close after 5s of emptiness even if buttons are there:
-            startAutoCloseTimer(form, button, onClose);
+        if (autoCloseTimeout) {
+            clearTimeout(autoCloseTimeout);
+            autoCloseTimeout = null;
         }
     });
 
@@ -393,9 +434,6 @@ export async function showInlineNoteForm(
         }
     });
 
-    // Start auto-close timer
-    startAutoCloseTimer(form, button, onClose);
-
     // Event blocking
     const eventsToBlock = [
         'click', 'dblclick', 'mousedown', 'mouseup',
@@ -411,18 +449,7 @@ export async function showInlineNoteForm(
     });
 }
 
-function startAutoCloseTimer(form: HTMLElement, button: HTMLElement, onClose: () => void) {
-    if (autoCloseTimeout) {
-        clearTimeout(autoCloseTimeout);
-    }
 
-    autoCloseTimeout = setTimeout(() => {
-        const textarea = form.querySelector('textarea') as HTMLTextAreaElement;
-        if (!textarea || textarea.value.trim().length === 0) {
-            closeForm(form, button, onClose);
-        }
-    }, 5000); // 5 seconds
-}
 
 async function closeForm(form: HTMLElement, button: HTMLElement, onClose: () => void) {
     if (autoCloseTimeout) {
@@ -469,39 +496,25 @@ async function closeForm(form: HTMLElement, button: HTMLElement, onClose: () => 
     button.style.display = 'flex';
 }
 
-function saveNote(timestamp: number, text: string, button: HTMLElement, isEditMode: boolean = false, existingTimestamp?: string) {
-    const formattedTime = formatTimestamp(timestamp);
-
+async function saveNote(timestamp: number, text: string, button: HTMLElement, isEditMode: boolean = false, existingTimestamp?: string) {
     if (isEditMode && existingTimestamp) {
-        // Update existing note
-        actions.updateNote(existingTimestamp, { text: text });
-        actions.saveNotes();
-
-        // Flash button green to confirm save
-        flashButtonColor(button, '#4caf50');
+        // Update existing note using centralized service
+        const success = await noteActionsService.updateNoteText(existingTimestamp, text);
+        if (success) {
+            flashButtonColor(button, '#4caf50');
+        }
     } else {
-        // Create and add new note
-        const newNote = {
-            timestamp: formattedTime,
-            timestampInSeconds: timestamp,
-            text: text,
-            id: `note-${Date.now()}`
-        };
+        // Create new note using centralized service
+        const result = await noteActionsService.createNote({
+            timestamp,
+            text,
+            scrollToNote: true,
+            focusTextarea: false
+        });
 
-        // Use actions to add note (this sets selectedNote and newlyAddedNote)
-        actions.addNote(newNote);
-        actions.saveNotes();
-
-        // Flash button green to confirm save
-        flashButtonColor(button, '#4caf50');
-
-        // Scroll to note in sidebar if visible
-        setTimeout(() => {
-            const noteElement = document.querySelector(`[data-note-id="${newNote.id}"]`);
-            if (noteElement) {
-                noteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
+        if (result.success) {
+            flashButtonColor(button, '#4caf50');
+        }
     }
 }
 

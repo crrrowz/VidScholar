@@ -4,12 +4,12 @@ import { actions } from '../../state/actions';
 import { noteStorage } from '../../classes/NoteStorage';
 import { createButton } from '../ui/Button';
 import { showToast } from '../../utils/toast';
-import { formatTimestamp, parseTimestamp } from '../../utils/time';
+import { parseTimestamp } from '../../utils/time';
 import { getVideoPlayer, openTranscript } from '../../utils/video';
-import { scrollToNewNote, focusNoteTextarea } from '../notes/NotesList';
 import config from '../../utils/config';
 import { languageService } from '../../services/LanguageService';
 import { getActiveInput, getLastActiveInput } from '../../utils/activeInputTracker';
+import { noteActionsService } from '../../services/NoteActionsService';
 
 export async function createMainToolbar(): Promise<HTMLElement> {
   const state = getStore().getState();
@@ -37,18 +37,17 @@ export async function createMainToolbar(): Promise<HTMLElement> {
         const state = getStore().getState();
         const currentTime = player.currentTime;
         let selectedTimestampInSeconds = currentTime;
-        let selectedTimestampFormatted = formatTimestamp(currentTime);
         let transcriptText = '';
 
+        // Auto-add transcript if enabled
         if (state.autoAddTranscript) {
           await openTranscript();
-          // Add a small delay to allow the transcript to render
           await new Promise(resolve => setTimeout(resolve, 500));
 
           const transcriptContainer = document.querySelector('ytd-transcript-renderer');
           if (transcriptContainer && getComputedStyle(transcriptContainer).display !== 'none') {
             const segments = transcriptContainer.querySelectorAll('ytd-transcript-segment-renderer');
-            let closestSegment: { timestampInSeconds: number; timestamp: string; text: string } | null = null;
+            let closestSegment: { timestampInSeconds: number; text: string } | null = null;
             let minDiff = Infinity;
 
             segments.forEach(segment => {
@@ -56,7 +55,7 @@ export async function createMainToolbar(): Promise<HTMLElement> {
               const textElement = segment.querySelector('.segment-text');
 
               if (timestampElement && textElement) {
-                const segmentTimestampStr = timestampElement.textContent.trim();
+                const segmentTimestampStr = (timestampElement as HTMLElement).textContent!.trim();
                 const segmentTimeInSeconds = parseTimestamp(segmentTimestampStr);
 
                 const diff = Math.abs(currentTime - segmentTimeInSeconds);
@@ -64,57 +63,46 @@ export async function createMainToolbar(): Promise<HTMLElement> {
                   minDiff = diff;
                   closestSegment = {
                     timestampInSeconds: segmentTimeInSeconds,
-                    timestamp: segmentTimestampStr,
-                    text: textElement.textContent.trim()
+                    text: (textElement as HTMLElement).textContent!.trim()
                   };
                 }
               }
             });
 
-            if (closestSegment) {
-              selectedTimestampInSeconds = closestSegment.timestampInSeconds;
-              selectedTimestampFormatted = closestSegment.timestamp;
-              transcriptText = closestSegment.text;
+            if (closestSegment !== null) {
+              selectedTimestampInSeconds = (closestSegment as { timestampInSeconds: number; text: string }).timestampInSeconds;
+              transcriptText = (closestSegment as { timestampInSeconds: number; text: string }).text;
             }
           }
         }
 
-        const newNote = {
-          timestamp: selectedTimestampFormatted,
-          timestampInSeconds: selectedTimestampInSeconds,
-          text: transcriptText
-        };
+        // Use centralized NoteActionsService
+        const result = await noteActionsService.createNote({
+          timestamp: selectedTimestampInSeconds,
+          text: transcriptText,
+          scrollToNote: true,
+          focusTextarea: true,
+          onConflict: (existingNote) => {
+            // Flash button red with shake to indicate existing note
+            const originalBg = addNoteButton.style.backgroundColor;
+            addNoteButton.style.backgroundColor = '#f44336';
+            addNoteButton.classList.add('animate-shake');
 
-        const notes = getStore().getState().notes;
-        const tenSeconds = 10;
-        const conflictingNote = notes.find(note =>
-          Math.abs(note.timestampInSeconds - newNote.timestampInSeconds) < tenSeconds
-        );
+            setTimeout(() => {
+              addNoteButton.style.backgroundColor = originalBg;
+              addNoteButton.classList.remove('animate-shake');
 
-        if (conflictingNote) {
-          // Flash button red with shake to indicate existing note
-          const originalBg = addNoteButton.style.backgroundColor;
-          addNoteButton.style.backgroundColor = '#f44336';
-          addNoteButton.classList.add('animate-shake');
+              // Select and scroll to the existing note for editing
+              noteActionsService.selectExistingNote(existingNote, true);
+            }, 500);
+          }
+        });
 
-          setTimeout(() => {
-            addNoteButton.style.backgroundColor = originalBg;
-            addNoteButton.classList.remove('animate-shake');
-
-            // Scroll to and select the existing note for editing
-            actions.selectNote(conflictingNote);
-            scrollToNewNote(conflictingNote.timestamp);
-
-            // Focus on the note's textarea
-            focusNoteTextarea(conflictingNote.timestamp);
-          }, 500);
+        if (!result.success && result.conflict) {
+          // Conflict already handled by onConflict callback
           return;
         }
 
-        actions.addNote(newNote);
-        actions.sortNotes();
-
-        setTimeout(() => scrollToNewNote(newNote.timestamp), 100);
       } catch (error) {
         console.error('Failed to add note:', error);
         showToast(languageService.translate("failedToAddNote"), 'error');

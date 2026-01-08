@@ -348,24 +348,23 @@ export class NoteStorage {
     }
   }
 
+  /**
+   * Overwrite all notes - delegates to NotesRepository which has safety measures
+   */
   async overwriteAllNotes(notesByVideo: StoredVideoData[]): Promise<boolean> {
     try {
-      await this.clearAllNotes();
+      // Import notesRepository to use the fixed implementation with auto-backup
+      const { notesRepository } = await import('../storage/NotesRepository');
+      const result = await notesRepository.overwriteAllNotes(notesByVideo);
 
-      for (const video of notesByVideo) {
-        await storageAdapter.saveVideoNotes({
-          videoId: video.videoId,
-          videoTitle: video.videoTitle,
-          notes: video.notes,
-          group: video.group,
-          channelName: video.channelName,
-          channelId: video.channelId
-        });
+      if (result) {
+        showToast(languageService.translate("allNotesImportedSuccess"), 'success');
+      } else {
+        showToast(languageService.translate("allNotesImportedError"), 'error');
       }
-
-      showToast(languageService.translate("allNotesImportedSuccess"), 'success');
-      return true;
+      return result;
     } catch (error) {
+      console.error('NoteStorage.overwriteAllNotes failed:', error);
       showToast(languageService.translate("allNotesImportedError"), 'error');
       return false;
     }
@@ -398,6 +397,15 @@ export class NoteStorage {
   async setRetentionDays(days: number): Promise<boolean> {
     const valueToStore = days === Infinity ? 99999 : days;
     this.retentionDays = days;
+
+    // ✅ FIXED (Issue #3): Sync retention setting to cloud via SettingsService
+    // This ensures the setting is preserved across devices and after reinstall
+    try {
+      await settingsService.update({ retentionDays: valueToStore });
+    } catch (error) {
+      console.warn('[NoteStorage] Failed to sync retention to cloud:', error);
+    }
+
     return await storageAdapter.set('retentionDays', valueToStore);
   }
 

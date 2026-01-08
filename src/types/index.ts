@@ -113,6 +113,9 @@ export interface UserSettings {
   presets?: Record<string, any>;
   floatingButtonPosition?: { x: number; y: number };
   lastModified?: number;
+  // Note notification settings
+  noteNotifications?: boolean;
+  noteNotificationSound?: boolean;
 }
 
 export interface Config {

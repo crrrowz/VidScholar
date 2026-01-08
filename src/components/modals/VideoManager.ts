@@ -235,20 +235,24 @@ function createVideoManagerUI(
 
     const groupOrder = settingsService.get('videoGroups');
 
-    const sortedGroupNames = Object.keys(groupedVideos).sort((a, b) => {
-      const aIndex = groupOrder.indexOf(a);
-      const bIndex = groupOrder.indexOf(b);
+    // ✅ FIXED: Filter out empty groups from UI display (Issue #2)
+    // Note: Group data remains in SettingsService.videoGroups - only UI display is affected
+    const sortedGroupNames = Object.keys(groupedVideos)
+      .filter(groupName => groupedVideos[groupName].length > 0) // Skip empty groups in UI
+      .sort((a, b) => {
+        const aIndex = groupOrder.indexOf(a);
+        const bIndex = groupOrder.indexOf(b);
 
-      if (aIndex !== -1 && bIndex !== -1) {
-        return aIndex - bIndex;
-      }
-      if (aIndex !== -1) return -1;
-      if (bIndex !== -1) return 1;
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex;
+        }
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
 
-      if (a === noGroupKey) return -1;
-      if (b === noGroupKey) return 1;
-      return a.localeCompare(b);
-    });
+        if (a === noGroupKey) return -1;
+        if (b === noGroupKey) return 1;
+        return a.localeCompare(b);
+      });
 
     sortedGroupNames.forEach(groupName => {
       const groupContainer = document.createElement('div');
@@ -270,7 +274,29 @@ function createVideoManagerUI(
 
       groupedVideos[groupName].forEach(video => {
         if (!video.id) return;
-        const card = createCard(video, closeCallback, () => card.remove());
+        const card = createCard(video, closeCallback, () => {
+          card.remove();
+
+          // ✅ FIX: Check if group is now empty and hide/remove it
+          const remainingCards = groupContentContainer.querySelectorAll('.video-card');
+          if (remainingCards.length === 0) {
+            // Hide the entire group section
+            groupContainer.style.display = 'none';
+          } else {
+            // Update the count in the group toggle
+            const countSpan = groupToggle.querySelector('.video-count');
+            if (countSpan) {
+              countSpan.textContent = `${remainingCards.length} ${languageService.translate("itemsTerm")}`;
+            }
+          }
+
+          // Update total video count in header
+          const headerCount = container.querySelector('.video-manager-header .video-count');
+          if (headerCount) {
+            const allCards = contentList.querySelectorAll('.video-card');
+            headerCount.textContent = `${allCards.length} ${languageService.translate("itemsTerm")}`;
+          }
+        });
         groupContentContainer.appendChild(card);
       });
 

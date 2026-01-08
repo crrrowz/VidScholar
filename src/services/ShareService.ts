@@ -7,6 +7,7 @@ import type { Note, VideoNotesExport, AllNotesExport, StoredVideoData } from '..
 import { languageService } from '../services/LanguageService';
 import { settingsService } from './SettingsService';
 import { noteStorage } from '../classes/NoteStorage';
+import { notesRepository } from '../storage/NotesRepository';
 import { showImportDecisionManager, ImportDecision, ImportDecisionModalOptions } from '../components/modals/ImportDecisionManager';
 import { showConfirmDialog } from '../components/modals/ConfirmDialog';
 import { actions } from '../state/actions'; // Correctly placed import
@@ -409,17 +410,12 @@ export class ShareService {
     fileInput.click();
   }
 
+  /**
+   * Merge notes - delegates to NotesRepository for consistent behavior
+   * @deprecated Use notesRepository.mergeNotes directly when possible
+   */
   private mergeNotes(existingNotes: Note[], importedNotes: Note[]): Note[] {
-    const mergedNotesMap = new Map<number, Note>();
-
-    existingNotes.forEach(note => mergedNotesMap.set(note.timestampInSeconds, note));
-
-    importedNotes.forEach(note => {
-      mergedNotesMap.set(note.timestampInSeconds, note);
-    });
-
-    const finalNotes = Array.from(mergedNotesMap.values()).sort((a, b) => a.timestampInSeconds - b.timestampInSeconds);
-    return finalNotes;
+    return notesRepository.mergeNotes(existingNotes, importedNotes);
   }
 }
 

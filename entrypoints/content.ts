@@ -5,7 +5,7 @@ import type { AppState } from '../src/types';
 import { noteStorage } from '../src/classes/NoteStorage';
 import { NoteError, showUserFriendlyError } from '../src/classes/NoteError';
 import { themeService } from '../src/services/ThemeService';
-import { waitForYouTubeUI, getVideoTitle } from '../src/utils/video';
+import { waitForYouTubeUI, getVideoTitle, getCurrentVideoId } from '../src/utils/video';
 import { addMaterialIconsSupport } from '../src/utils/icons';
 import { createFloatingButton } from '../src/components/video/FloatingButton';
 import { createSidebar, updateSidebarNotes } from '../src/components/sidebar/Sidebar';
@@ -15,6 +15,8 @@ import { settingsService } from '../src/services/SettingsService';
 import { createStore, getStore } from '../src/state/Store';
 import { actions, enableAutoSave } from '../src/state/actions';
 import { setupKeyboardManager } from '../src/utils/keyboardManager';
+// Note Notification System
+import { noteNotificationService } from '../src/services/NoteNotificationService';
 
 export default defineContentScript({
   matches: ['*://*.youtube.com/watch*'],
@@ -83,7 +85,28 @@ export default defineContentScript({
               return; // Don't re-render while typing in a note
             }
             updateSidebarNotes(newState);
+
+            // Update note notification service with current notes
+            noteNotificationService.updateNotes(newState.notes);
+
+            // Start watching if not already active and notes exist
+            const vid = getCurrentVideoId();
+            if (vid && newState.notes.length > 0 && !noteNotificationService.isActive()) {
+              noteNotificationService.startWatching(vid, newState.notes);
+              console.log('[VidScholar] Note notifications started dynamically for', newState.notes.length, 'notes');
+            }
           });
+
+          // Initialize Note Notification System - start watching
+          const videoId = getCurrentVideoId();
+          if (videoId) {
+            if (notes.length > 0) {
+              noteNotificationService.startWatching(videoId, notes);
+              console.log('[VidScholar] Note notifications started for', notes.length, 'notes');
+            } else {
+              console.log('[VidScholar] Note notifications ready (no notes yet)');
+            }
+          }
 
           // Robust Polling: Check for cloud updates at intervals (2s, 5s, 10s)
           // Uses forceRefresh=true to bypass local cache
@@ -189,6 +212,9 @@ export default defineContentScript({
         if (existingSidebar) {
           existingSidebar.remove();
         }
+
+        // Stop note notifications for previous video
+        noteNotificationService.stopWatching();
 
         actions.setSidebarInitialized(false);
         actions.setVideoTitle('');
