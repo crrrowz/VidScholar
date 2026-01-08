@@ -13,6 +13,7 @@ export interface ImportDecisionModalOptions {
     type: 'video_notes' | 'all_notes';
     importedData: VideoNotesExport | AllNotesExport;
     existingAllNotes?: StoredVideoData[];
+    existingVideoNotes?: Note[];  // For single video import comparison
     currentVideoId?: string;
 }
 
@@ -220,43 +221,275 @@ async function renderDecisionContent(
 ) {
     contentElement.innerHTML = '';
 
-    const decisionState = new Map<string, 'merge' | 'replace' | 'skip'>();
-
     if (options.type === 'video_notes') {
         const data = options.importedData as VideoNotesExport;
+        const existingNotes = options.existingVideoNotes || [];
 
-        const title = document.createElement('h3');
-        title.textContent = languageService.translate("singleVideoImportTitle", [data.videoTitle || data.videoId]);
-        contentElement.appendChild(title);
+        // Helper to check for note differences
+        const areNotesDifferent = (note1: Note, note2: Note): boolean => {
+            return note1.timestamp !== note2.timestamp || note1.text?.trim() !== note2.text?.trim();
+        };
 
-        const description = document.createElement('p');
-        description.className = "import-description";
-        description.textContent = languageService.translate("singleVideoImportDescription");
-        contentElement.appendChild(description);
+        // Find notes that exist in both (by timestamp)
+        const existingTimestamps = new Set(existingNotes.map(n => n.timestamp));
+        const importedTimestamps = new Set(data.notes.map(n => n.timestamp));
 
+        // Categorize imported notes
+        const newNotes = data.notes.filter(n => !existingTimestamps.has(n.timestamp));
+        const updatedNotes = data.notes.filter(n => {
+            if (!existingTimestamps.has(n.timestamp)) return false;
+            const existing = existingNotes.find(e => e.timestamp === n.timestamp);
+            return existing && areNotesDifferent(n, existing);
+        });
+        // Note: unchanged notes are not displayed, only new and updated are shown
+
+        // Existing notes that are NOT in the import (will be deleted on replace)
+        const notesToDelete = existingNotes.filter(n => !importedTimestamps.has(n.timestamp));
+
+        // Notes to display in imported section (only new or changed)
+        const displayedImportedNotes = [...newNotes, ...updatedNotes];
+
+        // ========== NO CHANGES AT ALL: Show simple "up to date" message ==========
+        if (displayedImportedNotes.length === 0 && notesToDelete.length === 0) {
+            // Show a simple "everything is up to date" message
+            const upToDateContainer = document.createElement('div');
+            upToDateContainer.className = "import-up-to-date-container";
+            upToDateContainer.style.cssText = "text-align: center; padding: 40px 20px;";
+
+            const iconWrapper = document.createElement('div');
+            iconWrapper.style.cssText = "width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);";
+            const icon = document.createElement('span');
+            icon.className = "material-icons";
+            icon.style.cssText = "font-size: 32px; color: white;";
+            icon.textContent = "check_circle";
+            iconWrapper.appendChild(icon);
+
+            const message = document.createElement('p');
+            message.style.cssText = "font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 8px 0;";
+            message.textContent = languageService.translate("allUpToDate") || "Everything is up to date!";
+
+            const subMessage = document.createElement('p');
+            subMessage.style.cssText = "font-size: 14px; color: var(--color-text-secondary); margin: 0;";
+            subMessage.textContent = languageService.translate("noChangesNeeded") || "The imported notes match your existing notes exactly.";
+
+            upToDateContainer.append(iconWrapper, message, subMessage);
+            contentElement.appendChild(upToDateContainer);
+
+            // Change apply button to just "OK"
+            const applyButton = document.querySelector('#import-decision-apply-button') as HTMLElement;
+            if (applyButton) {
+                applyButton.textContent = languageService.translate("okButton") || "OK";
+                applyButton.onclick = () => {
+                    const finalDecisions: ImportDecision[] = [{ videoId: data.videoId, action: 'merge', notes: data.notes }];
+                    closeManager(finalDecisions);
+                };
+            }
+
+            // Hide cancel button when there's nothing to cancel
+            const cancelButton = document.querySelector('.import-decision-footer .btn--default') as HTMLElement;
+            if (cancelButton) {
+                cancelButton.style.display = 'none';
+            }
+
+            return;
+        }
+
+        // ========== NO NEW CONTENT (even if import is subset) ==========
+        // If there are NO new/updated notes, show "up to date" message
+        // The import file might be older/smaller, but there's nothing new to add
+        if (displayedImportedNotes.length === 0) {
+            // Show "everything is up to date" message
+            const upToDateContainer = document.createElement('div');
+            upToDateContainer.className = "import-up-to-date-container";
+            upToDateContainer.style.cssText = "text-align: center; padding: 40px 20px;";
+
+            const iconWrapper = document.createElement('div');
+            iconWrapper.style.cssText = "width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);";
+            const icon = document.createElement('span');
+            icon.className = "material-icons";
+            icon.style.cssText = "font-size: 32px; color: white;";
+            icon.textContent = "check_circle";
+            iconWrapper.appendChild(icon);
+
+            const message = document.createElement('p');
+            message.style.cssText = "font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 8px 0;";
+            message.textContent = languageService.translate("allUpToDate") || "Everything is up to date!";
+
+            const subMessage = document.createElement('p');
+            subMessage.style.cssText = "font-size: 14px; color: var(--color-text-secondary); margin: 0;";
+            subMessage.textContent = languageService.translate("noChangesNeeded") || "The imported notes match your existing notes exactly.";
+
+            upToDateContainer.append(iconWrapper, message, subMessage);
+            contentElement.appendChild(upToDateContainer);
+
+            // Change apply button to just "OK"
+            const applyButton = document.querySelector('#import-decision-apply-button') as HTMLElement;
+            if (applyButton) {
+                applyButton.textContent = languageService.translate("okButton") || "OK";
+                applyButton.onclick = () => {
+                    const finalDecisions: ImportDecision[] = [{ videoId: data.videoId, action: 'merge', notes: data.notes }];
+                    closeManager(finalDecisions);
+                };
+            }
+
+            // Hide cancel button
+            const cancelButton = document.querySelector('.import-decision-footer .btn--default') as HTMLElement;
+            if (cancelButton) {
+                cancelButton.style.display = 'none';
+            }
+
+            return;
+        }
+
+        // From here, we have new content to show
         const mergeCheckboxWrapper = document.createElement('div');
-        mergeCheckboxWrapper.className = "import-checkbox-wrapper";
-
+        mergeCheckboxWrapper.className = "import-checkbox-wrapper global-merge-checkbox";
         const mergeCheckbox = document.createElement('input');
         mergeCheckbox.type = 'checkbox';
         mergeCheckbox.id = `merge-checkbox-${data.videoId}`;
-        mergeCheckbox.checked = decisionState.get(data.videoId) === 'merge';
-        mergeCheckbox.onchange = (e) => {
-            const isChecked = (e.target as HTMLInputElement).checked;
-            decisionState.set(data.videoId, isChecked ? 'merge' : 'replace');
-        };
+        mergeCheckbox.checked = true;
 
         const mergeLabel = document.createElement('label');
         mergeLabel.htmlFor = mergeCheckbox.id;
         mergeLabel.textContent = languageService.translate("mergeWithExistingNotes");
 
         mergeCheckboxWrapper.append(mergeCheckbox, mergeLabel);
-        contentElement.appendChild(mergeCheckboxWrapper);
 
-        if (!decisionState.has(data.videoId)) {
-            decisionState.set(data.videoId, 'merge');
-            mergeCheckbox.checked = true;
+        // Only show merge checkbox if there are NEW notes
+        // If only updates (no new notes), merge/replace doesn't apply - we're just updating
+        const hasNewNotes = newNotes.length > 0;
+        if (hasNewNotes) {
+            contentElement.appendChild(mergeCheckboxWrapper);
         }
+
+        // Warning message (shown when merge is disabled)
+        const warningMessage = document.createElement('div');
+        warningMessage.className = "import-warning-message";
+        warningMessage.innerHTML = `⚠️ ${languageService.translate("replaceNotesWarning") || "Warning: Notes below will be DELETED when merge is disabled!"}`;
+        warningMessage.style.display = 'none';
+        contentElement.appendChild(warningMessage);
+
+        // === IMPORTED NOTES SECTION ===
+        if (displayedImportedNotes.length > 0) {
+            const importedSection = document.createElement('div');
+            importedSection.className = "import-section";
+
+            const importedHeader = document.createElement('h4');
+            importedHeader.className = "import-section-header";
+            importedHeader.textContent = `📥 ${languageService.translate("importedNotes") || "Imported Notes"} (${displayedImportedNotes.length})`;
+            importedSection.appendChild(importedHeader);
+
+            const importedListContainer = document.createElement('div');
+            importedListContainer.className = "import-video-list imported-list";
+
+            displayedImportedNotes.forEach(note => {
+                const isNew = newNotes.includes(note);
+
+                const noteRow = document.createElement('div');
+                noteRow.className = "import-video-row";
+
+                const statusIndicator = document.createElement('span');
+                statusIndicator.className = `status-indicator ${isNew ? 'new' : 'existing'}`;
+                statusIndicator.textContent = isNew
+                    ? (languageService.translate("newNote") || "New")
+                    : (languageService.translate("willUpdate") || "Update");
+
+                const timestamp = document.createElement('span');
+                timestamp.className = "note-timestamp";
+                timestamp.textContent = note.timestamp;
+
+                const noteText = document.createElement('span');
+                noteText.className = "video-title note-text";
+                noteText.textContent = note.text?.substring(0, 50) + (note.text?.length > 50 ? '...' : '');
+
+                noteRow.append(statusIndicator, timestamp, noteText);
+                importedListContainer.appendChild(noteRow);
+            });
+
+            importedSection.appendChild(importedListContainer);
+            contentElement.appendChild(importedSection);
+        }
+        // Note: If displayedImportedNotes is empty, we handled it earlier with "up to date" message
+
+        // === EXISTING NOTES SECTION ===
+        // Only show if there are NEW notes being added
+        // If only updates, we're not changing the note count, so no need for merge/delete options
+        let existingSection: HTMLElement | null = null;
+        let existingListContainer: HTMLElement | null = null;
+
+        if (notesToDelete.length > 0 && hasNewNotes) {
+            existingSection = document.createElement('div');
+            existingSection.className = "import-section existing-section";
+
+            const existingHeader = document.createElement('h4');
+            existingHeader.className = "import-section-header existing-header";
+            existingHeader.textContent = `📁 ${languageService.translate("existingNotes") || "Existing Notes (not in import)"} (${notesToDelete.length})`;
+            existingSection.appendChild(existingHeader);
+
+            const listContainer = document.createElement('div');
+            listContainer.className = "import-video-list existing-list";
+            existingListContainer = listContainer;
+
+            notesToDelete.forEach(note => {
+                const noteRow = document.createElement('div');
+                noteRow.className = "import-video-row existing-video-row";
+                noteRow.dataset['timestamp'] = note.timestamp;
+
+                const statusIndicator = document.createElement('span');
+                statusIndicator.className = "status-indicator kept";
+                statusIndicator.textContent = languageService.translate("willKeep") || "Keep";
+
+                const timestamp = document.createElement('span');
+                timestamp.className = "note-timestamp";
+                timestamp.textContent = note.timestamp;
+
+                const noteText = document.createElement('span');
+                noteText.className = "video-title note-text";
+                noteText.textContent = note.text?.substring(0, 50) + (note.text?.length > 50 ? '...' : '');
+
+                noteRow.append(statusIndicator, timestamp, noteText);
+                listContainer.appendChild(noteRow);
+            });
+
+            existingSection.appendChild(listContainer);
+            contentElement.appendChild(existingSection);
+        }
+
+        // Function to update UI based on merge checkbox state
+        const updateDeleteWarning = () => {
+            const isMerge = mergeCheckbox.checked;
+
+            if (existingSection && existingListContainer) {
+                if (isMerge) {
+                    // Merge mode: existing notes will be kept
+                    existingSection.classList.remove('delete-mode');
+                    warningMessage.style.display = 'none';
+                    existingListContainer.querySelectorAll('.existing-video-row').forEach(row => {
+                        row.classList.remove('to-be-deleted');
+                        const indicator = row.querySelector('.status-indicator');
+                        if (indicator) {
+                            indicator.textContent = languageService.translate("willKeep") || "Keep";
+                            indicator.className = "status-indicator kept";
+                        }
+                    });
+                } else {
+                    // Replace mode: existing notes will be deleted
+                    existingSection.classList.add('delete-mode');
+                    warningMessage.style.display = 'block';
+                    existingListContainer.querySelectorAll('.existing-video-row').forEach(row => {
+                        row.classList.add('to-be-deleted');
+                        const indicator = row.querySelector('.status-indicator');
+                        if (indicator) {
+                            indicator.textContent = languageService.translate("willDelete") || "DELETE";
+                            indicator.className = "status-indicator deleted";
+                        }
+                    });
+                }
+            }
+        };
+
+        // Listen for checkbox changes
+        mergeCheckbox.addEventListener('change', updateDeleteWarning);
 
         const applyButton = document.querySelector('#import-decision-apply-button') as HTMLElement;
         if (applyButton) {
@@ -299,6 +532,110 @@ async function renderDecisionContent(
             }
         });
 
+        // ========== NO CHANGES AT ALL: Show simple "up to date" message ==========
+        if (displayedImportedNotes.length === 0 && videosToDelete.length === 0) {
+            // Show a simple "everything is up to date" message
+            const upToDateContainer = document.createElement('div');
+            upToDateContainer.className = "import-up-to-date-container";
+            upToDateContainer.style.cssText = "text-align: center; padding: 40px 20px;";
+
+            const iconWrapper = document.createElement('div');
+            iconWrapper.style.cssText = "width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);";
+            const icon = document.createElement('span');
+            icon.className = "material-icons";
+            icon.style.cssText = "font-size: 32px; color: white;";
+            icon.textContent = "check_circle";
+            iconWrapper.appendChild(icon);
+
+            const message = document.createElement('p');
+            message.style.cssText = "font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 8px 0;";
+            message.textContent = languageService.translate("allUpToDate") || "Everything is up to date!";
+
+            const subMessage = document.createElement('p');
+            subMessage.style.cssText = "font-size: 14px; color: var(--color-text-secondary); margin: 0;";
+            subMessage.textContent = languageService.translate("noChangesNeededVideos") || "The imported videos match your existing data exactly.";
+
+            upToDateContainer.append(iconWrapper, message, subMessage);
+            contentElement.appendChild(upToDateContainer);
+
+            // Change apply button to just "OK"
+            const applyButton = document.querySelector('#import-decision-apply-button') as HTMLElement;
+            if (applyButton) {
+                applyButton.textContent = languageService.translate("okButton") || "OK";
+                applyButton.onclick = () => {
+                    const finalDecisions: ImportDecision[] = importedAllNotes.map(v => ({
+                        videoId: v.videoId,
+                        action: 'merge' as const,
+                        notes: v.notes
+                    }));
+                    closeManager(finalDecisions);
+                };
+            }
+
+            // Hide cancel button
+            const cancelButton = document.querySelector('.import-decision-footer .btn--default') as HTMLElement;
+            if (cancelButton) {
+                cancelButton.style.display = 'none';
+            }
+
+            return;
+        }
+
+        // ========== NO NEW CONTENT (even if import is subset) ==========
+        // If there are NO new/updated videos, show "up to date" message
+        if (displayedImportedNotes.length === 0) {
+            // Show "everything is up to date" message
+            const upToDateContainer = document.createElement('div');
+            upToDateContainer.className = "import-up-to-date-container";
+            upToDateContainer.style.cssText = "text-align: center; padding: 40px 20px;";
+
+            const iconWrapper = document.createElement('div');
+            iconWrapper.style.cssText = "width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);";
+            const icon = document.createElement('span');
+            icon.className = "material-icons";
+            icon.style.cssText = "font-size: 32px; color: white;";
+            icon.textContent = "check_circle";
+            iconWrapper.appendChild(icon);
+
+            const message = document.createElement('p');
+            message.style.cssText = "font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 8px 0;";
+            message.textContent = languageService.translate("allUpToDate") || "Everything is up to date!";
+
+            const subMessage = document.createElement('p');
+            subMessage.style.cssText = "font-size: 14px; color: var(--color-text-secondary); margin: 0;";
+            subMessage.textContent = languageService.translate("noChangesNeededVideos") || "The imported videos match your existing data exactly.";
+
+            upToDateContainer.append(iconWrapper, message, subMessage);
+            contentElement.appendChild(upToDateContainer);
+
+            // Change apply button to just "OK"
+            const applyButton = document.querySelector('#import-decision-apply-button') as HTMLElement;
+            if (applyButton) {
+                applyButton.textContent = languageService.translate("okButton") || "OK";
+                applyButton.onclick = () => {
+                    const finalDecisions: ImportDecision[] = importedAllNotes.map(v => ({
+                        videoId: v.videoId,
+                        action: 'merge' as const,
+                        notes: v.notes
+                    }));
+                    closeManager(finalDecisions);
+                };
+            }
+
+            // Hide cancel button
+            const cancelButton = document.querySelector('.import-decision-footer .btn--default') as HTMLElement;
+            if (cancelButton) {
+                cancelButton.style.display = 'none';
+            }
+
+            return;
+        }
+
+        // From here, we have new content to show
+        // Calculate which are NEW videos vs UPDATES
+        const newVideos = displayedImportedNotes.filter(v => !existingAllNotesMap.has(v.videoId));
+        const hasNewVideos = newVideos.length > 0;
+
         // Merge checkbox
         const mergeCheckboxWrapper = document.createElement('div');
         mergeCheckboxWrapper.className = "import-checkbox-wrapper global-merge-checkbox";
@@ -312,7 +649,12 @@ async function renderDecisionContent(
         mergeLabel.textContent = languageService.translate("mergeWithExistingNotes");
 
         mergeCheckboxWrapper.append(mergeCheckbox, mergeLabel);
-        contentElement.appendChild(mergeCheckboxWrapper);
+
+        // Only show merge checkbox if there are NEW videos
+        // If only updates, merge/replace doesn't apply
+        if (hasNewVideos) {
+            contentElement.appendChild(mergeCheckboxWrapper);
+        }
 
         // Warning message (shown when merge is disabled)
         const warningMessage = document.createElement('div');
@@ -322,7 +664,6 @@ async function renderDecisionContent(
         contentElement.appendChild(warningMessage);
 
         // === IMPORTED VIDEOS SECTION ===
-        let noChangesMsg: HTMLElement | null = null;
         if (displayedImportedNotes.length > 0) {
             const importedSection = document.createElement('div');
             importedSection.className = "import-section";
@@ -362,22 +703,16 @@ async function renderDecisionContent(
 
             importedSection.appendChild(importedListContainer);
             contentElement.appendChild(importedSection);
-        } else {
-            // Optional: Show message if everything is identical? 
-            // User said "do not show anything", assuming they mean the specific videos.
-            // If ALL are identical, show the success message.
-            const allIdenticalMsg = document.createElement('div');
-            allIdenticalMsg.className = "import-info-message";
-            allIdenticalMsg.innerHTML = `✅ ${languageService.translate("noChangesDetected") || "All imported videos match existing notes. No changes detected."}`;
-            contentElement.appendChild(allIdenticalMsg);
-            noChangesMsg = allIdenticalMsg;
         }
+        // Note: If displayedImportedNotes is empty, we handled it earlier with "up to date" message
 
-        // === EXISTING VIDEOS SECTION (only if there are videos to delete) ===
+        // === EXISTING VIDEOS SECTION ===
+        // Only show if there are NEW videos being added
+        // If only updates, we're not changing the video count, so no need for merge/delete options
         let existingSection: HTMLElement | null = null;
         let existingListContainer: HTMLElement | null = null;
 
-        if (videosToDelete.length > 0) {
+        if (videosToDelete.length > 0 && hasNewVideos) {
             existingSection = document.createElement('div');
             existingSection.className = "import-section existing-section";
 
@@ -418,13 +753,6 @@ async function renderDecisionContent(
         // Function to update UI based on merge checkbox state
         const updateDeleteWarning = () => {
             const isMerge = mergeCheckbox.checked;
-
-            // Handle "No Changes" message visibility
-            // If we are in replace mode (deleting videos), strictly speaking "Changes ARE detected" (deletion),
-            // so the "No changes detected" message is misleading and should be hidden.
-            if (noChangesMsg) {
-                noChangesMsg.style.display = isMerge ? 'block' : 'none';
-            }
 
             if (existingSection && existingListContainer) {
                 if (isMerge) {

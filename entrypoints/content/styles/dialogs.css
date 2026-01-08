@@ -450,3 +450,37 @@
     cursor: pointer;
     user-select: none;
 }
+
+/* Note timestamp styling for single video import */
+.note-timestamp {
+    font-family: 'SF Mono', 'Roboto Mono', monospace;
+    font-size: var(--text-sm);
+    color: var(--color-primary);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+    padding: 4px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    font-weight: var(--font-weight-medium);
+    flex-shrink: 0;
+    min-width: 65px;
+    text-align: center;
+}
+
+.note-text {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+}
+
+/* Info message (e.g., "No changes detected") */
+.import-info-message {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-left: 4px solid #22c55e;
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    color: #15803d;
+    font-weight: var(--font-weight-bold);
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-md);
+    text-align: center;
+}

@@ -215,9 +215,13 @@ export class ShareService {
             return;
           }
 
+          // Get existing notes for comparison
+          const existingNotes = await noteStorage.loadNotes();
+
           decisions = await showImportDecisionManager({
             type: 'video_notes',
             importedData: data,
+            existingVideoNotes: existingNotes,
             currentVideoId: currentVideoId
           });
 

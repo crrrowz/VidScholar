@@ -626,42 +626,57 @@ class NotesRepository {
      * Prioritizes existing notes when timestamps match but content differs
      */
     mergeNotes(existingNotes: Note[], importedNotes: Note[]): Note[] {
-        // Map by unique key, preserving existing notes
+        // Map by unique key
         const mergedMap = new Map<string, Note>();
 
-        // Track timestamps to detect potential conflicts
-        const timestampMap = new Map<number, Note>();
+        // Track timestamps for updates
+        const timestampToKeyMap = new Map<number, string>();
 
-        // Add existing notes first (they take priority for conflict resolution)
+        // Add existing notes first
         for (const note of existingNotes) {
             const noteWithId = this.ensureNoteId(note);
             const key = this.getNoteKey(noteWithId);
             mergedMap.set(key, noteWithId);
-            timestampMap.set(noteWithId.timestampInSeconds, noteWithId);
+            timestampToKeyMap.set(noteWithId.timestampInSeconds, key);
         }
 
-        // Add imported notes, but don't overwrite existing notes with same ID
+        // Process imported notes
         for (const note of importedNotes) {
             const noteWithId = this.ensureNoteId(note);
             const key = this.getNoteKey(noteWithId);
 
-            // Only add if this exact note doesn't already exist
-            if (!mergedMap.has(key)) {
-                // Check if there's already a note at this timestamp with different content
-                const existingAtTimestamp = timestampMap.get(noteWithId.timestampInSeconds);
-
-                if (existingAtTimestamp && existingAtTimestamp.text !== noteWithId.text) {
-                    // Both notes are different - keep BOTH by slightly adjusting the imported timestamp
-                    console.log(`[NotesRepository] Conflict detected at ${note.timestamp}. Keeping both notes.`);
-                    // Generate a new unique key for the imported note
-                    const newKey = `imported-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-                    mergedMap.set(newKey, noteWithId);
-                } else if (!existingAtTimestamp) {
-                    // No conflict, add the imported note
-                    mergedMap.set(key, noteWithId);
-                    timestampMap.set(noteWithId.timestampInSeconds, noteWithId);
+            // Check if this exact note (by ID) already exists
+            if (mergedMap.has(key)) {
+                // Same ID exists - UPDATE the text if different
+                const existing = mergedMap.get(key)!;
+                if (existing.text !== noteWithId.text) {
+                    console.log(`[NotesRepository] Updating note at ${note.timestamp}: "${existing.text?.substring(0, 30)}..." -> "${noteWithId.text?.substring(0, 30)}..."`);
+                    mergedMap.set(key, {
+                        ...existing,
+                        text: noteWithId.text // Update with imported text
+                    });
                 }
-                // If existingAtTimestamp exists with same text, skip (duplicate)
+            } else {
+                // Note with this ID doesn't exist
+                // Check if there's a note at the same timestamp
+                const existingKey = timestampToKeyMap.get(noteWithId.timestampInSeconds);
+
+                if (existingKey) {
+                    const existingAtTimestamp = mergedMap.get(existingKey)!;
+                    if (existingAtTimestamp.text !== noteWithId.text) {
+                        // Same timestamp, different text - UPDATE the existing note
+                        console.log(`[NotesRepository] Updating note at timestamp ${note.timestamp}`);
+                        mergedMap.set(existingKey, {
+                            ...existingAtTimestamp,
+                            text: noteWithId.text // Update with imported text
+                        });
+                    }
+                    // If same text, skip (duplicate)
+                } else {
+                    // New note at a new timestamp - ADD it
+                    mergedMap.set(key, noteWithId);
+                    timestampToKeyMap.set(noteWithId.timestampInSeconds, key);
+                }
             }
         }
 

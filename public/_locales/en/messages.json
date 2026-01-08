@@ -665,5 +665,45 @@
   "notes": {
     "message": "notes",
     "description": "Generic term for notes."
+  },
+  "newNote": {
+    "message": "New",
+    "description": "Status indicator for a new note in the import decision list."
+  },
+  "importedNotes": {
+    "message": "Imported Notes",
+    "description": "Header for imported notes section in single video import dialog."
+  },
+  "existingNotes": {
+    "message": "Existing Notes (not in import)",
+    "description": "Header for existing notes section that may be deleted during replace."
+  },
+  "noNotesChangesDetected": {
+    "message": "All imported notes match existing notes. No changes detected.",
+    "description": "Message shown when no note changes are detected during single video import."
+  },
+  "replaceNotesWarning": {
+    "message": "⚠️ Warning: Notes below will be PERMANENTLY DELETED when merge is disabled!",
+    "description": "Warning message shown when merge is disabled during single video notes import."
+  },
+  "importMissingNotes": {
+    "message": "The imported file doesn't contain all existing notes. Notes shown below exist locally but are NOT in the import file.",
+    "description": "Info message shown when imported file has fewer notes than existing."
+  },
+  "importMissingVideos": {
+    "message": "The imported file doesn't contain all existing videos. Videos shown below exist locally but are NOT in the import file.",
+    "description": "Info message shown when imported file has fewer videos than existing."
+  },
+  "allUpToDate": {
+    "message": "Everything is up to date!",
+    "description": "Title shown when imported data matches existing data exactly."
+  },
+  "noChangesNeeded": {
+    "message": "The imported notes match your existing notes exactly. No changes are needed.",
+    "description": "Subtitle for single video import when no changes detected."
+  },
+  "noChangesNeededVideos": {
+    "message": "The imported videos match your existing data exactly. No changes are needed.",
+    "description": "Subtitle for all videos import when no changes detected."
   }
 }

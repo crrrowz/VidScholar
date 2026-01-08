@@ -1,0 +1,45 @@
+{
+    "type": "all_notes",
+    "notesByVideo": [
+        {
+            "videoId": "M0TdSd3Xhts",
+            "videoTitle": "المراجعة المركزة / الفصل الاول/ الاعداد المركبة (الجزء الاول)",
+            "notes": [
+                {
+                    "text": "ملاحضة مهمة جدا",
+                    "timestamp": "02:09:47",
+                    "timestampInSeconds": 7787.114217
+                },
+                {
+                    "text": "الجذور تذكرها بيوم الامتحان مهمة",
+                    "timestamp": "02:24:03",
+                    "timestampInSeconds": 8643.11282
+                },
+                {
+                    "text": "ملاحظة جديدة مضافة - اختبار التحديث",
+                    "timestamp": "02:30:00",
+                    "timestampInSeconds": 9000
+                }
+            ],
+            "lastModified": 1767900000000,
+            "group": "رياضيات سادس"
+        },
+        {
+            "videoId": "5Sv41ZeAnq8",
+            "videoTitle": "المراجعة المركزة / الفصل الاول/ الاعداد المركبة (الجزء الثاني)",
+            "notes": [
+                {
+                    "text": "حل المعادلة التربيعية بل دستور - تم التعديل",
+                    "timestamp": "33:50",
+                    "timestampInSeconds": 2030.684379
+                },
+                {
+                    "text": "ملاحظة إضافية جديدة",
+                    "timestamp": "40:00",
+                    "timestampInSeconds": 2400
+                }
+            ],
+            "lastModified": 1767900000000
+        }
+    ]
+}

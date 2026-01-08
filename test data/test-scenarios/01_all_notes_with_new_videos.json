@@ -1,0 +1,54 @@
+{
+    "type": "all_notes",
+    "notesByVideo": [
+        {
+            "videoId": "NEW_VIDEO_001",
+            "videoTitle": "فيديو جديد تماماً - اختبار الإضافة",
+            "notes": [
+                {
+                    "text": "ملاحظة جديدة 1 - هذا الفيديو غير موجود محلياً",
+                    "timestamp": "05:30",
+                    "timestampInSeconds": 330
+                },
+                {
+                    "text": "ملاحظة جديدة 2 - سيتم إضافتها",
+                    "timestamp": "10:45",
+                    "timestampInSeconds": 645
+                }
+            ],
+            "lastModified": 1767800000000,
+            "group": "اختبار"
+        },
+        {
+            "videoId": "NEW_VIDEO_002",
+            "videoTitle": "فيديو جديد آخر - لا يوجد محلياً",
+            "notes": [
+                {
+                    "text": "ملاحظة فيديو جديد",
+                    "timestamp": "15:00",
+                    "timestampInSeconds": 900
+                }
+            ],
+            "lastModified": 1767800000000,
+            "group": "اختبار"
+        },
+        {
+            "videoId": "M0TdSd3Xhts",
+            "videoTitle": "المراجعة المركزة / الفصل الاول/ الاعداد المركبة (الجزء الاول)",
+            "notes": [
+                {
+                    "text": "ملاحضة مهمة جدا",
+                    "timestamp": "02:09:47",
+                    "timestampInSeconds": 7787.114217
+                },
+                {
+                    "text": "الجذور تذكرها بيوم الامتحان مهمة",
+                    "timestamp": "02:24:03",
+                    "timestampInSeconds": 8643.11282
+                }
+            ],
+            "lastModified": 1767534895402,
+            "group": "رياضيات سادس"
+        }
+    ]
+}

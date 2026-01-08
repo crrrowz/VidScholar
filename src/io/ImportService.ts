@@ -203,10 +203,14 @@ class ImportService {
             return { success: true, message: 'Imported to different video' };
         }
 
+        // Get existing notes for this video to compare
+        const existingNotes = await notesRepository.loadNotes(data.videoId);
+
         // Show import decision dialog
         const decisions = await showImportDecisionManager({
             type: 'video_notes',
             importedData: data,
+            existingVideoNotes: existingNotes,
             currentVideoId
         });
 

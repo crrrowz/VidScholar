@@ -1,0 +1,58 @@
+{
+    "type": "all_notes",
+    "notesByVideo": [
+        {
+            "videoId": "BRAND_NEW_VIDEO",
+            "videoTitle": "فيديو جديد كلياً - اختبار مختلط",
+            "notes": [
+                {
+                    "text": "ملاحظة في فيديو جديد",
+                    "timestamp": "05:00",
+                    "timestampInSeconds": 300
+                }
+            ],
+            "lastModified": 1767900000000,
+            "group": "اختبار مختلط"
+        },
+        {
+            "videoId": "M0TdSd3Xhts",
+            "videoTitle": "المراجعة المركزة / الفصل الاول/ الاعداد المركبة (الجزء الاول)",
+            "notes": [
+                {
+                    "text": "ملاحضة مهمة جدا",
+                    "timestamp": "02:09:47",
+                    "timestampInSeconds": 7787.114217
+                },
+                {
+                    "text": "الجذور تذكرها بيوم الامتحان مهمة",
+                    "timestamp": "02:24:03",
+                    "timestampInSeconds": 8643.11282
+                },
+                {
+                    "text": "ملاحظة إضافية جديدة",
+                    "timestamp": "02:35:00",
+                    "timestampInSeconds": 9300
+                }
+            ],
+            "lastModified": 1767900000000,
+            "group": "رياضيات سادس"
+        },
+        {
+            "videoId": "5Sv41ZeAnq8",
+            "videoTitle": "المراجعة المركزة / الفصل الاول/ الاعداد المركبة (الجزء الثاني)",
+            "notes": [
+                {
+                    "text": "حل المعادلة التربيعية بل دستور",
+                    "timestamp": "33:50",
+                    "timestampInSeconds": 2030.684379
+                },
+                {
+                    "text": "ملاحضه مهمة",
+                    "timestamp": "35:05",
+                    "timestampInSeconds": 2105.03015
+                }
+            ],
+            "lastModified": 1767701252076
+        }
+    ]
+}
