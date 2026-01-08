@@ -56,9 +56,46 @@
 .sub-toolbar-left-group-container {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: 12px;
     flex: 1;
     align-items: stretch;
+}
+
+/* Row container for Group and Preset selects */
+.sub-toolbar-selects-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.sub-toolbar-selects-row .sub-toolbar-group-select {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Buttons row container (left and right groups) */
+.sub-toolbar-buttons-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.sub-toolbar-buttons-left,
+.sub-toolbar-buttons-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.sub-toolbar-buttons-left {
+    justify-content: flex-start;
+}
+
+.sub-toolbar-buttons-right {
+    justify-content: flex-end;
 }
 
 .sub-toolbar-button-group.left-top {

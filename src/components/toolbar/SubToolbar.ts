@@ -22,15 +22,13 @@ export async function createSubToolbar(): Promise<HTMLElement> {
   const leftGroupContainer = document.createElement("div");
   leftGroupContainer.className = "sub-toolbar-left-group-container sub-toolbar-flex-fill";
 
-  const rightButtonGroup = document.createElement("div");
-  rightButtonGroup.className = "sub-toolbar-button-group right sub-toolbar-flex-fill";
-
   const presetGroup = await createPresetButtons();
 
   // Group Select (created first for top placement)
   const groupSelect = document.createElement("select");
   groupSelect.id = 'groupSelect';
   groupSelect.classList.add('sub-toolbar-group-select');
+  groupSelect.style.cssText = 'width: 100%; height: 36px; padding: 6px 10px; box-sizing: border-box; flex-shrink: 0;';
 
   const updateGroupSelect = () => {
     const currentGroups = settingsService.get('videoGroups');
@@ -71,11 +69,6 @@ export async function createSubToolbar(): Promise<HTMLElement> {
   settingsService.subscribe(updateGroupSelect);
   getStore().subscribe(updateGroupSelect); // To update when video group changes
 
-
-  // Container for all other buttons (bottom part)
-  const bottomButtonsContainer = document.createElement("div");
-  bottomButtonsContainer.className = "sub-toolbar-bottom-buttons";
-  bottomButtonsContainer.classList.add('sub-toolbar-bottom-buttons-group');
 
   const editTemplateButton = createButton(
     icons.EDIT,
@@ -210,22 +203,58 @@ export async function createSubToolbar(): Promise<HTMLElement> {
   getStore().subscribe(updateAutoAddTranscriptButton);
   updateAutoAddTranscriptButton();
 
-  bottomButtonsContainer.appendChild(editTemplateButton);
-  bottomButtonsContainer.appendChild(copyAllButton);
-  bottomButtonsContainer.appendChild(downloadNotesButton);
-  bottomButtonsContainer.appendChild(uploadNotesButton);
-  bottomButtonsContainer.appendChild(manageVideosButton);
-  bottomButtonsContainer.appendChild(toggleThemeButton);
-  bottomButtonsContainer.appendChild(toggleLanguageButton);
-  bottomButtonsContainer.appendChild(toggleAutoAddTranscriptButton);
+  // ==========================================
+  // LEFT SECTION - Group Select + Action Buttons
+  // ==========================================
+  const leftSection = document.createElement("div");
+  leftSection.className = "sub-toolbar-section-left";
+  leftSection.style.cssText = 'display: flex; flex-direction: column; gap: 8px; flex: 1; align-items: stretch;';
 
-  leftGroupContainer.appendChild(groupSelect); // Group select at top
-  leftGroupContainer.appendChild(bottomButtonsContainer); // All other buttons at bottom
+  // Group Select in left section
+  leftSection.appendChild(groupSelect);
 
-  rightButtonGroup.appendChild(presetGroup);
+  // Left buttons group - Primary actions
+  const leftButtonsGroup = document.createElement("div");
+  leftButtonsGroup.className = "sub-toolbar-buttons-left";
+  leftButtonsGroup.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; align-items: center;';
+
+  leftButtonsGroup.appendChild(editTemplateButton);
+  leftButtonsGroup.appendChild(copyAllButton);
+  leftButtonsGroup.appendChild(downloadNotesButton);
+  leftButtonsGroup.appendChild(uploadNotesButton);
+  leftButtonsGroup.appendChild(manageVideosButton);
+
+  leftSection.appendChild(leftButtonsGroup);
+
+  // ==========================================
+  // RIGHT SECTION - Preset Select + Settings Buttons
+  // ==========================================
+  const rightSection = document.createElement("div");
+  rightSection.className = "sub-toolbar-section-right";
+  rightSection.style.cssText = 'display: flex; flex-direction: column; gap: 8px; flex: 1; align-items: stretch;';
+
+  // Preset Select in right section
+  rightSection.appendChild(presetGroup);
+
+  // Right buttons group - Settings
+  const rightButtonsGroup = document.createElement("div");
+  rightButtonsGroup.className = "sub-toolbar-buttons-right";
+  rightButtonsGroup.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end;';
+
+  rightButtonsGroup.appendChild(toggleThemeButton);
+  rightButtonsGroup.appendChild(toggleLanguageButton);
+  rightButtonsGroup.appendChild(toggleAutoAddTranscriptButton);
+
+  rightSection.appendChild(rightButtonsGroup);
+
+  // ==========================================
+  // MAIN CONTAINER - Left and Right Sections
+  // ==========================================
+  leftGroupContainer.style.cssText = 'display: flex; flex-direction: row; gap: 16px; flex: 1; align-items: flex-start;';
+  leftGroupContainer.appendChild(leftSection);
+  leftGroupContainer.appendChild(rightSection);
 
   container.appendChild(leftGroupContainer);
-  container.appendChild(rightButtonGroup);
 
   const updateTexts = () => {
     copyAllButton.title = languageService.translate("copyAllNotes");

@@ -289,7 +289,7 @@ export async function showTemplateEditor(): Promise<void> {
 
         // Name span
         const nameSpan = document.createElement('span');
-        nameSpan.textContent = `${id} - ${(preset as any).name || 'Preset ' + id}`;
+        nameSpan.textContent = (preset as any).name || 'Preset ' + id;
         presetItem.appendChild(nameSpan);
 
         // Buttons container (same as Groups: edit, delete, drag)
