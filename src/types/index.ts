@@ -26,6 +26,7 @@ export interface AppState {
 }
 
 export type Theme = 'light' | 'dark' | 'sepia' | 'high-contrast' | 'oled';
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 export interface ThemeColors {
   primary: string;

@@ -12,12 +12,10 @@ export function showToast(message: string, type: ToastType = 'info'): void {
       console.warn(prefix, message);
       break;
     case 'success':
-      // استخدام تنسيق CSS داخل الكونسول لتمييز رسائل النجاح باللون الأخضر
-      console.log(`%c${prefix} ${message}`, 'color: #43a047; font-weight: bold;');
-      break;
     case 'info':
     default:
-      console.info(prefix, message);
+      // Success and info are not logged in production
       break;
+
   }
 }

@@ -294,11 +294,6 @@ export async function showTemplateEditor(): Promise<void> {
       const presets = noteStorage.getAllPresets();
       const currentPresetId = await noteStorage.getCurrentPreset();
 
-      // Debug logging
-      console.log('[TemplateEditor] Presets:', presets);
-      console.log('[TemplateEditor] Presets count:', Object.keys(presets).length);
-      console.log('[TemplateEditor] Current preset:', currentPresetId);
-
       // Update copy-from dropdown
       copyFromSelect.innerHTML = `<option value="">${t("noCopy", "Empty (no copy)")}</option>`;
       Object.entries(presets).forEach(([id, preset]) => {
@@ -384,9 +379,6 @@ export async function showTemplateEditor(): Promise<void> {
         presetItem.appendChild(buttonContainer);
         presetListContainer.appendChild(presetItem);
       });
-
-      // Debug: Verify items were added
-      console.log('[TemplateEditor] Items added to list:', presetListContainer.children.length);
 
       // Sortable for presets
       new Sortable(presetListContainer, {

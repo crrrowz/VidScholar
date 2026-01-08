@@ -633,5 +633,33 @@
   "goBackButton": {
     "message": "Back",
     "description": "Text for the back/return button."
+  },
+  "replaceWarning": {
+    "message": "⚠️ Warning: Videos below will be PERMANENTLY DELETED when merge is disabled!",
+    "description": "Warning message shown when merge is disabled during import."
+  },
+  "importedVideos": {
+    "message": "Imported Videos",
+    "description": "Header for imported videos section in import dialog."
+  },
+  "existingVideos": {
+    "message": "Existing Videos (not in import)",
+    "description": "Header for existing videos section in import dialog."
+  },
+  "willUpdate": {
+    "message": "Update",
+    "description": "Status indicator for videos that will be updated during import."
+  },
+  "willKeep": {
+    "message": "Keep",
+    "description": "Status indicator for existing videos that will be kept during merge."
+  },
+  "willDelete": {
+    "message": "DELETE",
+    "description": "Status indicator for existing videos that will be deleted during replace."
+  },
+  "notes": {
+    "message": "notes",
+    "description": "Generic term for notes."
   }
 }

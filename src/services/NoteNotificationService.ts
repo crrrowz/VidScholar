@@ -18,9 +18,13 @@ class NoteNotificationService {
     private currentVideoId: string | null = null;
     private currentNotes: Note[] = [];
 
+    // Suppress notifications until this timestamp (prevents immediate notification after adding a note)
+    private suppressUntil: number = 0;
+
     // Configuration
     private readonly CHECK_INTERVAL_MS = 250;
     private readonly TIMESTAMP_TOLERANCE = 1.0;
+    private readonly DEFAULT_SUPPRESS_DURATION_MS = 3000; // 3 seconds cooldown after adding note
 
     private constructor() { }
 
@@ -46,8 +50,6 @@ class NoteNotificationService {
         // Check if notifications are enabled
         const notificationsEnabled = settingsService.get('noteNotifications') ?? true;
         if (!notificationsEnabled) return;
-
-        console.log(`[NoteNotificationService] Started watching ${notes.length} notes`);
 
         this.watchInterval = setInterval(() => {
             this.checkCurrentTime();
@@ -94,6 +96,11 @@ class NoteNotificationService {
      * Check current playback time and show notifications
      */
     private checkCurrentTime(): void {
+        // Check if notifications are suppressed (e.g., after adding a note)
+        if (Date.now() < this.suppressUntil) {
+            return;
+        }
+
         const video = getVideoPlayer();
         if (!video) return;
 
@@ -104,8 +111,6 @@ class NoteNotificationService {
 
             const diff = Math.abs(currentTime - note.timestampInSeconds);
             if (diff <= this.TIMESTAMP_TOLERANCE) {
-                console.log(`[NoteNotification] Triggering InlineForm for note at ${note.timestampInSeconds}s`);
-
                 this.triggerNoteDisplay(note);
                 this.playSound();
 
@@ -120,30 +125,22 @@ class NoteNotificationService {
      */
     private triggerNoteDisplay(note: Note): void {
         const floatingBtn = document.getElementById('floating-add-note-button');
+        if (!floatingBtn) return;
 
-        console.log('[NoteNotification] Trigger requested for:', note.text?.substring(0, 20));
-
-        if (floatingBtn) {
-            console.log('[NoteNotification] Floating button found, triggering form...');
-            import('../components/video/InlineNoteForm').then(({ showInlineNoteForm }) => {
-                showInlineNoteForm(
-                    floatingBtn as HTMLElement,
-                    note.timestampInSeconds,
-                    () => { console.log('[NoteNotification] Form closed'); },
-                    note.text,
-                    undefined, // No ID (view/edit mode implication)
-                    5000       // Auto-close duration: 5 seconds
-                ).then(() => {
-                    console.log('[NoteNotification] Form shown with auto-close');
-                }).catch(err => {
-                    console.error('[NoteNotification] Error showing form:', err);
-                });
-            }).catch(err => {
-                console.error('[NoteNotification] Error importing InlineNoteForm:', err);
+        import('../components/video/InlineNoteForm').then(({ showInlineNoteForm }) => {
+            showInlineNoteForm(
+                floatingBtn as HTMLElement,
+                note.timestampInSeconds,
+                () => { },  // onClose callback
+                note.text,
+                undefined, // No ID (view/edit mode implication)
+                5000       // Auto-close duration: 5 seconds
+            ).catch(err => {
+                console.error('[NoteNotification] Error showing form:', err);
             });
-        } else {
-            console.error('[NoteNotification] FATAL: Floating button (#floating-add-note-button) not found in DOM!');
-        }
+        }).catch(err => {
+            console.error('[NoteNotification] Error importing InlineNoteForm:', err);
+        });
     }
 
     /**
@@ -175,7 +172,7 @@ class NoteNotificationService {
             osc.start();
             osc.stop(ctx.currentTime + 0.5);
         } catch (error) {
-            console.error('[NoteNotification] Audio error:', error);
+            // Audio error - silently ignore
         }
     }
 
@@ -190,6 +187,15 @@ class NoteNotificationService {
             }
         });
         toRemove.forEach(t => this.notifiedTimestamps.delete(t));
+    }
+
+    /**
+     * Suppress notifications for a duration (useful after adding a note)
+     * This prevents the notification from triggering immediately for the note you just added
+     */
+    suppressNotifications(durationMs?: number): void {
+        const duration = durationMs ?? this.DEFAULT_SUPPRESS_DURATION_MS;
+        this.suppressUntil = Date.now() + duration;
     }
 
     /**

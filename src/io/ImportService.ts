@@ -292,11 +292,22 @@ class ImportService {
         // Get existing notes
         const existingVideos = await notesRepository.loadAllVideos();
 
+        // Convert Video[] to StoredVideoData[] (Video uses 'id', StoredVideoData uses 'videoId')
+        const existingAsStoredData: StoredVideoData[] = existingVideos.map(v => ({
+            videoId: v.id,
+            videoTitle: v.title,
+            notes: v.notes,
+            lastModified: v.lastModified,
+            group: v.group,
+            channelName: v.channelName,
+            channelId: v.channelId
+        }));
+
         // Show import decision dialog
         const decisions = await showImportDecisionManager({
             type: 'all_notes',
             importedData: data,
-            existingAllNotes: existingVideos
+            existingAllNotes: existingAsStoredData
         });
 
         if (!decisions || decisions.length === 0) {
@@ -383,6 +394,9 @@ class ImportService {
 
         const finalVideos: StoredVideoData[] = [];
 
+        // Check if user chose merge mode (at least one merge decision means merge mode)
+        const isMergeMode = decisions.some(d => d.action === 'merge');
+
         for (const decision of decisions) {
             const imported = importedVideos.find(v => v.videoId === decision.videoId);
             if (!imported) continue;
@@ -408,8 +422,11 @@ class ImportService {
             }
         }
 
-        // Add remaining existing videos
-        existingMap.forEach(video => finalVideos.push(video));
+        // Only add remaining existing videos if merge mode is enabled
+        // If replace mode (no merge), only imported videos are kept
+        if (isMergeMode) {
+            existingMap.forEach(video => finalVideos.push(video));
+        }
 
         return finalVideos;
     }

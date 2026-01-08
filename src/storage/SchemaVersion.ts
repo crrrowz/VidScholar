@@ -47,7 +47,6 @@ class SchemaMigrator {
     private registerMigrations(): void {
         // Migration from v1 to v2: Add note IDs
         this.migrations.set(1, (data: any) => {
-            console.log('[SchemaMigrator] Migrating from v1 to v2: Adding note IDs');
 
             if (data.notes && Array.isArray(data.notes)) {
                 data.notes = data.notes.map((note: any, index: number) => {
@@ -131,8 +130,6 @@ class SchemaMigrator {
 
                 currentData = migration(currentData);
                 currentVersion++;
-
-                console.log(`[SchemaMigrator] Migrated to v${currentVersion}`);
             }
 
             // Add schema version to data

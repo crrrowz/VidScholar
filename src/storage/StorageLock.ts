@@ -47,7 +47,6 @@ class StorageLock {
                 timestamp: Date.now()
             });
 
-            console.log(`[StorageLock] Queued: ${operationName} (queue size: ${this.queue.length})`);
             this.processQueue();
         });
     }
@@ -70,12 +69,8 @@ class StorageLock {
         this.currentOperation = item.operationName;
         this.lockAcquiredAt = Date.now();
 
-        console.log(`[StorageLock] Acquired: ${item.operationName}`);
-
         try {
             const result = await item.operation();
-            const duration = Date.now() - this.lockAcquiredAt;
-            console.log(`[StorageLock] Released: ${item.operationName} (${duration}ms)`);
             item.resolve(result);
         } catch (error) {
             console.error(`[StorageLock] Error in ${item.operationName}:`, error);

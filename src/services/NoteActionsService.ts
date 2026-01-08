@@ -13,6 +13,7 @@ import { formatTimestamp } from '../utils/time';
 import { showToast } from '../utils/toast';
 import { languageService } from './LanguageService';
 import { scrollToNewNote, focusNoteTextarea } from '../components/notes/NotesList';
+import { noteNotificationService } from './NoteNotificationService';
 
 const DUPLICATE_THRESHOLD = 10; // seconds - same as in FloatingButton and MainToolbar
 
@@ -73,6 +74,9 @@ class NoteActionsService {
             timestampInSeconds: timestamp,
             text: text
         };
+
+        // Suppress notifications to prevent immediate trigger for the note we just added
+        noteNotificationService.suppressNotifications();
 
         // Add note at the beginning of the list (top)
         actions.addNote(newNote);

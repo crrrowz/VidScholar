@@ -315,6 +315,9 @@ export class ShareService {
           const finalNotesCollection: StoredVideoData[] = [];
           const existingNotesMap = new Map<string, StoredVideoData>(existingAllNotes.map(video => [video.videoId, video]));
 
+          // Check if user chose merge mode (at least one merge decision means merge mode)
+          const isMergeMode = decisions.some(d => d.action === 'merge');
+
           for (const decision of decisions) {
             const importedVideoData = (importedData as AllNotesExport).notesByVideo.find(v => v.videoId === decision.videoId);
             if (!importedVideoData) continue;
@@ -341,7 +344,11 @@ export class ShareService {
             }
           }
 
-          existingNotesMap.forEach(video => finalNotesCollection.push(video));
+          // Only add remaining existing videos if merge mode is enabled
+          // If replace mode (no merge), only imported videos are kept, others are deleted!
+          if (isMergeMode) {
+            existingNotesMap.forEach(video => finalNotesCollection.push(video));
+          }
 
           await noteStorage.overwriteAllNotes(finalNotesCollection);
 

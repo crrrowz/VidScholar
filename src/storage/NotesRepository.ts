@@ -351,7 +351,7 @@ class NotesRepository {
                     try {
                         await storageAdapter.deleteVideo(existingVideo.id);
                     } catch (deleteError) {
-                        console.warn(`[NotesRepository] Failed to delete video ${existingVideo.id}:`, deleteError);
+                        console.error(`[NotesRepository] Failed to delete video ${existingVideo.id}:`, deleteError);
                         errors.push(deleteError instanceof Error ? deleteError : new Error(String(deleteError)));
                     }
                 }

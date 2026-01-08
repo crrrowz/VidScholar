@@ -1128,30 +1128,295 @@
         gap: var(--space-sm);
     }
 
+    /* Video row styling */
     .import-video-row {
         display: flex;
         align-items: center;
-        gap: var(--space-sm);
-        padding: var(--space-sm);
+        gap: var(--space-md);
+        padding: var(--space-sm) var(--space-md);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
         background-color: var(--color-surface);
+        transition: all 0.2s ease;
+        margin-bottom: var(--space-xs);
     }
 
+    .import-video-row:hover {
+        background-color: var(--color-surface-elevated);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Status indicator base */
     .status-indicator {
         font-weight: var(--font-weight-bold);
+        font-size: var(--text-sm);
+        padding: 4px 10px;
+        border-radius: var(--radius-md);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     .status-indicator.new {
-        color: var(--color-primary);
+        color: #fff;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
     }
 
     .status-indicator.existing {
-        color: var(--color-text-primary);
+        color: #fff;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+    }
+
+    .status-indicator.kept {
+        color: #fff;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+    }
+
+    .status-indicator.deleted {
+        color: #fff;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
+        animation: blink-delete 1s ease-in-out infinite;
+    }
+
+    @keyframes blink-delete {
+
+        0%,
+        100% {
+            opacity: 1;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
+        }
+
+        50% {
+            opacity: 0.85;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.6);
+        }
     }
 
     .video-title {
         flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: var(--font-weight-medium);
+    }
+
+    .notes-count {
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+        flex-shrink: 0;
+        background-color: var(--color-surface-elevated);
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--color-border);
+    }
+
+    /* Import sections - Enforce styles with better spacing */
+    #import-decision-manager-container .import-section,
+    .import-section {
+        margin-top: var(--space-xl) !important;
+        padding: var(--space-lg) !important;
+        background-color: var(--color-surface-elevated) !important;
+        border-radius: var(--radius-lg) !important;
+        border: 1px solid var(--color-border) !important;
+        box-shadow: var(--shadow-sm) !important;
+    }
+
+    #import-decision-manager-container .import-section-header,
+    .import-section-header {
+        margin: 0 0 var(--space-lg) 0 !important;
+        font-size: var(--text-lg) !important;
+        font-weight: var(--font-weight-bold) !important;
+        color: var(--color-text-primary) !important;
+        padding-bottom: var(--space-md) !important;
+        border-bottom: 2px solid var(--color-border) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: var(--space-md) !important;
+    }
+
+    #import-decision-manager-container .import-section-header.existing-header,
+    .import-section-header.existing-header {
+        color: var(--color-text-secondary) !important;
+    }
+
+    /* Warning message - More premium look */
+    #import-decision-manager-container .import-warning-message,
+    .import-warning-message {
+        display: block;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)) !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        border-left: 4px solid #ef4444 !important;
+        border-radius: var(--radius-lg) !important;
+        padding: var(--space-lg) !important;
+        color: #ef4444 !important;
+        font-weight: var(--font-weight-bold) !important;
+        margin-top: var(--space-xl) !important;
+        margin-bottom: var(--space-lg) !important;
+        animation: pulse-warning 2s ease-in-out infinite !important;
+        text-align: center !important;
+        font-size: var(--text-base) !important;
+        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.1) !important;
+    }
+
+    @keyframes pulse-warning {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+    }
+
+    /* Existing section in delete mode */
+    #import-decision-manager-container .existing-section.delete-mode,
+    .existing-section.delete-mode {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(254, 242, 242, 0.5)) !important;
+        border: 2px dashed rgba(239, 68, 68, 0.4) !important;
+        box-shadow: inset 0 0 30px rgba(239, 68, 68, 0.05) !important;
+    }
+
+    #import-decision-manager-container .existing-section.delete-mode .import-section-header,
+    .existing-section.delete-mode .import-section-header {
+        color: #ef4444 !important;
+        border-bottom-color: rgba(239, 68, 68, 0.3) !important;
+    }
+
+    /* Video Row Base Styles */
+    #import-decision-manager-container .import-video-row,
+    .import-video-row {
+        gap: var(--space-lg) !important;
+        padding: 12px 16px !important;
+        margin-bottom: 8px !important;
+        border-radius: var(--radius-md) !important;
+        border: 1px solid transparent !important;
+        background-color: var(--color-surface) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    /* Video row to be deleted - Full Red Overlay Effect */
+    #import-decision-manager-container .import-video-row.to-be-deleted,
+    .import-video-row.to-be-deleted {
+        background: linear-gradient(to right, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)) !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        position: relative !important;
+        opacity: 0.8 !important;
+        filter: grayscale(0.5) !important;
+    }
+
+    #import-decision-manager-container .import-video-row.to-be-deleted .video-title,
+    .import-video-row.to-be-deleted .video-title {
+        text-decoration: line-through !important;
+        text-decoration-thickness: 2px !important;
+        text-decoration-color: rgba(239, 68, 68, 0.6) !important;
+        color: var(--color-text-secondary) !important;
+    }
+
+    /* Status Indicators - Badge Style */
+    #import-decision-manager-container .status-indicator,
+    .status-indicator {
+        font-weight: 700 !important;
+        font-size: 11px !important;
+        padding: 4px 10px !important;
+        border-radius: 4px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 80px !important;
+        flex-shrink: 0 !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .status-indicator.new {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+        color: white !important;
+    }
+
+    .status-indicator.existing {
+        background: linear-gradient(135deg, #d97706, #b45309) !important;
+        color: white !important;
+    }
+
+    .status-indicator.kept {
+        background: linear-gradient(135deg, #16a34a, #15803d) !important;
+        color: white !important;
+    }
+
+    .status-indicator.deleted {
+        background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+        color: white !important;
+        box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4) !important;
+        animation: pulse-red 2s infinite !important;
+    }
+
+    @keyframes pulse-red {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 6px rgba(220, 38, 38, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+        }
+    }
+
+    /* Imported list styling */
+    .imported-list .import-video-row {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(34, 197, 94, 0.04));
+        border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .imported-list .import-video-row:hover {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.08));
+    }
+
+    /* Existing list styling */
+    .existing-list .import-video-row {
+        background: linear-gradient(135deg, rgba(156, 163, 175, 0.08), rgba(156, 163, 175, 0.04));
+        border-color: rgba(156, 163, 175, 0.3);
+    }
+
+    /* Checkbox wrapper styling */
+    .global-merge-checkbox {
+        background: linear-gradient(135deg, var(--color-surface-elevated), var(--color-surface));
+        padding: var(--space-md);
+        border-radius: var(--radius-lg);
+        border: 2px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .global-merge-checkbox input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--color-primary);
+        cursor: pointer;
+    }
+
+    .global-merge-checkbox label {
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        user-select: none;
     }
 
     /* ============================================

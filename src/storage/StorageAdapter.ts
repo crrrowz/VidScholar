@@ -148,11 +148,8 @@ class StorageAdapter {
             this.useCloud = await supabaseService.initialize();
 
             if (this.useCloud) {
-                console.log('StorageAdapter: Using cloud storage (Supabase)');
-                // Sync any pending local changes
+                // Using cloud storage
                 await this.syncPendingChanges();
-            } else {
-                console.log('StorageAdapter: Using local storage only');
             }
 
             this.initialized = true;
@@ -171,7 +168,6 @@ class StorageAdapter {
         try {
             const pending = await this.getLocal<StoredVideoData[]>('__pending_sync__');
             if (pending && pending.length > 0) {
-                console.log(`Syncing ${pending.length} pending videos to cloud...`);
                 await supabaseService.syncToCloud(pending);
                 await this.removeLocal('__pending_sync__');
             }

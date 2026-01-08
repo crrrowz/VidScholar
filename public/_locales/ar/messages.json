@@ -657,5 +657,33 @@
   "goBackButton": {
     "message": "العودة",
     "description": "Text for the back/return button."
+  },
+  "replaceWarning": {
+    "message": "⚠️ تحذير: الفيديوهات أدناه ستُحذف نهائياً عند إلغاء الدمج!",
+    "description": "Warning message shown when merge is disabled during import."
+  },
+  "importedVideos": {
+    "message": "الفيديوهات المستوردة",
+    "description": "Header for imported videos section in import dialog."
+  },
+  "existingVideos": {
+    "message": "الفيديوهات الموجودة (ليست في الاستيراد)",
+    "description": "Header for existing videos section in import dialog."
+  },
+  "willUpdate": {
+    "message": "تحديث",
+    "description": "Status indicator for videos that will be updated during import."
+  },
+  "willKeep": {
+    "message": "إبقاء",
+    "description": "Status indicator for existing videos that will be kept during merge."
+  },
+  "willDelete": {
+    "message": "حذف",
+    "description": "Status indicator for existing videos that will be deleted during replace."
+  },
+  "notes": {
+    "message": "ملاحظة",
+    "description": "Generic term for notes (singular or used with count)."
   }
 }
