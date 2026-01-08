@@ -77,6 +77,19 @@ export async function showImportDecisionManager(options: ImportDecisionModalOpti
                 margin-bottom: 20px !important;
                 text-align: center !important;
             }
+            #import-decision-manager-container .import-info-message {
+                display: block;
+                background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05)) !important;
+                border: 1px solid rgba(34, 197, 94, 0.3) !important;
+                border-left: 4px solid #22c55e !important;
+                border-radius: 12px !important;
+                padding: 16px !important;
+                color: #15803d !important; /* Green-700 */
+                font-weight: bold !important;
+                margin-top: 24px !important;
+                margin-bottom: 20px !important;
+                text-align: center !important;
+            }
             #import-decision-manager-container .status-indicator {
                 font-weight: 700 !important;
                 font-size: 11px !important;
@@ -103,17 +116,38 @@ export async function showImportDecisionManager(options: ImportDecisionModalOpti
                 padding: 12px !important;
                 background: var(--color-surface, #fff) !important;
                 border-bottom: 1px solid var(--color-border, #f3f4f6) !important;
-                position: relative !important; /* Needed for overlay */
-                overflow: hidden !important; /* Ensure overlay stays inside */
             }
             
-            /* Remove section background change */
+            /* Force transparent background on section container */
             #import-decision-manager-container .existing-section.delete-mode {
                 background: transparent !important;
+                background-color: transparent !important;
                 border: 1px solid var(--color-border, #e5e7eb) !important;
+                box-shadow: none !important;
             }
 
-            /* Red layer OVER the video card */
+            /* Ensure row background is white (not red) underneath the overlay */
+            #import-decision-manager-container .import-video-row.to-be-deleted {
+                background: var(--color-surface, #fff) !important;
+                background-color: var(--color-surface, #fff) !important;
+                position: relative !important;
+            }
+
+            /* Strikethrough style: RED LINE BEHIND TEXT for maximum readability */
+            #import-decision-manager-container .import-video-row.to-be-deleted .video-title {
+                text-decoration: none !important;
+                position: relative !important;
+                display: inline-block !important;
+                color: var(--color-text-primary, #000) !important; /* Adaptive contrast */
+                font-weight: 600 !important;
+                
+                /* Create a 2px red line in the center using background gradient */
+                background-image: linear-gradient(transparent calc(50% - 1px), #ef4444 calc(50% - 1px), #ef4444 calc(50% + 1px), transparent calc(50% + 1px)) !important;
+                background-repeat: no-repeat !important;
+                background-size: 100% 100% !important;
+                background-position: center !important;
+            }
+            /* Red layer OVER the video card - made slightly more visible */
             #import-decision-manager-container .import-video-row.to-be-deleted::after {
                 content: '' !important;
                 position: absolute !important;
@@ -121,17 +155,9 @@ export async function showImportDecisionManager(options: ImportDecisionModalOpti
                 left: 0 !important;
                 right: 0 !important;
                 bottom: 0 !important;
-                background-color: rgba(239, 68, 68, 0.12) !important; /* Light red layer */
+                background-color: rgba(239, 68, 68, 0.08) !important; /* Subtle red tint */
                 pointer-events: none !important;
                 z-index: 1 !important;
-            }
-
-            /* Strikethrough text */
-            #import-decision-manager-container .import-video-row.to-be-deleted .video-title {
-                text-decoration: line-through !important;
-                text-decoration-color: rgba(239, 68, 68, 0.8) !important;
-                color: var(--color-text-secondary, #6b7280) !important;
-                opacity: 0.8 !important;
             }
         `;
         container.appendChild(style);
@@ -249,6 +275,22 @@ async function renderDecisionContent(
         // Get imported video IDs for comparison
         const importedVideoIds = new Set(importedAllNotes.map(v => v.videoId));
 
+        // Helper to check for actual changes
+        const areNotesDifferent = (notes1: Note[], notes2: Note[]): boolean => {
+            if (notes1.length !== notes2.length) return true;
+            // Create a signature based on timestamp and text for comparison
+            // We verify: timestamp (string), text
+            const sig = (n: Note[]) => n.map(x => `${x.timestamp}:${x.text?.trim()}`).sort().join('||');
+            return sig(notes1) !== sig(notes2);
+        };
+
+        // Filter imported notes to render ONLY new or changed videos
+        const displayedImportedNotes = importedAllNotes.filter(importedVideo => {
+            const existingVideo = existingAllNotesMap.get(importedVideo.videoId);
+            if (!existingVideo) return true; // New video -> Show
+            return areNotesDifferent(importedVideo.notes, existingVideo.notes); // Different -> Show, Identical -> Hide
+        });
+
         // Find existing videos that are NOT in the import (will be deleted on replace)
         const videosToDelete: StoredVideoData[] = [];
         existingAllNotesMap.forEach((video, videoId) => {
@@ -280,44 +322,56 @@ async function renderDecisionContent(
         contentElement.appendChild(warningMessage);
 
         // === IMPORTED VIDEOS SECTION ===
-        const importedSection = document.createElement('div');
-        importedSection.className = "import-section";
+        let noChangesMsg: HTMLElement | null = null;
+        if (displayedImportedNotes.length > 0) {
+            const importedSection = document.createElement('div');
+            importedSection.className = "import-section";
 
-        const importedHeader = document.createElement('h4');
-        importedHeader.className = "import-section-header";
-        importedHeader.textContent = `📥 ${languageService.translate("importedVideos") || "Imported Videos"} (${importedAllNotes.length})`;
-        importedSection.appendChild(importedHeader);
+            const importedHeader = document.createElement('h4');
+            importedHeader.className = "import-section-header";
+            importedHeader.textContent = `📥 ${languageService.translate("importedVideos") || "Imported Videos"} (${displayedImportedNotes.length})`;
+            importedSection.appendChild(importedHeader);
 
-        const importedListContainer = document.createElement('div');
-        importedListContainer.className = "import-video-list imported-list";
+            const importedListContainer = document.createElement('div');
+            importedListContainer.className = "import-video-list imported-list";
 
-        importedAllNotes.forEach(importedVideo => {
-            const existingVideo = existingAllNotesMap.get(importedVideo.videoId);
-            const isNew = !existingVideo;
+            displayedImportedNotes.forEach(importedVideo => {
+                const existingVideo = existingAllNotesMap.get(importedVideo.videoId);
+                const isNew = !existingVideo;
 
-            const videoRow = document.createElement('div');
-            videoRow.className = "import-video-row";
+                const videoRow = document.createElement('div');
+                videoRow.className = "import-video-row";
 
-            const statusIndicator = document.createElement('span');
-            statusIndicator.className = `status-indicator ${isNew ? 'new' : 'existing'}`;
-            statusIndicator.textContent = isNew
-                ? (languageService.translate("newVideo") || "New")
-                : (languageService.translate("willUpdate") || "Update");
+                const statusIndicator = document.createElement('span');
+                statusIndicator.className = `status-indicator ${isNew ? 'new' : 'existing'}`;
+                statusIndicator.textContent = isNew
+                    ? (languageService.translate("newVideo") || "New")
+                    : (languageService.translate("willUpdate") || "Update");
 
-            const videoTitle = document.createElement('span');
-            videoTitle.className = "video-title";
-            videoTitle.textContent = importedVideo.videoTitle || importedVideo.videoId;
+                const videoTitle = document.createElement('span');
+                videoTitle.className = "video-title";
+                videoTitle.textContent = importedVideo.videoTitle || importedVideo.videoId;
 
-            const notesCount = document.createElement('span');
-            notesCount.className = "notes-count";
-            notesCount.textContent = `(${importedVideo.notes.length} ${languageService.translate("notes") || "notes"})`;
+                const notesCount = document.createElement('span');
+                notesCount.className = "notes-count";
+                notesCount.textContent = `(${importedVideo.notes.length} ${languageService.translate("notes") || "notes"})`;
 
-            videoRow.append(statusIndicator, videoTitle, notesCount);
-            importedListContainer.appendChild(videoRow);
-        });
+                videoRow.append(statusIndicator, videoTitle, notesCount);
+                importedListContainer.appendChild(videoRow);
+            });
 
-        importedSection.appendChild(importedListContainer);
-        contentElement.appendChild(importedSection);
+            importedSection.appendChild(importedListContainer);
+            contentElement.appendChild(importedSection);
+        } else {
+            // Optional: Show message if everything is identical? 
+            // User said "do not show anything", assuming they mean the specific videos.
+            // If ALL are identical, show the success message.
+            const allIdenticalMsg = document.createElement('div');
+            allIdenticalMsg.className = "import-info-message";
+            allIdenticalMsg.innerHTML = `✅ ${languageService.translate("noChangesDetected") || "All imported videos match existing notes. No changes detected."}`;
+            contentElement.appendChild(allIdenticalMsg);
+            noChangesMsg = allIdenticalMsg;
+        }
 
         // === EXISTING VIDEOS SECTION (only if there are videos to delete) ===
         let existingSection: HTMLElement | null = null;
@@ -364,6 +418,13 @@ async function renderDecisionContent(
         // Function to update UI based on merge checkbox state
         const updateDeleteWarning = () => {
             const isMerge = mergeCheckbox.checked;
+
+            // Handle "No Changes" message visibility
+            // If we are in replace mode (deleting videos), strictly speaking "Changes ARE detected" (deletion),
+            // so the "No changes detected" message is misleading and should be hidden.
+            if (noChangesMsg) {
+                noChangesMsg.style.display = isMerge ? 'block' : 'none';
+            }
 
             if (existingSection && existingListContainer) {
                 if (isMerge) {

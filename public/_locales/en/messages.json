@@ -646,6 +646,10 @@
     "message": "Existing Videos (not in import)",
     "description": "Header for existing videos section in import dialog."
   },
+  "noChangesDetected": {
+    "message": "All imported videos match existing notes. No changes detected.",
+    "description": "Message shown when no changes are detected during import because all imported videos already exist."
+  },
   "willUpdate": {
     "message": "Update",
     "description": "Status indicator for videos that will be updated during import."

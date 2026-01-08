@@ -670,6 +670,10 @@
     "message": "الفيديوهات الموجودة (ليست في الاستيراد)",
     "description": "Header for existing videos section in import dialog."
   },
+  "noChangesDetected": {
+    "message": "جميع الفيديوهات المستوردة تطابق الملاحظات الموجودة. لا توجد تغييرات.",
+    "description": "Message shown when no changes are detected during import because all imported videos match existing notes."
+  },
   "willUpdate": {
     "message": "تحديث",
     "description": "Status indicator for videos that will be updated during import."
