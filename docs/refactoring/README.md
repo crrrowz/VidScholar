@@ -8,6 +8,8 @@ This analysis examined the VidScholar codebase holistically to discover **natura
 
 ## 🎯 Key Findings
 
+### Original Analysis
+
 | Finding | Impact | Estimated Savings |
 |---------|--------|-------------------|
 | Storage layer fragmentation | High | ~1,200 lines |
@@ -17,7 +19,19 @@ This analysis examined the VidScholar codebase holistically to discover **natura
 | Drag & drop triple duplication | Medium | ~350 lines |
 | Direction handling scatter | Low-Medium | ~100 lines |
 
-**Total Estimated Code Reduction: ~3,100 lines (from ~15,000+ total)**
+### Deep Analysis (Newly Discovered)
+
+| Finding | Impact | Estimated Savings |
+|---------|--------|-------------------|
+| Storage cascade (redundant caching) | High | ~400 lines |
+| Note lifecycle fragmentation | Medium-High | ~200 lines |
+| Video context reconstruction | Medium | ~150 lines |
+| Initialization cascade | Medium | ~200 lines |
+| Message passing (untyped) | Medium | ~100 lines |
+| UI feedback in storage layer | Medium | ~150 lines |
+| Error handling inconsistency | Medium-High | ~300 lines |
+
+**Total Estimated Code Reduction: ~4,600 lines (from ~15,000+ total)**
 
 ---
 
@@ -46,6 +60,18 @@ This analysis examined the VidScholar codebase holistically to discover **natura
 | 07 | [Video Context Utilities](./07-video-context-utilities.md) | YouTube DOM | Scattered DOM queries |
 | 08 | [Localization & RTL](./08-localization-rtl-handling.md) | Direction handling | Duplicated listener patterns |
 
+### Deep Pattern Analysis (Newly Discovered Zones)
+
+| # | Zone | File | Primary Issue |
+|---|------|------|---------------|
+| 09 | [Storage Cascade Elimination](./09-storage-cascade-elimination.md) | Storage refactor | Multi-layer delegation with redundant caching |
+| 10 | [Note Lifecycle Unification](./10-note-lifecycle-unification.md) | Note management | 4 different note creation paths |
+| 11 | [Video Context Object](./11-video-context-object-pattern.md) | Context pattern | Video metadata reconstructed 20+ times |
+| 12 | [Initialization Cascade](./12-singleton-initialization-cascade.md) | Service lifecycle | 8+ services with scattered init |
+| 13 | [Message Passing Architecture](./13-message-passing-consolidation.md) | Chrome messaging | Untyped message strings |
+| 14 | [UI Feedback Centralization](./14-ui-feedback-centralization.md) | Notifications | Toast calls in storage layer |
+| 15 | [Error Handling Strategy](./15-error-handling-unification.md) | Error patterns | 5+ inconsistent error patterns |
+
 ---
 
 ## 🔢 Recommended Execution Order
@@ -56,16 +82,25 @@ Based on dependency analysis and risk assessment:
 Phase 1: Foundation (Weeks 1-2)
 ├── 03 - Delete unused DI container (quick win)
 ├── 06 - Extract Sortable abstraction (isolated)
-└── 08 - Add direction helpers (low risk)
+├── 08 - Add direction helpers (low risk)
+└── 15 - Create error handling infrastructure (foundation)
 
-Phase 2: Primitives (Weeks 3-4)
-├── 05 - Enhance button factory
-├── 07 - Create VideoContext
-└── 04 - Extract IO primitives (filePicker, fileReader)
+Phase 2: Infrastructure (Weeks 3-4)
+├── 12 - Create InitializationManager (service lifecycle)
+├── 13 - Create MessageBus (type-safe messaging)
+├── 14 - Create NotificationService (UI feedback)
+└── 05 - Enhance button factory
 
-Phase 3: Major Refactoring (Weeks 5-8)
-├── 02 - Create Modal Core infrastructure
+Phase 3: Context & Lifecycle (Weeks 5-6)
+├── 11 - Create VideoContext provider
+├── 10 - Create NoteLifecycleManager
+├── 07 - Migrate VideoContext utilities
+└── 04 - Extract IO primitives
+
+Phase 4: Major Refactoring (Weeks 7-10)
+├── 09 - Eliminate storage cascade (depends on 12, 15)
 ├── 01 - Unify Storage layer
+├── 02 - Create Modal Core infrastructure
 └── 04 - Complete Import/Export consolidation
 ```
 
