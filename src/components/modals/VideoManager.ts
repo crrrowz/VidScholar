@@ -1,5 +1,5 @@
 import { getCurrentVideoId } from '../../utils/video';
-import type { Video } from '../../types';
+import type { Video, Note, StoredVideoData } from '../../types';
 import { noteStorage } from '../../classes/NoteStorage';
 import { actions } from '../../state/actions';
 import { createButton } from '../ui/Button';
@@ -13,6 +13,12 @@ import { showConfirmDialog } from './ConfirmDialog';
 import { showPromptDialog } from './PromptDialog';
 import Sortable from 'sortablejs';
 import { settingsService } from '../../services/SettingsService';
+
+// Extended interface for filtered search results
+interface FilteredVideo extends Video {
+  filteredNotes?: Note[];
+  isSearchResult?: boolean;
+}
 
 function debounce(func: Function, wait: number) {
   let timeout: any;
@@ -198,10 +204,24 @@ function createVideoManagerUI(
   downloadAllNotesBtn.title = languageService.translate("downloadAllNotesJson");
 
   const uploadAllNotesBtn = createButton(
-    icons.UPLOAD,
+    icons['UPLOAD'] ?? null,
     null,
     async () => {
-      await shareService.importNotesFromJson(true, (videos) => renderList(videos));
+      await shareService.importNotesFromJson(true, (storedVideos: StoredVideoData[]) => {
+        // Convert StoredVideoData[] to Video[] for display
+        const videos: Video[] = storedVideos.map(sv => ({
+          id: sv.videoId,
+          title: sv.videoTitle,
+          thumbnail: sv.thumbnail,
+          notes: sv.notes,
+          lastModified: sv.lastModified,
+          firstNoteTimestamp: sv.firstNoteTimestamp,
+          group: sv.group,
+          channelName: sv.channelName,
+          channelId: sv.channelId
+        }));
+        renderList(videos, '');
+      });
     },
     'uploadAllNotesBtn',
     'primary'
@@ -214,11 +234,16 @@ function createVideoManagerUI(
   const contentList = document.createElement('div');
   contentList.className = 'video-manager-content';
 
-  const renderList = (list: Video[]) => {
+  // Overloaded renderList to support filtered search results
+  // Note: FilteredVideo extends Video, so this accepts both types
+  const renderList = (list: (Video | FilteredVideo)[], searchQuery: string = '') => {
     contentList.innerHTML = '';
 
     if (!list || list.length === 0) {
-      contentList.innerHTML = `<div class="empty-list-message">${languageService.translate("noSavedVideos")}</div>`;
+      const message = searchQuery
+        ? languageService.translate("noSearchResults", "No results found")
+        : languageService.translate("noSavedVideos");
+      contentList.innerHTML = `<div class="empty-list-message">${message}</div>`;
       return;
     }
 
@@ -230,7 +255,7 @@ function createVideoManagerUI(
       if (!groupedVideos[groupName]) {
         groupedVideos[groupName] = [];
       }
-      groupedVideos[groupName].push(video);
+      groupedVideos[groupName].push(video as FilteredVideo);
     });
 
     const groupOrder = settingsService.get('videoGroups');
@@ -274,29 +299,36 @@ function createVideoManagerUI(
 
       groupedVideos[groupName].forEach(video => {
         if (!video.id) return;
-        const card = createCard(video, closeCallback, () => {
-          card.remove();
+        // ✅ ISSUE #4: Pass searchQuery and filteredNotes for precise search
+        const card = createCard(
+          video,
+          closeCallback,
+          () => {
+            card.remove();
 
-          // ✅ FIX: Check if group is now empty and hide/remove it
-          const remainingCards = groupContentContainer.querySelectorAll('.video-card');
-          if (remainingCards.length === 0) {
-            // Hide the entire group section
-            groupContainer.style.display = 'none';
-          } else {
-            // Update the count in the group toggle
-            const countSpan = groupToggle.querySelector('.video-count');
-            if (countSpan) {
-              countSpan.textContent = `${remainingCards.length} ${languageService.translate("itemsTerm")}`;
+            // ✅ FIX: Check if group is now empty and hide/remove it
+            const remainingCards = groupContentContainer.querySelectorAll('.video-card');
+            if (remainingCards.length === 0) {
+              // Hide the entire group section
+              groupContainer.style.display = 'none';
+            } else {
+              // Update the count in the group toggle
+              const countSpan = groupToggle.querySelector('.video-count');
+              if (countSpan) {
+                countSpan.textContent = `${remainingCards.length} ${languageService.translate("itemsTerm")}`;
+              }
             }
-          }
 
-          // Update total video count in header
-          const headerCount = container.querySelector('.video-manager-header .video-count');
-          if (headerCount) {
-            const allCards = contentList.querySelectorAll('.video-card');
-            headerCount.textContent = `${allCards.length} ${languageService.translate("itemsTerm")}`;
-          }
-        });
+            // Update total video count in header
+            const headerCount = container.querySelector('.video-manager-header .video-count');
+            if (headerCount) {
+              const allCards = contentList.querySelectorAll('.video-card');
+              headerCount.textContent = `${allCards.length} ${languageService.translate("itemsTerm")}`;
+            }
+          },
+          searchQuery,
+          video.filteredNotes
+        );
         groupContentContainer.appendChild(card);
       });
 
@@ -458,28 +490,70 @@ function createVideoManagerUI(
     }
   });
 
+  // ✅ ISSUE #4: Precise Note Search - Filter notes within videos, not just entire videos
   searchInput.addEventListener('input', debounce(async (e: Event) => {
     const rawQ = (e.target as HTMLInputElement).value;
     const q = normalizeStringForSearch(rawQ);
+
+    // If empty query, show all videos normally
+    if (!q.trim()) {
+      const allVideos = await noteStorage.loadSavedVideos();
+      renderList(allVideos, '');
+      return;
+    }
+
     const allVideos = await noteStorage.loadSavedVideos();
-    const filteredVideos = allVideos.filter(v => {
-      const normalizedTitle = normalizeStringForSearch(v.title || '');
-      const normalizedGroup = normalizeStringForSearch(v.group || '');
-      const notesMatch = (v.notes || []).some(n => normalizeStringForSearch(n.text || '').includes(q));
-      return normalizedTitle.includes(q) || normalizedGroup.includes(q) || notesMatch;
-    });
-    renderList(filteredVideos);
+
+    // Filter videos and their notes precisely
+    const filteredVideos: FilteredVideo[] = allVideos
+      .map(video => {
+        const normalizedTitle = normalizeStringForSearch(video.title || '');
+        const normalizedGroup = normalizeStringForSearch(video.group || '');
+        const titleMatch = normalizedTitle.includes(q);
+        const groupMatch = normalizedGroup.includes(q);
+
+        // Filter notes that match the query
+        const matchingNotes = (video.notes || []).filter(n =>
+          normalizeStringForSearch(n.text || '').includes(q)
+        );
+
+        // Include video if title/group matches OR has matching notes
+        if (titleMatch || groupMatch || matchingNotes.length > 0) {
+          return {
+            ...video,
+            // If title/group match, show all notes; otherwise only show matching notes
+            filteredNotes: (titleMatch || groupMatch) ? video.notes : matchingNotes,
+            isSearchResult: true
+          } as FilteredVideo;
+        }
+        return null;
+      })
+      .filter((v): v is FilteredVideo => v !== null);
+
+    renderList(filteredVideos, q);
   }, 300));
 
   container.append(header, toolbar, contentList);
   return container;
 }
 
-function createCard(video: Video, closeCallback: () => void, onDelete: () => void): HTMLElement {
+// ✅ ISSUE #4: Updated createCard to support search highlighting
+function createCard(
+  video: FilteredVideo,
+  closeCallback: () => void,
+  onDelete: () => void,
+  searchQuery: string = '',
+  filteredNotes?: Note[]
+): HTMLElement {
   const icons = config.getIcons();
   const card = document.createElement('div');
   card.className = 'video-card';
   card.dataset.videoId = video.id;
+
+  // Add search result indicator if searching
+  if (searchQuery) {
+    card.classList.add('video-card--search-result');
+  }
 
   const topRow = document.createElement('div');
   topRow.className = 'video-card-top-row';
@@ -492,7 +566,7 @@ function createCard(video: Video, closeCallback: () => void, onDelete: () => voi
 
   const playO = document.createElement('div');
   playO.className = 'play-overlay';
-  playO.innerHTML = `<span class="material-icons">${icons.PLAY_CIRCLE}</span>`;
+  playO.innerHTML = `<span class="material-icons">${icons['PLAY_CIRCLE']}</span>`;
 
   thumbWrapper.append(thumb, playO);
 
@@ -512,9 +586,9 @@ function createCard(video: Video, closeCallback: () => void, onDelete: () => voi
   const btns = document.createElement('div');
   btns.className = 'video-card-actions';
 
-  const openBtn = createButton(icons.OPEN, languageService.translate("openVideo"), () => { closeCallback(); setTimeout(() => noteStorage.handleVideoOpen(video.id, video.firstNoteTimestamp), 50); }, undefined, 'primary');
+  const openBtn = createButton(icons['OPEN'] ?? null, languageService.translate("openVideo"), () => { closeCallback(); setTimeout(() => noteStorage.handleVideoOpen(video.id, video.firstNoteTimestamp), 50); }, undefined, 'primary');
 
-  const delBtn = createButton(icons.DELETE, languageService.translate("delete"), async () => {
+  const delBtn = createButton(icons['DELETE'] ?? null, languageService.translate("delete"), async () => {
     const confirmed = await showConfirmDialog({
       title: languageService.translate("confirmDeleteTitle"),
       message: languageService.translate("confirmDelete", [video.title]),
@@ -534,11 +608,27 @@ function createCard(video: Video, closeCallback: () => void, onDelete: () => voi
   const notesContainer = document.createElement('div');
   notesContainer.className = 'video-card-notes-container';
 
-  const notes = video.notes || [];
-  if (notes.length > 0) {
+  // ✅ ISSUE #4: Use filteredNotes if provided (during search), otherwise show all notes
+  const notesToDisplay = filteredNotes || video.notes || [];
+  const totalNotesCount = video.notes?.length || 0;
+
+  if (notesToDisplay.length > 0) {
     const toggle = document.createElement('div');
     toggle.className = 'notes-toggle';
-    toggle.innerHTML = `<span class="material-icons">${icons.EXPAND_MORE}</span> <b>${notes.length}</b> ${languageService.translate("notesTerm")}`;
+
+    // Show "X matching notes out of Y total" during search
+    if (searchQuery && filteredNotes && filteredNotes.length < totalNotesCount) {
+      toggle.innerHTML = `<span class="material-icons">${icons['EXPAND_MORE']}</span> <b>${filteredNotes.length}</b>/${totalNotesCount} ${languageService.translate("matchingNotes", "matching notes")}`;
+      toggle.classList.add('notes-toggle--search');
+    } else {
+      toggle.innerHTML = `<span class="material-icons">${icons['EXPAND_MORE']}</span> <b>${notesToDisplay.length}</b> ${languageService.translate("notesTerm")}`;
+    }
+
+    // Auto-expand notes during search to show matching content
+    if (searchQuery) {
+      notesContainer.style.display = 'flex';
+      toggle.querySelector('.material-icons')!.classList.add('rotated');
+    }
 
     toggle.onclick = () => {
       const isHid = notesContainer.style.display === 'none';
@@ -549,7 +639,21 @@ function createCard(video: Video, closeCallback: () => void, onDelete: () => voi
     const list = document.createElement('div');
     list.className = 'notes-list';
 
-    notes.forEach(note => {
+    // Helper function to highlight search matches
+    const highlightText = (text: string, query: string): string => {
+      if (!query) return text;
+      const normalizedText = text.toLowerCase();
+      const normalizedQuery = query.toLowerCase();
+      const index = normalizedText.indexOf(normalizedQuery);
+      if (index === -1) return text;
+
+      const before = text.slice(0, index);
+      const match = text.slice(index, index + query.length);
+      const after = text.slice(index + query.length);
+      return `${before}<mark class="search-highlight">${match}</mark>${after}`;
+    };
+
+    notesToDisplay.forEach(note => {
       const row = document.createElement('div');
       row.className = 'note-row';
       row.style.display = 'flex';
@@ -583,7 +687,12 @@ function createCard(video: Video, closeCallback: () => void, onDelete: () => voi
 
       const txt = document.createElement('span');
       txt.className = 'note-text';
-      txt.textContent = note.text;
+      // ✅ ISSUE #4: Apply search highlighting if there's a search query
+      if (searchQuery) {
+        txt.innerHTML = highlightText(note.text, searchQuery);
+      } else {
+        txt.textContent = note.text;
+      }
       Object.assign(txt.style, {
         flex: '1',
         padding: '4px',
