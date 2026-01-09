@@ -2,6 +2,27 @@ import { supabaseService } from '../src/services/SupabaseService';
 import { storageAdapter } from '../src/storage/StorageAdapter';
 
 export default defineBackground(() => {
+    // 🔑 Store Chrome User ID on startup for content scripts to access
+    const storeChomeUserId = () => {
+        try {
+            chrome.identity.getProfileUserInfo((userInfo) => {
+                if (userInfo && userInfo.id) {
+                    chrome.storage.sync.set({
+                        __chrome_user_id__: userInfo.id,
+                        __chrome_user_email__: userInfo.email || ''
+                    });
+                } else {
+                    chrome.storage.sync.remove(['__chrome_user_id__', '__chrome_user_email__']);
+                }
+            });
+        } catch (error) {
+            // Silently fail - device ID will be used as fallback
+        }
+    };
+
+    // Store Chrome User ID immediately on startup
+    storeChomeUserId();
+
     // 1. YouTube Video Data Loader
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         if (changeInfo.status === "complete" && tab.url && tab.url.includes("youtube.com/watch")) {
@@ -12,7 +33,7 @@ export default defineBackground(() => {
                 chrome.tabs.sendMessage(tabId, {
                     type: "LOAD_VIDEO_DATA",
                     videoId: videoId
-                }).catch(err => {
+                }).catch(() => {
                     // Content script might not be ready, this is safe to ignore usually
                 });
             }
@@ -21,6 +42,9 @@ export default defineBackground(() => {
 
     // 2. Initial Cloud Sync on Install/Update
     chrome.runtime.onInstalled.addListener(async (details) => {
+        // Re-check Chrome User ID on install/update
+        storeChomeUserId();
+
         if (details.reason === "install" || details.reason === "update") {
             console.log(`Extension ${details.reason} detected. Starting background cloud sync...`);
             try {
@@ -79,6 +103,29 @@ export default defineBackground(() => {
                 sendResponse({ success: false, error: "No tab ID found for reload." });
             }
             return true; // Indicate async response
+        } else if (request.type === "GET_CHROME_USER_ID") {
+            // 🔑 Get Chrome Profile User ID from background script
+            console.log('[Background] GET_CHROME_USER_ID request received');
+
+            chrome.identity.getProfileUserInfo((userInfo) => {
+                console.log('[Background] getProfileUserInfo result:');
+                console.log('[Background] - lastError:', chrome.runtime.lastError);
+                console.log('[Background] - userInfo:', JSON.stringify(userInfo, null, 2));
+                console.log('[Background] - id:', userInfo?.id);
+                console.log('[Background] - email:', userInfo?.email);
+
+                if (chrome.runtime.lastError) {
+                    console.error('[Background] Identity error:', chrome.runtime.lastError);
+                    sendResponse({ success: false, error: chrome.runtime.lastError.message, userId: null });
+                } else if (userInfo && userInfo.id) {
+                    console.log('[Background] ✅ Chrome Profile ID found:', userInfo.id);
+                    sendResponse({ success: true, userId: userInfo.id, email: userInfo.email });
+                } else {
+                    console.log('[Background] ⚠️ User not signed in or ID empty');
+                    sendResponse({ success: false, error: 'User not signed in Chrome', userId: null });
+                }
+            });
+            return true; // Async response
         }
 
         // For synchronous messages

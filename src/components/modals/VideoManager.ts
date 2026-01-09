@@ -52,9 +52,7 @@ export async function showVideoManager(): Promise<void> {
   requestAnimationFrame(() => overlay.classList.add('visible'));
 
   try {
-    // Force save any pending changes before loading the library
-    await actions.saveNotes();
-
+    // Load videos and retention days in parallel (no need to save before reading)
     const [videos, retentionDays] = await Promise.all([
       noteStorage.loadSavedVideos().catch(() => []),
       noteStorage.getRetentionDays().catch(() => 30)

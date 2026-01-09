@@ -86,29 +86,44 @@ class SupabaseService {
 
     /**
      * Get Chrome Profile User ID
+     * Priority: 1. Storage (set by background) -> 2. Messaging -> 3. Device ID
      */
     private getChromeUserId(): Promise<string | null> {
         // 🛠️ DEVELOPMENT MODE: Check multiple flags just to be sure
         if (import.meta.env.DEV || import.meta.env.MODE === 'development' || process.env['NODE_ENV'] === 'development') {
             const TEST_ID = 'TEST_USER_DEV_123';
-            console.log(`SupabaseService: 🔧 DEV MODE detected. Using Test ID: ${TEST_ID}`);
             return Promise.resolve(TEST_ID);
         }
 
-        return new Promise((resolve) => {
-            // Attempt to use chrome.identity
-            if (typeof chrome !== 'undefined' && chrome.identity) {
-                chrome.identity.getProfileUserInfo((userInfo) => {
-                    if (!chrome.runtime.lastError && userInfo && userInfo.id) {
-                        resolve(userInfo.id);
+        return new Promise(async (resolve) => {
+            try {
+                // 1️⃣ First, try to read Chrome User ID from storage (set by background script)
+                const storageResult = await chrome.storage.sync.get('__chrome_user_id__');
+
+                if (storageResult['__chrome_user_id__']) {
+                    resolve(storageResult['__chrome_user_id__']);
+                    return;
+                }
+
+                // 2️⃣ Try to get via messaging (in case background just started)
+                try {
+                    const response = await chrome.runtime.sendMessage({ type: 'GET_CHROME_USER_ID' });
+
+                    if (response?.success && response?.userId) {
+                        resolve(response.userId);
                         return;
                     }
-                    // If identity fails or returns empty, fallback to device ID
-                    this.getOrCreateDeviceId().then(resolve);
-                });
-            } else {
-                // If identity API is missing, fallback directly
-                this.getOrCreateDeviceId().then(resolve);
+                } catch {
+                    // Background may not be ready, continue to fallback
+                }
+
+                // 3️⃣ Fallback to device ID
+                const deviceId = await this.getOrCreateDeviceId();
+                resolve(deviceId);
+
+            } catch {
+                const deviceId = await this.getOrCreateDeviceId();
+                resolve(deviceId);
             }
         });
     }
@@ -121,12 +136,14 @@ class SupabaseService {
             // Use chrome.storage.sync to persist device ID across reinstalls
             // This syncs with Chrome account and survives extension removal
             const result = await chrome.storage.sync.get('__device_id__');
+
             if (result['__device_id__']) {
                 return result['__device_id__'];
             }
 
             // Also check local storage for migration from old version
             const localResult = await chrome.storage.local.get('__device_id__');
+
             if (localResult['__device_id__']) {
                 // Migrate to sync storage
                 await chrome.storage.sync.set({ __device_id__: localResult['__device_id__'] });
@@ -137,7 +154,7 @@ class SupabaseService {
             const deviceId = 'device_' + crypto.randomUUID();
             await chrome.storage.sync.set({ __device_id__: deviceId });
             return deviceId;
-        } catch (error) {
+        } catch {
             return 'device_' + Date.now().toString(36);
         }
     }

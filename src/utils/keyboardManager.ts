@@ -51,6 +51,16 @@ export function isExtensionInputFocused(): boolean {
     return isInsideExtension(activeElement);
 }
 
+// Global flag to track if a select dropdown is currently open
+let selectDropdownOpen = false;
+
+/**
+ * Check if any select dropdown is currently active
+ */
+function isSelectDropdownActive(): boolean {
+    return selectDropdownOpen;
+}
+
 /**
  * Setup keyboard event handling
  * This ensures YouTube shortcuts work when not focused on extension inputs
@@ -75,6 +85,76 @@ export function setupKeyboardManager(): void {
             }
         }
     }, true); // Use capture phase to handle before YouTube's listeners
+
+    // Track select dropdown state with focus/blur events
+    document.addEventListener('focus', (e) => {
+        const target = e.target as Element;
+        if (target?.tagName === 'SELECT' && isInsideExtension(target)) {
+            selectDropdownOpen = true;
+        }
+    }, true);
+
+    document.addEventListener('blur', (e) => {
+        const target = e.target as Element;
+        if (target?.tagName === 'SELECT' && isInsideExtension(target)) {
+            // Small delay to allow dropdown to complete
+            setTimeout(() => {
+                selectDropdownOpen = false;
+            }, 200);
+        }
+    }, true);
+
+    // Track mouse position to detect when it leaves extension area
+    let mouseInsideExtension = false;
+
+    document.addEventListener('mouseover', (e) => {
+        const target = e.target as Element;
+        const nowInside = isInsideExtension(target);
+
+        // If mouse just LEFT the extension area
+        if (mouseInsideExtension && !nowInside) {
+            // Don't restore focus if a select dropdown is open
+            if (!isSelectDropdownActive()) {
+                returnFocusToVideo();
+            }
+        }
+
+        mouseInsideExtension = nowInside;
+    }, true);
+
+    // Also handle mouseleave from document (for edge cases)
+    document.addEventListener('mouseleave', () => {
+        if (mouseInsideExtension) {
+            // Don't restore focus if a select dropdown is open
+            if (!isSelectDropdownActive()) {
+                returnFocusToVideo();
+            }
+            mouseInsideExtension = false;
+        }
+    });
+
+    // Handle click events - restore focus to video after clicking non-input elements
+    document.addEventListener('click', (e) => {
+        const target = e.target as Element;
+
+        // If clicking inside our extension
+        if (isInsideExtension(target)) {
+            const isInteractiveElement =
+                target.tagName === 'INPUT' ||
+                target.tagName === 'TEXTAREA' ||
+                target.tagName === 'SELECT' ||  // ✅ Added SELECT
+                target.tagName === 'OPTION' ||  // ✅ Added OPTION
+                target.getAttribute('contenteditable') === 'true' ||
+                target.closest('input, textarea, select, [contenteditable="true"]');
+
+            // If it's NOT an interactive element, restore focus to video after a short delay
+            if (!isInteractiveElement && !isSelectDropdownActive()) {
+                setTimeout(() => {
+                    returnFocusToVideo();
+                }, 50);
+            }
+        }
+    }, true);
 
     // Also handle on the container level
     const setupContainerHandler = () => {
@@ -110,6 +190,30 @@ export function setupKeyboardManager(): void {
         childList: true,
         subtree: true
     });
+}
+
+/**
+ * Return focus to the video player so YouTube keyboard shortcuts work
+ */
+function returnFocusToVideo(): void {
+    // Don't steal focus if user is in an input
+    if (isExtensionInputFocused()) return;
+
+    // Try to focus the video player
+    const videoPlayer = document.querySelector('video');
+    if (videoPlayer) {
+        // Blur current active element first
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && isInsideExtension(activeElement)) {
+            activeElement.blur();
+        }
+
+        // Focus the movie player container (YouTube's keyboard handler target)
+        const moviePlayer = document.querySelector('#movie_player') as HTMLElement;
+        if (moviePlayer) {
+            moviePlayer.focus();
+        }
+    }
 }
 
 /**

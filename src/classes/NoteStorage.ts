@@ -431,25 +431,30 @@ export class NoteStorage {
 
   async loadSavedVideos(): Promise<Video[]> {
     try {
-      const retentionDays = await this.getRetentionDays();
+      // Get retention settings and videos in parallel for speed
+      const [retentionDays, storedVideos, videoOrder] = await Promise.all([
+        this.getRetentionDays(),
+        storageAdapter.loadAllVideos(),
+        this.loadVideoOrder()
+      ]);
+
       const retentionPeriod = retentionDays * 24 * 60 * 60 * 1000;
       const currentTime = Date.now();
-
-      const storedVideos = await storageAdapter.loadAllVideos();
       const videos: Video[] = [];
+      const videosToDelete: string[] = []; // Collect for deferred deletion
 
       for (const data of storedVideos) {
-        // Retention check
+        // Retention check - collect for deferred deletion instead of blocking
         const videoDate = data.lastModified || 0;
         if (retentionDays !== Infinity && currentTime - videoDate > retentionPeriod) {
-          await storageAdapter.deleteVideo(data.videoId);
+          videosToDelete.push(data.videoId);
           continue;
         }
 
         const notes = data.notes || [];
         let firstNoteTimestamp: number | undefined = undefined;
 
-        if (notes.length > 0) {
+        if (notes.length > 0 && notes[0]) {
           firstNoteTimestamp = notes.reduce((min, note) => {
             return note.timestampInSeconds < min ? note.timestampInSeconds : min;
           }, notes[0].timestampInSeconds);
@@ -468,8 +473,16 @@ export class NoteStorage {
         });
       }
 
-      // Apply sort order
-      const videoOrder = await this.loadVideoOrder();
+      // Deferred deletion - don't block the UI
+      if (videosToDelete.length > 0) {
+        setTimeout(async () => {
+          for (const videoId of videosToDelete) {
+            await storageAdapter.deleteVideo(videoId);
+          }
+        }, 100);
+      }
+
+      // Apply sort order using pre-loaded videoOrder
       const videoMap = new Map(videos.map(v => [v.id, v]));
       const orderedVideos: Video[] = [];
 

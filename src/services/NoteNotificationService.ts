@@ -94,6 +94,7 @@ class NoteNotificationService {
 
     /**
      * Check current playback time and show notifications
+     * Shows notification 1 second BEFORE the note timestamp
      */
     private checkCurrentTime(): void {
         // Check if notifications are suppressed (e.g., after adding a note)
@@ -105,12 +106,16 @@ class NoteNotificationService {
         if (!video) return;
 
         const currentTime = video.currentTime;
+        const PRE_NOTIFICATION_OFFSET = 1.0; // Show notification 1 second before
 
         for (const note of this.currentNotes) {
             if (this.notifiedTimestamps.has(note.timestampInSeconds)) continue;
 
-            const diff = Math.abs(currentTime - note.timestampInSeconds);
-            if (diff <= this.TIMESTAMP_TOLERANCE) {
+            // Calculate when to show notification (1 second before the note timestamp)
+            const notificationTriggerTime = note.timestampInSeconds - PRE_NOTIFICATION_OFFSET;
+            const diff = Math.abs(currentTime - notificationTriggerTime);
+
+            if (diff <= this.TIMESTAMP_TOLERANCE && currentTime < note.timestampInSeconds) {
                 this.triggerNoteDisplay(note);
                 this.playSound();
 

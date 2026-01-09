@@ -630,6 +630,10 @@
     "message": "Preset saved successfully",
     "description": "Success message when preset is saved."
   },
+  "edit": {
+    "message": "Edit",
+    "description": "Text for edit button or action."
+  },
   "goBackButton": {
     "message": "Back",
     "description": "Text for the back/return button."
