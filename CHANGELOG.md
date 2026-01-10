@@ -80,4 +80,13 @@ This release marks VidScholar as production-ready with comprehensive features, c
 
 ---
 
+### Related Documentation
+
+For more detailed information about this release, see:
+- [Detailed Changelog](./docs/changelogs/2026-01-05.md) - Comprehensive v2.1.0 changes
+- [Release Guide](./docs/guides/release.md) - Full release documentation
+- [Development Roadmap](./docs/roadmap/development-roadmap.md) - Future plans
+
+---
+
 [2.1.0]: https://github.com/crrrowz/VidScholar/releases/tag/v2.1.0

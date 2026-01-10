@@ -1,6 +1,6 @@
 # VidScholar Documentation
 
-> **Complete technical documentation for the VidScholar Chrome Extension**
+> **Complete technical documentation for the VidScholar Browser Extension**
 
 ---
 
@@ -9,6 +9,7 @@
 ```
 docs/
 ├── README.md                    # This file - Documentation index
+│
 ├── architecture/                # System design & technical architecture
 │   ├── overview.md             # Architecture overview (start here)
 │   ├── complete-design.md      # Full architectural design with diagrams
@@ -22,14 +23,23 @@ docs/
 ├── guides/                      # Setup, implementation & release guides
 │   ├── installation.md         # Installation instructions
 │   ├── implementation-guide.md # Development patterns & examples
-│   ├── release.md              # Release process documentation
-│   └── visual-assets.md        # Visual assets reference
+│   └── release.md              # Release process documentation
 │
 ├── decisions/                   # Architectural Decision Records (ADRs)
 │   ├── 001-state-management.md # State management decision
 │   └── 003-testing-infrastructure.md # Testing strategy decision
 │
-└── changelog-2026-01-05.md     # Detailed changelog entry
+├── refactoring/                 # Refactoring analysis & plans
+│   ├── README.md               # Refactoring index
+│   ├── unified-sync-roadmap.md # Sync logic unification plan
+│   └── 01-15 zone files...     # Individual refactoring zones
+│
+├── changelogs/                  # Detailed changelog entries
+│   └── 2026-01-05.md           # Changelog for v2.1.0 release
+│
+└── assets/                      # Visual assets & diagrams
+    ├── visual-assets.md        # Asset index
+    └── *.png                   # Screenshots and diagrams
 ```
 
 ---
@@ -49,6 +59,7 @@ docs/
 ### For Future Development
 - [**Development Roadmap**](./roadmap/development-roadmap.md) - Feature plans & timeline
 - [**Remote Config Roadmap**](./roadmap/remote-config-roadmap.md) - Remote update strategy
+- [**Refactoring Analysis**](./refactoring/README.md) - Code improvement plans
 
 ### For Decision History
 - [**ADRs**](./decisions/) - Why we made certain architectural decisions
@@ -63,6 +74,9 @@ docs/
 | **`roadmap/`** | Development plans, timelines, and strategic feature planning |
 | **`guides/`** | How-to guides for installation, development, and release |
 | **`decisions/`** | Architectural Decision Records (ADRs) documenting key choices |
+| **`refactoring/`** | Refactoring analysis, zone breakdowns, and improvement plans |
+| **`changelogs/`** | Detailed changelog entries for each release |
+| **`assets/`** | Visual assets, screenshots, and diagrams |
 
 ---
 
@@ -72,9 +86,10 @@ docs/
 |----------|-------------|
 | [Architecture Overview](./architecture/overview.md) | High-level system architecture with component descriptions |
 | [Complete Design](./architecture/complete-design.md) | Detailed architecture with data flow diagrams |
-| [Development Roadmap](./roadmap/development-roadmap.md) | 7 critical issues and phased implementation plan |
+| [Development Roadmap](./roadmap/development-roadmap.md) | Feature roadmap and phased implementation plan |
 | [Remote Config](./roadmap/remote-config-roadmap.md) | MV3-compliant remote update system design |
 | [Installation](./guides/installation.md) | Step-by-step setup instructions |
+| [Refactoring Analysis](./refactoring/README.md) | 15-zone refactoring plan with ~4,600 lines estimated reduction |
 
 ---
 
@@ -90,12 +105,21 @@ When adding new documentation:
 ### Document Naming Convention
 
 ```
-[category]-[topic].md
+[topic].md
 Examples:
   - architecture/cloud-sync.md
   - guides/testing-strategy.md
   - decisions/002-storage-adapter.md
+  - changelogs/2026-01-05.md
 ```
+
+### Content Guidelines
+
+- Use clear, descriptive headers
+- Include code examples where applicable
+- Add diagrams for complex concepts
+- Keep documents focused on single topics
+- Update the "Last updated" date when editing
 
 ---
 
@@ -103,12 +127,13 @@ Examples:
 
 | Document | Last Updated | Status |
 |----------|--------------|--------|
-| Architecture Overview | 2026-01-06 | ✅ Current |
+| Architecture Overview | 2026-01-10 | ✅ Current |
 | Complete Design | 2024-12-27 | ✅ Current |
-| Development Roadmap | 2026-01-06 | ✅ Current |
+| Development Roadmap | 2026-01-10 | ✅ Current |
 | Remote Config Roadmap | 2026-01-06 | ✅ Current |
 | Installation Guide | 2024-12-27 | ✅ Current |
+| Refactoring Analysis | 2026-01-08 | ✅ Current |
 
 ---
 
-*Last updated: 2026-01-06*
+*Last updated: 2026-01-10*

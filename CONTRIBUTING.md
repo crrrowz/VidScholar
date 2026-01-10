@@ -6,13 +6,13 @@ This document provides guidelines for contributing to the project. Please read i
 
 ## Understanding the Architecture
 
-Before you start, it is crucial to read and understand the project's current architectural state, as detailed in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+Before you start, it is crucial to read and understand the project's current architectural state, as detailed in the [Architecture Overview](./docs/architecture/overview.md).
 
 The key takeaway is that the project is in a **transitional phase**. You will find a mix of a modern, target architecture (DI, central store) and a legacy pattern (singleton services). When contributing, you should aim to follow the patterns of the **target architecture** whenever possible.
 
 ## Development Setup
 
-Please refer to the [`docs/INSTALLATION.md`](./docs/INSTALLATION.md) for detailed instructions on how to set up your development environment.
+Please refer to the [Installation Guide](./docs/guides/installation.md) for detailed instructions on how to set up your development environment.
 
 A typical workflow is:
 

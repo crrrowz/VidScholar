@@ -62,8 +62,6 @@ Examples of singleton services:
 *   `themeService` (`src/services/ThemeService.ts`)
 *   `languageService` (`src/services/LanguageService.ts`)
 *   `settingsService` (`src/services/SettingsService.ts`)
-
-*   `settingsService` (`src/services/SettingsService.ts`)
 *   `supabaseService` (`src/services/SupabaseService.ts`)
 
 ### 5. Data Storage Strategy (Hybrid)
@@ -94,8 +92,6 @@ The codebase includes a `BackupService` and an `EncryptionService`.
 6.  User interactions in the sidebar (e.g., adding a note) dispatch actions to the store.
 7.  The store updates its state.
 8.  A store subscription in `content.ts` is triggered, which then updates the sidebar UI to reflect the new state.
-7.  The store updates its state.
-8.  A store subscription in `content.ts` is triggered, which then updates the sidebar UI to reflect the new state.
 9.  `NoteStorage` saves the data via `StorageAdapter`.
 10. `StorageAdapter` writes to local storage and pushes changes to Supabase (if online).
 
@@ -112,7 +108,17 @@ The intended direction for the project is to complete the transition to the new 
 *   Migrate all UI components to React.
 *   Refactor all services to be managed by the DI container.
 *   Eliminate the direct-import singleton pattern.
-*   Migrate all UI components to React.
-*   Refactor all services to be managed by the DI container.
-*   Eliminate the direct-import singleton pattern.
-*   Integrate the `UI` for Backup & Restore (Import/Export is already functional).
+*   Integrate the UI for Backup & Restore (Import/Export is already functional).
+
+---
+
+## Related Documentation
+
+- [Complete Design](./complete-design.md) - Detailed architecture diagrams
+- [Cloud Sync](./cloud-sync.md) - Supabase integration details
+- [Code Analysis](./code-analysis.md) - Codebase patterns
+- [Development Roadmap](../roadmap/development-roadmap.md) - Feature plans
+
+---
+
+*Last updated: 2026-01-10*

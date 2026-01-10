@@ -215,6 +215,7 @@ npm run e2e:debug         # Debug mode
 | **Architecture** | [Overview](./docs/architecture/overview.md) · [Complete Design](./docs/architecture/complete-design.md) · [Cloud Sync](./docs/architecture/cloud-sync.md) |
 | **Roadmaps** | [Development Roadmap](./docs/roadmap/development-roadmap.md) · [Remote Config](./docs/roadmap/remote-config-roadmap.md) |
 | **Guides** | [Installation](./docs/guides/installation.md) · [Implementation](./docs/guides/implementation-guide.md) · [Release](./docs/guides/release.md) |
+| **Refactoring** | [Refactoring Analysis](./docs/refactoring/README.md) - 15 improvement zones |
 | **Decisions** | [ADRs](./docs/decisions/) - Architectural Decision Records |
 | **Contributing** | [CONTRIBUTING.md](./CONTRIBUTING.md) · [CHANGELOG.md](./CHANGELOG.md) |
 

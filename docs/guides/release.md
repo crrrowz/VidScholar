@@ -70,7 +70,6 @@ VidScholar/
 │   ├── _locales/
 │   │   ├── en/messages.json     # English translations
 │   │   └── ar/messages.json     # Arabic translations (RTL)
-│   ├── icon-16.png
 │   ├── icon-48.png
 │   └── icon-128.png
 │
@@ -93,11 +92,27 @@ VidScholar/
 │   │   └── ui/                  # Button, Toast, etc.
 │   │
 │   ├── services/                # Business Logic
+│   │   ├── di/                  # Dependency Injection
 │   │   ├── LanguageService.ts
 │   │   ├── ThemeService.ts
 │   │   ├── SettingsService.ts
 │   │   ├── SupabaseService.ts   # Cloud sync
-│   │   └── ...
+│   │   ├── NoteActionsService.ts
+│   │   └── NoteNotificationService.ts
+│   │
+│   ├── storage/                 # Storage Layer
+│   │   ├── StorageAdapter.ts    # Hybrid storage
+│   │   ├── NotesRepository.ts   # Notes data access
+│   │   └── StorageKeys.ts       # Storage constants
+│   │
+│   ├── io/                      # Import/Export
+│   │   ├── ImportService.ts
+│   │   └── ExportService.ts
+│   │
+│   ├── classes/                 # Core Domain
+│   │   ├── NoteStorage.ts
+│   │   ├── NoteCache.ts
+│   │   └── NoteError.ts
 │   │
 │   ├── state/                   # State Management
 │   │   ├── Store.ts
@@ -108,11 +123,19 @@ VidScholar/
 │   │
 │   └── utils/                   # Utilities
 │
+├── supabase/                    # Supabase Config
+│   ├── schema.sql
+│   └── migrations/
+│
 └── docs/                        # Documentation
-    ├── ARCHITECTURE.md
-    ├── INSTALLATION.md
-    ├── CODE_ANALYSIS.md
-    └── CHANGELOG_2026-01-05.md
+    ├── README.md                # Documentation index
+    ├── architecture/            # System design docs
+    ├── roadmap/                 # Development plans
+    ├── guides/                  # Setup & implementation
+    ├── decisions/               # ADRs
+    ├── refactoring/             # Refactoring analysis
+    ├── changelogs/              # Detailed release notes
+    └── assets/                  # Visual assets
 ```
 
 ---
@@ -300,5 +323,15 @@ None currently tracked for this release.
 
 ---
 
-*Last Updated: January 5, 2026*  
+## 📚 Related Documentation
+
+- [Installation Guide](./installation.md) - Developer setup instructions
+- [Implementation Guide](./implementation-guide.md) - Development patterns
+- [Architecture Overview](../architecture/overview.md) - System architecture
+- [Development Roadmap](../roadmap/development-roadmap.md) - Feature plans
+- [Changelog](../changelogs/2026-01-05.md) - Detailed v2.1.0 changelog
+
+---
+
+*Last Updated: 2026-01-10*  
 *Version: 2.1.0*

@@ -202,5 +202,5 @@ Each refactoring zone includes specific validation notes. General testing approa
 
 ---
 
-*Last analyzed: 2026-01-08*
-*Codebase version: 1.1.x*
+*Last analyzed: 2026-01-10*
+*Codebase version: 2.1.0*

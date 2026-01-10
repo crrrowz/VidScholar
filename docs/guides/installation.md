@@ -1,6 +1,6 @@
 # Developer Setup and Installation Guide
 
-This guide provides detailed instructions for setting up the VidScholar development environment. For a quick start, see the [README.md](../README.md).
+This guide provides detailed instructions for setting up the VidScholar development environment. For a quick start, see the [README.md](../../README.md).
 
 ## Prerequisites
 

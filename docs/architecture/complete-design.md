@@ -2,7 +2,7 @@
 
 > **Version:** 2.1.0  
 > **Status:** Production-Ready Architecture  
-> **Last Updated:** December 27, 2024
+> **Last Updated:** January 10, 2026
 
 ---
 
@@ -115,9 +115,10 @@ VidScholar follows a Manifest V3 architecture with clear separation between exte
 VidScholar/
 ├── entrypoints/                    # Extension Entry Points
 │   ├── content.ts                  # Main UI injection script
-│   ├── content/                    # Content script assets
+│   ├── content/                    # Content script assets (14 files)
 │   │   ├── design-tokens.css       # CSS custom properties
-│   │   └── components.css          # Component styles
+│   │   ├── components.css          # Component styles
+│   │   └── styles/                 # Additional styles
 │   └── background.ts               # Service worker
 │
 ├── src/                            # Source Code
@@ -126,20 +127,40 @@ VidScholar/
 │   │   ├── notes/                  # Note display components
 │   │   ├── toolbar/                # Action toolbars
 │   │   ├── modals/                 # Dialog components
+│   │   │   ├── ConfirmDialog.ts
+│   │   │   ├── PromptDialog.ts
+│   │   │   ├── TemplateEditor.ts
+│   │   │   ├── VideoManager.ts
+│   │   │   └── ImportDecisionManager.ts
 │   │   ├── ui/                     # Reusable UI primitives
 │   │   └── video/                  # Video-related components
 │   │
 │   ├── services/                   # Business Logic Services
 │   │   ├── di/                     # Dependency Injection
 │   │   │   ├── Container.ts        # DI container implementation
-│   │   │   └── services.ts         # Service registration
+│   │   │   ├── services.ts         # Service registration
+│   │   │   └── index.ts            # Exports
 │   │   ├── ThemeService.ts         # Theme management
 │   │   ├── LanguageService.ts      # i18n/l10n
 │   │   ├── SettingsService.ts      # User preferences
+│   │   ├── SupabaseService.ts      # Cloud sync with Supabase
 │   │   ├── BackupService.ts        # Data backup/restore
 │   │   ├── EncryptionService.ts    # AES-256-GCM encryption
 │   │   ├── ShareService.ts         # Export/share functionality
-│   │   └── ScreenshotService.ts    # Video frame capture
+│   │   ├── ScreenshotService.ts    # Video frame capture
+│   │   ├── NoteActionsService.ts   # Note CRUD operations
+│   │   └── NoteNotificationService.ts # Note notifications
+│   │
+│   ├── storage/                    # Storage Layer
+│   │   ├── StorageAdapter.ts       # Hybrid storage orchestration
+│   │   ├── NotesRepository.ts      # Notes data access
+│   │   ├── SchemaVersion.ts        # Schema versioning
+│   │   ├── StorageKeys.ts          # Storage key constants
+│   │   └── StorageLock.ts          # Concurrent access control
+│   │
+│   ├── io/                         # Import/Export Module
+│   │   ├── ImportService.ts        # File import logic
+│   │   └── ExportService.ts        # File export logic
 │   │
 │   ├── state/                      # State Management
 │   │   ├── Store.ts                # Redux-like immutable store
@@ -158,34 +179,47 @@ VidScholar/
 │   │   ├── time.ts                 # Time formatting
 │   │   ├── toast.ts                # Notifications
 │   │   ├── icons.ts                # Icon management
-│   │   └── config.ts               # Configuration
+│   │   ├── config.ts               # Configuration
+│   │   ├── ErrorBoundary.ts        # Error handling utilities
+│   │   ├── keyboardManager.ts      # Keyboard shortcuts
+│   │   └── uuid.ts                 # UUID generation
 │   │
-│   └── config/                     # Configuration Constants
-│       └── defaults.ts             # Default values
+│   ├── config/                     # Configuration Constants
+│   │   └── defaults.ts             # Default values
+│   │
+│   └── constants/                  # Application Constants
 │
 ├── tests/                          # Test Suites
-│   ├── setup.ts                    # Jest configuration
-│   ├── state/                      # State management tests
-│   ├── services/                   # Service tests
-│   ├── classes/                    # Class tests
-│   └── e2e/                        # Playwright tests
+│   ├── data-integrity.test.ts      # Data integrity tests
+│   └── hardened-integrity.test.ts  # Hardened integrity tests
+│
+├── supabase/                       # Supabase Configuration
+│   ├── schema.sql                  # Database schema
+│   └── migrations/                 # Database migrations
 │
 ├── public/                         # Static Assets
-│   ├── icon.png                    # Extension icons
+│   ├── icon-128.png                # Extension icon (128px)
+│   ├── icon-48.png                 # Extension icon (48px)
+│   ├── icon.png                    # Extension icon (small)
 │   └── _locales/                   # i18n message files
+│       ├── en/                     # English
+│       └── ar/                     # Arabic (RTL)
 │
 ├── docs/                           # Documentation
-│   ├── ARCHITECTURE.md             # Architecture overview
-│   ├── INSTALLATION.md             # Setup guide
-│   └── ADRs/                       # Architectural decisions
+│   ├── README.md                   # Documentation index
+│   ├── architecture/               # Architecture docs
+│   ├── roadmap/                    # Development plans
+│   ├── guides/                     # Setup & implementation
+│   ├── decisions/                  # ADRs
+│   ├── refactoring/                # Refactoring analysis
+│   ├── changelogs/                 # Detailed changelogs
+│   └── assets/                     # Visual assets
 │
 └── Configuration Files
     ├── wxt.config.ts               # WXT configuration
     ├── tsconfig.json               # TypeScript config
-    ├── jest.config.js              # Jest config
-    ├── playwright.config.ts        # Playwright config
     ├── tailwind.config.js          # Tailwind CSS config
-    └── .eslintrc.json              # ESLint config
+    └── package.json                # Dependencies
 ```
 
 ---
@@ -560,11 +594,17 @@ export function getThemeService(): ThemeService
 | **ThemeService** | Theme management, CSS variable application | `applyTheme()`, `toggleTheme()`, `getCurrentTheme()` |
 | **LanguageService** | i18n, RTL support, translations | `getString()`, `getCurrentDirection()`, `setLocale()` |
 | **SettingsService** | User preferences management | `get()`, `update()`, `reset()`, `export()` |
+| **SupabaseService** | Cloud sync with Supabase | `syncNotes()`, `fetchFromCloud()`, `pushToCloud()` |
 | **NoteStorage** | Note CRUD, caching, persistence | `saveNotes()`, `loadNotes()`, `deleteNote()` |
+| **StorageAdapter** | Hybrid local/cloud storage orchestration | `saveVideoNotes()`, `getVideoNotes()`, `sync()` |
+| **ImportService** | File import and data merging | `importFromFile()`, `parseImport()`, `mergeData()` |
+| **ExportService** | File export in multiple formats | `exportAsJSON()`, `exportAsMarkdown()` |
 | **BackupService** | Data backup and restore | `createBackup()`, `restoreBackup()`, `listBackups()` |
 | **EncryptionService** | AES-256-GCM encryption | `encrypt()`, `decrypt()`, `hashPassword()` |
 | **ShareService** | Export notes in various formats | `exportAsJSON()`, `exportAsMarkdown()`, `share()` |
 | **ScreenshotService** | Video frame capture | `captureFrame()`, `downloadScreenshot()` |
+| **NoteActionsService** | Note CRUD operations | `createNote()`, `updateNote()`, `deleteNote()` |
+| **NoteNotificationService** | Note-related notifications | `showNotification()`, `notifyDuplicate()` |
 
 ### 7.2 Service Implementation Examples
 
