@@ -1,6 +1,7 @@
 // entrypoints/content.ts
 import './content/design-tokens.css';
 import './content/components.css';
+import './content/styles/modal-core.css';
 import type { AppState } from '../src/types';
 import { noteStorage } from '../src/classes/NoteStorage';
 import { NoteError, showUserFriendlyError } from '../src/classes/NoteError';

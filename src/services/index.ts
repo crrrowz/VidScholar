@@ -4,10 +4,13 @@
 export { backupService } from './BackupService';
 export { encryptionService } from './EncryptionService';
 export { languageService } from './LanguageService';
+export { noteActionsService } from './NoteActionsService';
+export { noteNotificationService } from './NoteNotificationService';
 export { screenshotService } from './ScreenshotService';
 export { settingsService } from './SettingsService';
 export { shareService } from './ShareService';
+export { supabaseService } from './SupabaseService';
 export { themeService } from './ThemeService';
 
-// Dependency Injection
-export * from './di';
+// Service Registry
+export { serviceRegistry, initializeServices } from './registry';

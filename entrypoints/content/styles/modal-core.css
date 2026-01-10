@@ -1,0 +1,318 @@
+/**
+ * Modal Core CSS
+ * 
+ * أنماط موحدة لإطار عمل Modal Core الجديد
+ */
+
+/* ============================================
+   Modal Overlay (خلفية الـ Modal)
+   ============================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  padding: 20px;
+}
+
+.modal-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ============================================
+   Modal Container (حاوية المحتوى)
+   ============================================ */
+.modal-container {
+  background-color: var(--color-surface, #1a1a2e);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.2s ease;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+}
+
+.modal-overlay.visible .modal-container {
+  transform: scale(1) translateY(0);
+}
+
+/* Modal Sizes */
+.modal-size-sm {
+  min-width: 320px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.modal-size-md {
+  min-width: 400px;
+  max-width: 560px;
+  width: 100%;
+}
+
+.modal-size-lg {
+  min-width: 500px;
+  max-width: 720px;
+  width: 100%;
+}
+
+.modal-size-xl {
+  min-width: 600px;
+  max-width: 900px;
+  width: 100%;
+}
+
+.modal-size-fullscreen {
+  width: 95vw;
+  height: 95vh;
+  max-width: none;
+  max-height: none;
+}
+
+/* ============================================
+   Modal Header (رأس الـ Modal)
+   ============================================ */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary, #fff);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  color: var(--color-text-secondary, #888);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  background-color: var(--color-surface-hover, rgba(255, 255, 255, 0.1));
+  color: var(--color-text-primary, #fff);
+}
+
+.modal-close-btn .material-icons {
+  font-size: 20px;
+}
+
+/* ============================================
+   Modal Body (محتوى الـ Modal)
+   ============================================ */
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  color: var(--color-text-primary, #fff);
+}
+
+/* Scrollbar styling for modal body */
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--color-border, rgba(255, 255, 255, 0.2));
+  border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted, rgba(255, 255, 255, 0.3));
+}
+
+/* ============================================
+   Modal Footer (ذيل الـ Modal)
+   ============================================ */
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  flex-shrink: 0;
+}
+
+/* RTL Support */
+[dir="rtl"] .modal-footer {
+  flex-direction: row-reverse;
+}
+
+/* ============================================
+   Modal Buttons (أزرار الـ Modal)
+   ============================================ */
+.modal-btn {
+  min-width: 100px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modal-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* ============================================
+   Confirm Modal Specific
+   ============================================ */
+.confirm-modal-body {
+  text-align: center;
+  padding: 24px 20px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text-secondary, #ccc);
+}
+
+.confirm-modal-footer {
+  justify-content: center;
+}
+
+/* ============================================
+   Prompt Modal Specific
+   ============================================ */
+.prompt-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prompt-modal-label {
+  font-size: 14px;
+  color: var(--color-text-secondary, #ccc);
+  font-weight: 500;
+}
+
+.prompt-modal-input,
+.prompt-modal-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.2));
+  background-color: var(--color-surface-alt, rgba(255, 255, 255, 0.05));
+  color: var(--color-text-primary, #fff);
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.prompt-modal-input:focus,
+.prompt-modal-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.prompt-modal-input.input-error,
+.prompt-modal-textarea.input-error {
+  border-color: var(--color-error, #ef4444);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.prompt-modal-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.prompt-modal-error {
+  font-size: 13px;
+  color: var(--color-error, #ef4444);
+  padding: 8px 12px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid var(--color-error, #ef4444);
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .modal-container {
+    max-height: 95vh;
+  }
+
+  .modal-size-sm,
+  .modal-size-md,
+  .modal-size-lg,
+  .modal-size-xl {
+    min-width: auto;
+    max-width: none;
+    width: calc(100% - 20px);
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    padding: 14px 16px;
+    flex-wrap: wrap;
+  }
+
+  .modal-btn {
+    flex: 1;
+    min-width: 80px;
+  }
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes modal-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.modal-shake {
+  animation: modal-shake 0.4s ease-in-out;
+}
