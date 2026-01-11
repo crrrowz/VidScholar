@@ -4,7 +4,29 @@
  * This manager ensures that keyboard shortcuts work properly with YouTube:
  * - When the user is focused on an input inside the extension, keyboard events are captured
  * - When the user is not focused on extension inputs, keyboard events pass through to YouTube
+ * - Arrow keys and video controls always work, even after navigation or focus loss
  */
+
+// Video control keys that should always work
+const VIDEO_CONTROL_KEYS = [
+    'ArrowUp',      // Volume up
+    'ArrowDown',    // Volume down
+    'ArrowLeft',    // Seek back
+    'ArrowRight',   // Seek forward
+    'Space',        // Play/Pause (Alternative)
+    ' ',            // Play/Pause
+    'k',            // Play/Pause
+    'j',            // Seek back 10s
+    'l',            // Seek forward 10s
+    'm',            // Mute
+    'f',            // Fullscreen
+    'c',            // Captions
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', // Seek to %
+];
+
+// Last time we ensured video focus
+let lastFocusEnsureTime = 0;
+const FOCUS_ENSURE_COOLDOWN = 100; // ms
 
 /**
  * Check if an element is inside the VidScholar extension
@@ -66,6 +88,52 @@ function isSelectDropdownActive(): boolean {
  * This ensures YouTube shortcuts work when not focused on extension inputs
  */
 export function setupKeyboardManager(): void {
+    // ✅ NEW: Ensure video focus for control keys BEFORE other handlers
+    // This is the fix for arrow keys not working until navigating to extension
+    document.addEventListener('keydown', (e) => {
+        const target = e.target as Element;
+
+        // Skip if focused on any input element (extension or page)
+        if (isExtensionInputFocused()) return;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
+            target.getAttribute('contenteditable') === 'true') return;
+
+        // If this is a video control key and we're NOT focused on the movie player
+        if (VIDEO_CONTROL_KEYS.includes(e.key)) {
+            const moviePlayer = document.querySelector('#movie_player') as HTMLElement;
+            const activeElement = document.activeElement as HTMLElement;
+
+            // Check if focus is NOT on the movie player or video element
+            const isFocusedOnVideo = activeElement === moviePlayer ||
+                activeElement?.tagName === 'VIDEO' ||
+                activeElement?.closest('#movie_player');
+
+            if (!isFocusedOnVideo && moviePlayer) {
+                const now = Date.now();
+                if (now - lastFocusEnsureTime > FOCUS_ENSURE_COOLDOWN) {
+                    lastFocusEnsureTime = now;
+
+                    // Focus the movie player to make the key work
+                    moviePlayer.focus();
+
+                    // Re-dispatch the event to the movie player since we might have intercepted it
+                    // Use a microtask to ensure focus has been applied
+                    queueMicrotask(() => {
+                        const newEvent = new KeyboardEvent('keydown', {
+                            key: e.key,
+                            code: e.code,
+                            keyCode: e.keyCode,
+                            which: e.which,
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        moviePlayer.dispatchEvent(newEvent);
+                    });
+                }
+            }
+        }
+    }, true); // Capture phase - runs FIRST
+
     // Handle keydown events on the extension containers
     document.addEventListener('keydown', (e) => {
         const target = e.target as Element;
